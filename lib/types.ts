@@ -17,6 +17,23 @@ export type LatestPrice = {
   lowTime?: number;
 };
 
+export type ItemQuote = {
+  high: number | null;
+  low: number | null;
+  highTime: number | null;
+  lowTime: number | null;
+  margin: number | null;
+  tax: number | null;
+  netProfit: number | null;
+  roi: number | null;
+  freshnessSeconds: number | null;
+};
+
+export type ItemQuoteResponse = {
+  item: ItemMeta;
+  quote: ItemQuote;
+};
+
 export type PricePoint = {
   timestamp: number;
   avgHighPrice?: number;

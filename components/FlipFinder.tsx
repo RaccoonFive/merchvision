@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsLeft, ChevronsRight, RefreshCw, Search, SlidersHorizontal, TrendingUp } from "lucide-react";
+import { RefreshCw, Search, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -13,6 +13,7 @@ import {
   YAxis
 } from "recharts";
 import type { FlipCandidate, PricePoint } from "@/lib/types";
+import { AppShell, type Theme } from "@/components/AppShell";
 
 type FlipsResponse = {
   data?: FlipCandidate[];
@@ -40,9 +41,9 @@ type Filters = {
 
 const DEFAULT_FILTERS: Filters = {
   search: "",
-  minProfit: "100",
+  minProfit: "",
   minRoi: "0.5",
-  minVolume: "100",
+  minVolume: "",
   maxPrice: "",
   members: "all",
   sort: "score",
@@ -50,7 +51,6 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 export function FlipFinder() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [flips, setFlips] = useState<FlipCandidate[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -61,7 +61,6 @@ export function FlipFinder() {
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
 
   const selected = flips.find((flip) => flip.id === selectedId) ?? flips[0];
-
   const query = useMemo(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
@@ -128,53 +127,24 @@ export function FlipFinder() {
   }
 
   return (
-    <div className={`app-frame${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
-      <aside className="sidebar">
-        <div className="sidebar-head">
-          <Link className="brand" href="/" aria-label="Merchvision home">
-            <div className="brand-mark">MV</div>
-            <div className="sidebar-brand-copy">
-              <strong>Merchvision</strong>
-              <span>Market tools</span>
-            </div>
-          </Link>
-          <button
-            aria-expanded={!sidebarCollapsed}
-            aria-label={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
-            className="sidebar-toggle"
-            onClick={() => setSidebarCollapsed((current) => !current)}
-            title={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
-            type="button"
-          >
-            {sidebarCollapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
+    <AppShell
+      activePath="/"
+      title="Flip Finder"
+      subtitle="Live OSRS Grand Exchange flip finder"
+      headerActions={
+        <div className="status-pill">
+          <RefreshCw size={15} />
+          {generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}
+          <button className="refresh-btn" onClick={loadFlips} type="button" aria-label="Refresh flips">
+            <RefreshCw size={16} />
+            Refresh
           </button>
         </div>
-
-        <nav className="sidebar-nav" aria-label="Main navigation">
-          <Link className="nav-item active" href="/" title="Flip Finder">
-            <TrendingUp size={19} />
-            <span>Flip Finder</span>
-          </Link>
-        </nav>
-      </aside>
-
-      <main className="app-shell">
-        <header className="topbar">
-          <div>
-            <h1>Flip Finder</h1>
-            <p className="subtitle">Live OSRS Grand Exchange flip finder</p>
-          </div>
-          <div className="status-pill">
-            <RefreshCw size={15} />
-            {generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}
-            <button className="refresh-btn" onClick={loadFlips} type="button" aria-label="Refresh flips">
-              <RefreshCw size={16} />
-              Refresh
-            </button>
-          </div>
-        </header>
-
-        <section className="toolbar" aria-label="Flip filters">
+      }
+    >
+      {(theme) => (
+        <>
+          <section className="toolbar" aria-label="Flip filters">
           <div className="field">
             <label htmlFor="search">
               <Search size={13} /> Search
@@ -210,10 +180,10 @@ export function FlipFinder() {
               <option value="freshness">Freshness</option>
             </select>
           </div>
-        </section>
+          </section>
 
-        <div className="main-grid">
-        <section className="table-wrap" aria-label="Ranked flips">
+          <div className="main-grid">
+          <section className="table-wrap" aria-label="Ranked flips">
           {error ? <div className="error">{error}</div> : null}
           {loading ? <div className="empty">Loading live margins...</div> : null}
           {!loading && !error && flips.length === 0 ? <div className="empty">No flips match these filters.</div> : null}
@@ -238,9 +208,14 @@ export function FlipFinder() {
                 <tbody>
                   {flips.map((flip) => (
                     <tr
+                      aria-label={`Select ${flip.name}`}
                       className={selected?.id === flip.id ? "selected" : ""}
                       key={flip.id}
                       onClick={() => setSelectedId(flip.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") setSelectedId(flip.id);
+                      }}
+                      tabIndex={0}
                     >
                       <td>
                         <div className="item-cell">
@@ -267,7 +242,7 @@ export function FlipFinder() {
               </table>
             </div>
           ) : null}
-        </section>
+          </section>
 
         <aside className="detail-panel" aria-label="Selected item details">
           {selected ? (
@@ -275,7 +250,11 @@ export function FlipFinder() {
               <div className="detail-head">
                 <ItemIcon flip={selected} className="detail-icon" />
                 <div>
-                  <h2>{selected.name}</h2>
+                  <h2>
+                    <Link className="detail-title-link" href={`/lookup/${selected.id}`}>
+                      {selected.name}
+                    </Link>
+                  </h2>
                   <p className="subtitle">{selected.members ? "Members item" : "Free-to-play item"}</p>
                 </div>
               </div>
@@ -293,15 +272,15 @@ export function FlipFinder() {
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData.map(toChartPoint)}>
-                        <CartesianGrid stroke="#313946" vertical={false} />
-                        <XAxis dataKey="time" stroke="#9aa8b8" tick={{ fontSize: 11 }} />
-                        <YAxis stroke="#9aa8b8" tick={{ fontSize: 11 }} width={72} tickFormatter={formatCompact} />
+                        <CartesianGrid stroke={chartColors(theme).grid} vertical={false} />
+                        <XAxis dataKey="time" stroke={chartColors(theme).axis} tick={{ fontSize: 11 }} />
+                        <YAxis stroke={chartColors(theme).axis} tick={{ fontSize: 11 }} width={72} tickFormatter={formatCompact} />
                         <Tooltip
-                          contentStyle={{ background: "#10151d", border: "1px solid #313946", borderRadius: 6 }}
+                          contentStyle={{ background: chartColors(theme).tooltip, border: `1px solid ${chartColors(theme).grid}`, borderRadius: 6, color: chartColors(theme).axis }}
                           formatter={(value) => formatGp(Number(value))}
                         />
-                        <Area dataKey="high" stroke="#58c18c" fill="#58c18c33" name="High" />
-                        <Area dataKey="low" stroke="#e4b454" fill="#e4b45433" name="Low" />
+                        <Area dataKey="high" stroke={chartColors(theme).high} fill={`${chartColors(theme).high}26`} name="High" />
+                        <Area dataKey="low" stroke={chartColors(theme).low} fill={`${chartColors(theme).low}26`} name="Low" />
                       </AreaChart>
                     </ResponsiveContainer>
                   )}
@@ -314,11 +293,18 @@ export function FlipFinder() {
           ) : (
             <div className="empty">Select a flip to inspect the math.</div>
           )}
-        </aside>
-        </div>
-      </main>
-    </div>
+          </aside>
+          </div>
+        </>
+      )}
+    </AppShell>
   );
+}
+
+function chartColors(theme: Theme) {
+  return theme === "dark"
+    ? { grid: "#34485d", axis: "#9aafc2", tooltip: "#18232e", high: "#72b99b", low: "#8fa7bb" }
+    : { grid: "#d8e0e7", axis: "#7d9ab3", tooltip: "#ffffff", high: "#398066", low: "#587b9b" };
 }
 
 function NumberField({
