@@ -1,6 +1,7 @@
 "use client";
 
-import { RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, RefreshCw, Search, SlidersHorizontal, TrendingUp } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Area,
@@ -49,6 +50,7 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 export function FlipFinder() {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [flips, setFlips] = useState<FlipCandidate[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -126,64 +128,91 @@ export function FlipFinder() {
   }
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
-        <div className="brand">
-          <div className="brand-mark">MV</div>
-          <div>
-            <h1>Merchvision</h1>
-            <p className="subtitle">Live OSRS Grand Exchange flip finder</p>
-          </div>
-        </div>
-        <div className="status-pill">
-          <RefreshCw size={15} />
-          {generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}
-          <button className="refresh-btn" onClick={loadFlips} type="button" aria-label="Refresh flips">
-            <RefreshCw size={16} />
-            Refresh
+    <div className={`app-frame${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
+      <aside className="sidebar">
+        <div className="sidebar-head">
+          <Link className="brand" href="/" aria-label="Merchvision home">
+            <div className="brand-mark">MV</div>
+            <div className="sidebar-brand-copy">
+              <strong>Merchvision</strong>
+              <span>Market tools</span>
+            </div>
+          </Link>
+          <button
+            aria-expanded={!sidebarCollapsed}
+            aria-label={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
+            className="sidebar-toggle"
+            onClick={() => setSidebarCollapsed((current) => !current)}
+            title={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
+            type="button"
+          >
+            {sidebarCollapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
           </button>
         </div>
-      </header>
 
-      <section className="toolbar" aria-label="Flip filters">
-        <div className="field">
-          <label htmlFor="search">
-            <Search size={13} /> Search
-          </label>
-          <input
-            id="search"
-            value={filters.search}
-            onChange={(event) => updateFilter("search", event.target.value)}
-            placeholder="Nature rune, bowstring..."
-          />
-        </div>
-        <NumberField id="minProfit" label="Min profit" value={filters.minProfit} onChange={(value) => updateFilter("minProfit", value)} />
-        <NumberField id="minRoi" label="Min ROI %" value={filters.minRoi} onChange={(value) => updateFilter("minRoi", value)} />
-        <NumberField id="minVolume" label="Min volume" value={filters.minVolume} onChange={(value) => updateFilter("minVolume", value)} />
-        <NumberField id="maxPrice" label="Max buy price" value={filters.maxPrice} onChange={(value) => updateFilter("maxPrice", value)} />
-        <div className="field">
-          <label htmlFor="members">Market</label>
-          <select id="members" value={filters.members} onChange={(event) => updateFilter("members", event.target.value)}>
-            <option value="all">All items</option>
-            <option value="f2p">F2P only</option>
-            <option value="members">Members</option>
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="sort">
-            <SlidersHorizontal size={13} /> Sort
-          </label>
-          <select id="sort" value={filters.sort} onChange={(event) => updateFilter("sort", event.target.value)}>
-            <option value="score">Score</option>
-            <option value="profit">Profit</option>
-            <option value="roi">ROI</option>
-            <option value="volume">Volume</option>
-            <option value="freshness">Freshness</option>
-          </select>
-        </div>
-      </section>
+        <nav className="sidebar-nav" aria-label="Main navigation">
+          <Link className="nav-item active" href="/" title="Flip Finder">
+            <TrendingUp size={19} />
+            <span>Flip Finder</span>
+          </Link>
+        </nav>
+      </aside>
 
-      <div className="main-grid">
+      <main className="app-shell">
+        <header className="topbar">
+          <div>
+            <h1>Flip Finder</h1>
+            <p className="subtitle">Live OSRS Grand Exchange flip finder</p>
+          </div>
+          <div className="status-pill">
+            <RefreshCw size={15} />
+            {generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}
+            <button className="refresh-btn" onClick={loadFlips} type="button" aria-label="Refresh flips">
+              <RefreshCw size={16} />
+              Refresh
+            </button>
+          </div>
+        </header>
+
+        <section className="toolbar" aria-label="Flip filters">
+          <div className="field">
+            <label htmlFor="search">
+              <Search size={13} /> Search
+            </label>
+            <input
+              id="search"
+              value={filters.search}
+              onChange={(event) => updateFilter("search", event.target.value)}
+              placeholder="Nature rune, bowstring..."
+            />
+          </div>
+          <NumberField id="minProfit" label="Min profit" value={filters.minProfit} onChange={(value) => updateFilter("minProfit", value)} />
+          <NumberField id="minRoi" label="Min ROI %" value={filters.minRoi} onChange={(value) => updateFilter("minRoi", value)} />
+          <NumberField id="minVolume" label="Min volume" value={filters.minVolume} onChange={(value) => updateFilter("minVolume", value)} />
+          <NumberField id="maxPrice" label="Max buy price" value={filters.maxPrice} onChange={(value) => updateFilter("maxPrice", value)} />
+          <div className="field">
+            <label htmlFor="members">Market</label>
+            <select id="members" value={filters.members} onChange={(event) => updateFilter("members", event.target.value)}>
+              <option value="all">All items</option>
+              <option value="f2p">F2P only</option>
+              <option value="members">Members</option>
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="sort">
+              <SlidersHorizontal size={13} /> Sort
+            </label>
+            <select id="sort" value={filters.sort} onChange={(event) => updateFilter("sort", event.target.value)}>
+              <option value="score">Score</option>
+              <option value="profit">Profit</option>
+              <option value="roi">ROI</option>
+              <option value="volume">Volume</option>
+              <option value="freshness">Freshness</option>
+            </select>
+          </div>
+        </section>
+
+        <div className="main-grid">
         <section className="table-wrap" aria-label="Ranked flips">
           {error ? <div className="error">{error}</div> : null}
           {loading ? <div className="empty">Loading live margins...</div> : null}
@@ -286,8 +315,9 @@ export function FlipFinder() {
             <div className="empty">Select a flip to inspect the math.</div>
           )}
         </aside>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   );
 }
 
