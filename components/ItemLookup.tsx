@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, RefreshCw, Search } from "lucide-react";
+import { AlertTriangle, RefreshCw, Search, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -26,6 +26,8 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
   const [chartData, setChartData] = useState<PricePoint[]>([]);
   const [itemsLoading, setItemsLoading] = useState(true);
   const [quoteLoading, setQuoteLoading] = useState(Boolean(initialItemId));
+  const [favorited, setFavorited] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const suggestions = useMemo(() => searchItems(items, query), [items, query]);
 
@@ -83,9 +85,57 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
     };
   }, [initialItemId]);
 
+  useEffect(() => {
+    if (!initialItemId) {
+      setFavorited(false);
+      return;
+    }
+
+    let alive = true;
+    fetch(`/api/favorites/${initialItemId}`)
+      .then(async (response) => {
+        if (response.status === 401) return { favorited: false };
+        const payload = (await response.json()) as { favorited?: boolean; error?: string };
+        if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to check favorite.");
+        return payload;
+      })
+      .then((payload) => {
+        if (alive) setFavorited(Boolean(payload.favorited));
+      })
+      .catch(() => {
+        if (alive) setFavorited(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [initialItemId]);
+
   function selectItem(item: ItemMeta) {
     setQuery(item.name);
     router.push(`/lookup/${item.id}`);
+  }
+
+  async function toggleFavorite() {
+    if (!initialItemId) return;
+    setFavoriteLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/favorites/${initialItemId}`, { method: favorited ? "DELETE" : "PUT" });
+      if (response.status === 401) {
+        router.push(`/account?callbackUrl=${encodeURIComponent(`/lookup/${initialItemId}`)}`);
+        return;
+      }
+
+      const payload = (await response.json()) as { favorited?: boolean; error?: string };
+      if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to update favorite.");
+      setFavorited(Boolean(payload.favorited));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update favorite.");
+    } finally {
+      setFavoriteLoading(false);
+    }
   }
 
   return (
@@ -126,7 +176,16 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
             {error ? <div className="error">{error}</div> : null}
             {quoteLoading ? <div className="empty">Loading item quote...</div> : null}
             {!initialItemId && !error ? <div className="empty">Search for an item to inspect its current margin.</div> : null}
-            {!quoteLoading && quoteData ? <QuoteDetails data={quoteData} chartData={chartData} theme={theme} /> : null}
+            {!quoteLoading && quoteData ? (
+              <QuoteDetails
+                chartData={chartData}
+                data={quoteData}
+                favoriteLoading={favoriteLoading}
+                favorited={favorited}
+                onToggleFavorite={toggleFavorite}
+                theme={theme}
+              />
+            ) : null}
           </section>
         </div>
       )}
@@ -134,7 +193,21 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
   );
 }
 
-function QuoteDetails({ data, chartData, theme }: { data: ItemQuoteResponse; chartData: PricePoint[]; theme: Theme }) {
+function QuoteDetails({
+  data,
+  chartData,
+  theme,
+  favorited,
+  favoriteLoading,
+  onToggleFavorite
+}: {
+  data: ItemQuoteResponse;
+  chartData: PricePoint[];
+  theme: Theme;
+  favorited: boolean;
+  favoriteLoading: boolean;
+  onToggleFavorite: () => void;
+}) {
   const { item, quote } = data;
   const warnings = buildItemQuoteWarnings(quote);
   const colors = chartColors(theme);
@@ -149,9 +222,23 @@ function QuoteDetails({ data, chartData, theme }: { data: ItemQuoteResponse; cha
             <p className="subtitle">{item.members ? "Members item" : "Free-to-play item"}</p>
           </div>
         </div>
-        <div className="quote-status">
-          <RefreshCw size={14} />
-          {quote.freshnessSeconds === null ? "No recent quote" : `Freshest trade ${formatAge(quote.freshnessSeconds)} ago`}
+        <div className="lookup-detail-actions">
+          <div className="quote-status">
+            <RefreshCw size={14} />
+            {quote.freshnessSeconds === null ? "No recent quote" : `Freshest trade ${formatAge(quote.freshnessSeconds)} ago`}
+          </div>
+          <button
+            aria-label={favorited ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`}
+            aria-pressed={favorited}
+            className={`favorite-toggle${favorited ? " active" : ""}`}
+            disabled={favoriteLoading}
+            onClick={onToggleFavorite}
+            title={favorited ? "Remove favorite" : "Add favorite"}
+            type="button"
+          >
+            <Star fill={favorited ? "currentColor" : "none"} size={17} />
+            <span>{favorited ? "Favorited" : "Favorite"}</span>
+          </button>
         </div>
       </div>
 

@@ -1,13 +1,15 @@
 "use client";
 
-import { ChevronsLeft, ChevronsRight, Moon, Search, Sun, TrendingUp } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, LogIn, LogOut, Moon, Search, Star, Sun, TrendingUp, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 export type Theme = "light" | "dark";
 
 type AppShellProps = {
-  activePath: "/" | "/lookup";
+  activePath: "/" | "/lookup" | "/favorites" | "/account";
   title: string;
   subtitle: string;
   headerActions?: ReactNode;
@@ -15,6 +17,8 @@ type AppShellProps = {
 };
 
 export function AppShell({ activePath, title, subtitle, headerActions, children }: AppShellProps) {
+  const router = useRouter();
+  const { data: session, isPending: sessionPending } = authClient.useSession();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
 
@@ -29,6 +33,12 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
       window.localStorage.setItem("merchvision-theme", nextTheme);
       return nextTheme;
     });
+  }
+
+  async function signOut() {
+    await authClient.signOut();
+    router.push("/");
+    router.refresh();
   }
 
   return (
@@ -63,7 +73,34 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
             <Search size={19} />
             <span>Item Lookup</span>
           </Link>
+          <Link className={`nav-item${activePath === "/favorites" ? " active" : ""}`} href="/favorites" title="Favorites">
+            <Star size={19} />
+            <span>Favorites</span>
+          </Link>
         </nav>
+
+        <div className="sidebar-account">
+          {session?.user ? (
+            <>
+              <Link className={`account-summary${activePath === "/account" ? " active" : ""}`} href="/account" title={session.user.email}>
+                <User size={18} />
+                <span>
+                  <strong>{session.user.name}</strong>
+                  <small>{session.user.email}</small>
+                </span>
+              </Link>
+              <button aria-label="Sign out" className="account-action" onClick={signOut} title="Sign out" type="button">
+                <LogOut size={18} />
+                <span>Sign out</span>
+              </button>
+            </>
+          ) : (
+            <Link className={`account-action${activePath === "/account" ? " active" : ""}`} href="/account" title="Sign in">
+              <LogIn size={18} />
+              <span>{sessionPending ? "Checking account..." : "Sign in"}</span>
+            </Link>
+          )}
+        </div>
       </aside>
 
       <main className="app-shell">

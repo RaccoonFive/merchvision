@@ -34,6 +34,10 @@ export type ItemQuoteResponse = {
   quote: ItemQuote;
 };
 
+export type FavoriteItem = ItemQuoteResponse & {
+  favoritedAt: string;
+};
+
 export type PricePoint = {
   timestamp: number;
   avgHighPrice?: number;
