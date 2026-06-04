@@ -18,12 +18,23 @@ type ItemLookupProps = {
   initialItemId?: number;
 };
 
+type ChartRange = "1D" | "7D" | "3M" | "1Y";
+
+const CHART_RANGES: { label: ChartRange; timestep: string }[] = [
+  { label: "1D", timestep: "5m" },
+  { label: "7D", timestep: "1h" },
+  { label: "3M", timestep: "6h" },
+  { label: "1Y", timestep: "24h" }
+];
+
 export function ItemLookup({ initialItemId }: ItemLookupProps) {
   const router = useRouter();
   const [items, setItems] = useState<ItemMeta[]>([]);
   const [query, setQuery] = useState("");
   const [quoteData, setQuoteData] = useState<ItemQuoteResponse | null>(null);
   const [chartData, setChartData] = useState<PricePoint[]>([]);
+  const [chartRange, setChartRange] = useState<ChartRange>("7D");
+  const [chartLoading, setChartLoading] = useState(Boolean(initialItemId));
   const [itemsLoading, setItemsLoading] = useState(true);
   const [quoteLoading, setQuoteLoading] = useState(Boolean(initialItemId));
   const [favorited, setFavorited] = useState(false);
@@ -45,7 +56,6 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
   useEffect(() => {
     if (!initialItemId) {
       setQuoteData(null);
-      setChartData([]);
       setQuoteLoading(false);
       return;
     }
@@ -54,24 +64,16 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
     setQuoteLoading(true);
     setError(null);
 
-    Promise.allSettled([
-      fetch(`/api/items/${initialItemId}/quote`).then(async (response) => {
+    fetch(`/api/items/${initialItemId}/quote`)
+      .then(async (response) => {
         const payload = (await response.json()) as ItemQuoteResponse & { error?: string };
         if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load item quote.");
         return payload;
-      }),
-      fetch(`/api/items/${initialItemId}/timeseries?timestep=1h`).then(async (response) => {
-        const payload = (await response.json()) as ApiResponse<PricePoint[]>;
-        if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load item chart.");
-        return payload.data ?? [];
       })
-    ])
-      .then(([quoteResult, chartResult]) => {
+      .then((quote) => {
         if (!alive) return;
-        if (quoteResult.status === "rejected") throw quoteResult.reason;
-        setQuoteData(quoteResult.value);
-        setChartData(chartResult.status === "fulfilled" ? chartResult.value : []);
-        setQuery(quoteResult.value.item.name);
+        setQuoteData(quote);
+        setQuery(quote.item.name);
       })
       .catch((err) => {
         if (alive) setError(err instanceof Error ? err.message : "Unable to load item.");
@@ -84,6 +86,35 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
       alive = false;
     };
   }, [initialItemId]);
+
+  useEffect(() => {
+    if (!initialItemId) {
+      setChartData([]);
+      setChartLoading(false);
+      return;
+    }
+
+    const timestep = CHART_RANGES.find((range) => range.label === chartRange)?.timestep ?? "1h";
+    let alive = true;
+    setChartLoading(true);
+
+    fetch(`/api/items/${initialItemId}/timeseries?timestep=${timestep}`)
+      .then(async (response) => {
+        const payload = (await response.json()) as ApiResponse<PricePoint[]>;
+        if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load item chart.");
+        if (alive) setChartData(payload.data ?? []);
+      })
+      .catch(() => {
+        if (alive) setChartData([]);
+      })
+      .finally(() => {
+        if (alive) setChartLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [chartRange, initialItemId]);
 
   useEffect(() => {
     if (!initialItemId) {
@@ -179,10 +210,13 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
             {!quoteLoading && quoteData ? (
               <QuoteDetails
                 chartData={chartData}
+                chartLoading={chartLoading}
+                chartRange={chartRange}
                 data={quoteData}
                 favoriteLoading={favoriteLoading}
                 favorited={favorited}
                 onToggleFavorite={toggleFavorite}
+                onChartRangeChange={setChartRange}
                 theme={theme}
               />
             ) : null}
@@ -196,21 +230,29 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
 function QuoteDetails({
   data,
   chartData,
+  chartLoading,
+  chartRange,
   theme,
   favorited,
   favoriteLoading,
-  onToggleFavorite
+  onToggleFavorite,
+  onChartRangeChange
 }: {
   data: ItemQuoteResponse;
   chartData: PricePoint[];
+  chartLoading: boolean;
+  chartRange: ChartRange;
   theme: Theme;
   favorited: boolean;
   favoriteLoading: boolean;
   onToggleFavorite: () => void;
+  onChartRangeChange: (range: ChartRange) => void;
 }) {
   const { item, quote } = data;
   const warnings = buildItemQuoteWarnings(quote);
   const colors = chartColors(theme);
+  const chartPoints = chartData.map((point) => toChartPoint(point, chartRange));
+  const yDomain = chartYDomain(chartPoints);
 
   return (
     <>
@@ -262,16 +304,42 @@ function QuoteDetails({
       </div>
 
       <div className="lookup-chart-panel">
-        <h3>Recent prices</h3>
+        <div className="lookup-chart-head">
+          <div>
+            <h3>Price history</h3>
+            <p className="muted">{chartRange} view using {chartIntervalLabel(chartRange)} samples</p>
+          </div>
+          <div className="chart-range-selector" aria-label="Chart timespan">
+            {CHART_RANGES.map((range) => (
+              <button
+                aria-pressed={chartRange === range.label}
+                className={chartRange === range.label ? "active" : ""}
+                key={range.label}
+                onClick={() => onChartRangeChange(range.label)}
+                type="button"
+              >
+                {range.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="lookup-chart">
-          {chartData.length === 0 ? (
+          {chartLoading ? (
+            <div className="empty">Loading {chartRange} price history...</div>
+          ) : chartData.length === 0 ? (
             <div className="empty">No recent chart data is available.</div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData.map(toChartPoint)}>
+              <AreaChart data={chartPoints}>
                 <CartesianGrid stroke={colors.grid} vertical={false} />
-                <XAxis dataKey="time" stroke={colors.axis} tick={{ fontSize: 11 }} />
-                <YAxis stroke={colors.axis} tick={{ fontSize: 11 }} width={72} tickFormatter={formatCompact} />
+                <XAxis dataKey="time" stroke={colors.axis} tick={{ fontSize: 11 }} minTickGap={24} />
+                <YAxis
+                  domain={yDomain}
+                  stroke={colors.axis}
+                  tick={{ fontSize: 11 }}
+                  width={72}
+                  tickFormatter={formatCompact}
+                />
                 <Tooltip
                   contentStyle={{ background: colors.tooltip, border: 0, borderRadius: 8, color: colors.axis }}
                   formatter={(value) => formatGp(Number(value))}
@@ -312,12 +380,44 @@ function chartColors(theme: Theme) {
     : { grid: "#e9edf1", axis: "#7d9ab3", tooltip: "#ffffff", high: "#398066", low: "#587b9b" };
 }
 
-function toChartPoint(point: PricePoint) {
+function toChartPoint(point: PricePoint, range: ChartRange) {
+  const date = new Date(point.timestamp * 1000);
   return {
-    time: new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    time:
+      range === "1D"
+        ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : range === "7D"
+          ? date.toLocaleDateString([], { weekday: "short", hour: "2-digit" })
+          : date.toLocaleDateString([], { month: "short", day: "numeric" }),
     high: point.avgHighPrice,
     low: point.avgLowPrice
   };
+}
+
+function chartYDomain(points: ReturnType<typeof toChartPoint>[]): [number, number] {
+  const prices = points.flatMap((point) =>
+    [point.high, point.low].filter((price): price is number => Number.isFinite(price))
+  );
+  if (prices.length === 0) return [0, 1];
+
+  const minimum = Math.min(...prices);
+  const maximum = Math.max(...prices);
+  const padding = Math.max((maximum - minimum) * 0.05, maximum * 0.002, 1);
+  return [Math.max(0, Math.floor(minimum - padding)), Math.ceil(maximum + padding)];
+}
+
+function chartIntervalLabel(range: ChartRange): string {
+  switch (range) {
+    case "1D":
+      return "5-minute";
+    case "3M":
+      return "6-hour";
+    case "1Y":
+      return "daily";
+    case "7D":
+    default:
+      return "hourly";
+  }
 }
 
 function formatNullableGp(value: number | null): string {

@@ -978,6 +978,45 @@ tbody tr.selected {
   padding-top: 18px;
 }
 
+.lookup-chart-head {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.chart-range-selector {
+  background: var(--soft-subtle);
+  border-radius: 10px;
+  display: flex;
+  padding: 3px;
+}
+
+.chart-range-selector button {
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 42px;
+  padding: 7px 9px;
+}
+
+.chart-range-selector button:hover {
+  color: var(--text);
+}
+
+.chart-range-selector button.active {
+  background: var(--panel-2);
+  color: var(--accent-strong);
+}
+
+.chart-range-selector button:focus-visible {
+  box-shadow: 0 0 0 3px rgb(88 123 155 / 20%);
+  outline: none;
+}
+
 .lookup-chart {
   height: 330px;
   margin-top: 12px;
@@ -1154,6 +1193,11 @@ tbody tr.selected {
   .lookup-detail-actions {
     align-items: flex-start;
     justify-items: start;
+  }
+
+  .lookup-chart-head {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
