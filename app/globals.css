@@ -27,6 +27,7 @@
   --subtle-bg: #131d26;
   --glass-bg: rgb(24 35 46 / 72%);
   --nav-hover: rgb(125 154 179 / 12%);
+  --nav-active: #263746;
   --soft-panel: #101820;
   --soft-panel-raised: #131d26;
   --soft-subtle: #0d141b;
@@ -51,6 +52,7 @@
   --subtle-bg: var(--ice-50);
   --glass-bg: rgb(255 255 255 / 55%);
   --nav-hover: rgb(255 255 255 / 65%);
+  --nav-active: var(--panel);
   --soft-panel: #e9edf1;
   --soft-panel-raised: #ffffff;
   --soft-subtle: #f3f5f8;
@@ -179,7 +181,7 @@ button {
 }
 
 .nav-item.active {
-  background: var(--panel);
+  background: var(--nav-active);
   border-color: var(--ice-300);
   box-shadow: 0 5px 16px rgb(52 72 93 / 7%);
   color: var(--accent-strong);
