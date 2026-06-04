@@ -46,6 +46,48 @@ export type PricePoint = {
   lowPriceVolume?: number;
 };
 
+export type MarketSummary = {
+  id: number;
+  avgHighPrice?: number;
+  highPriceVolume?: number;
+  avgLowPrice?: number;
+  lowPriceVolume?: number;
+};
+
+export type InvestmentAnalysis = {
+  currentMidpoint: number;
+  shortTrend: number;
+  mediumTrend: number;
+  volatility: number;
+  consistency: number;
+  confidence: number;
+  shortCoverage: number;
+  mediumCoverage: number;
+  sampleCount: number;
+};
+
+export type InvestmentCandidate = InvestmentAnalysis & {
+  id: number;
+  name: string;
+  members: boolean;
+  icon?: string;
+  buyLimit?: number;
+  matchedVolume: number;
+  liquidityPercentile: number;
+  score: number;
+  warnings: string[];
+};
+
+export type InvestmentFilters = {
+  search?: string;
+  minShortTrend?: number;
+  minMediumTrend?: number;
+  minVolume?: number;
+  maxPrice?: number;
+  members?: "all" | "members" | "f2p";
+  sort?: "score" | "shortTrend" | "mediumTrend" | "volume" | "volatility";
+};
+
 export type FlipCandidate = {
   id: number;
   name: string;

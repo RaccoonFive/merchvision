@@ -19,6 +19,7 @@ Last updated: 2026-06-04
 ## Current State
 
 - Flip Finder ranks profitable items using current net profit, ROI, recent volume, freshness, and buy limits.
+- Investment Finder ranks the top 100 liquid items with positive 24-hour and 7-day midpoint-price trends using a risk-adjusted momentum score.
 - Item Lookup shows current quote metrics, warnings, recent hourly prices, and favorite controls.
 - Signed-in users can save favorites and view their live quotes on a protected Favorites page.
 - Email/password accounts, sessions, MySQL persistence, Prisma migrations, light/dark themes, and responsive layouts are implemented.
@@ -175,6 +176,7 @@ Notify signed-in users inside Merchvision when favorites or market-wide opportun
 
 ## Completed
 
+- **2026-06-04:** Added the public Investment Finder with liquidity shortlisting, confirmed 24-hour and 7-day midpoint trends, risk-adjusted ranking, filters, and explainable detail charts.
 - **2026-06-04:** Added email/password accounts, Better Auth sessions, MySQL/Prisma persistence, and protected Favorites.
 - **2026-06-04:** Added item favoriting from Item Lookup and live favorite quote tracking.
 - **2026-06-04:** Established the permanent Soft visual design, responsive sidebar, and closable Flip Finder detail panel.

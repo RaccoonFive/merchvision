@@ -1,4 +1,4 @@
-import type { ItemMeta, LatestPrice, PricePoint } from "./types";
+import type { ItemMeta, LatestPrice, MarketSummary, PricePoint } from "./types";
 
 const BASE_URL = "https://prices.runescape.wiki/api/v1/osrs";
 const WIKI_IMAGE_BASE_URL = "https://oldschool.runescape.wiki/images";
@@ -9,6 +9,7 @@ type CacheEntry<T> = {
 };
 
 const cache = new Map<string, CacheEntry<unknown>>();
+const pending = new Map<string, Promise<unknown>>();
 
 export async function getItems(): Promise<ItemMeta[]> {
   const rows = await getMappingRows();
@@ -30,17 +31,32 @@ export async function getLatestPrices(): Promise<LatestPrice[]> {
 
 export async function getTimeseries(id: number, timestep: string): Promise<PricePoint[]> {
   const safeTimestep = ["5m", "1h", "6h", "24h"].includes(timestep) ? timestep : "1h";
-  const response = await wikiFetch<{ data: WikiTimeseriesPoint[] }>(
-    `/timeseries?id=${id}&timestep=${safeTimestep}`
-  );
+  return cached(`timeseries:${id}:${safeTimestep}`, timeseriesCacheMs(), async () => {
+    const response = await wikiFetch<{ data: WikiTimeseriesPoint[] }>(
+      `/timeseries?id=${id}&timestep=${safeTimestep}`
+    );
 
-  return response.data.map((point) => ({
-    timestamp: point.timestamp,
-    avgHighPrice: point.avgHighPrice,
-    avgLowPrice: point.avgLowPrice,
-    highPriceVolume: point.highPriceVolume,
-    lowPriceVolume: point.lowPriceVolume
-  }));
+    return response.data.map((point) => ({
+      timestamp: point.timestamp,
+      avgHighPrice: point.avgHighPrice,
+      avgLowPrice: point.avgLowPrice,
+      highPriceVolume: point.highPriceVolume,
+      lowPriceVolume: point.lowPriceVolume
+    }));
+  });
+}
+
+export async function get24hPrices(): Promise<MarketSummary[]> {
+  return cached("24h", timeseriesCacheMs(), async () => {
+    const response = await wikiFetch<{ data: Record<string, WikiMarketSummary> }>("/24h");
+    return Object.entries(response.data).map(([id, summary]) => ({
+      id: Number(id),
+      avgHighPrice: summary.avgHighPrice,
+      highPriceVolume: summary.highPriceVolume,
+      avgLowPrice: summary.avgLowPrice,
+      lowPriceVolume: summary.lowPriceVolume
+    }));
+  });
 }
 
 export async function getRecentVolumes(ids: number[]): Promise<Map<number, number>> {
@@ -93,9 +109,19 @@ async function cached<T>(key: string, ttlMs: number, loader: () => Promise<T>): 
     return existing.value;
   }
 
-  const value = await loader();
-  cache.set(key, { value, expiresAt: Date.now() + ttlMs });
-  return value;
+  const inFlight = pending.get(key) as Promise<T> | undefined;
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const request = loader()
+    .then((value) => {
+      cache.set(key, { value, expiresAt: Date.now() + ttlMs });
+      return value;
+    })
+    .finally(() => pending.delete(key));
+  pending.set(key, request);
+  return request;
 }
 
 function latestCacheMs(): number {
@@ -104,6 +130,10 @@ function latestCacheMs(): number {
 
 function mappingCacheMs(): number {
   return envSeconds("OSRS_MAPPING_CACHE_SECONDS", 86_400) * 1000;
+}
+
+function timeseriesCacheMs(): number {
+  return envSeconds("OSRS_TIMESERIES_CACHE_SECONDS", 300) * 1000;
 }
 
 function envSeconds(name: string, fallback: number): number {
@@ -160,5 +190,12 @@ type WikiTimeseriesPoint = {
   avgHighPrice?: number;
   avgLowPrice?: number;
   highPriceVolume?: number;
+  lowPriceVolume?: number;
+};
+
+type WikiMarketSummary = {
+  avgHighPrice?: number;
+  highPriceVolume?: number;
+  avgLowPrice?: number;
   lowPriceVolume?: number;
 };
