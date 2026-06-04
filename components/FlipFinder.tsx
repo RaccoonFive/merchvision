@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import { RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -54,6 +54,7 @@ export function FlipFinder() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [flips, setFlips] = useState<FlipCandidate[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(true);
   const [chartData, setChartData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(false);
@@ -97,7 +98,7 @@ export function FlipFinder() {
   }, [loadFlips]);
 
   useEffect(() => {
-    if (!selected?.id) {
+    if (!detailPanelOpen || !selected?.id) {
       setChartData([]);
       return;
     }
@@ -120,7 +121,7 @@ export function FlipFinder() {
     return () => {
       alive = false;
     };
-  }, [selected?.id]);
+  }, [detailPanelOpen, selected?.id]);
 
   function updateFilter(key: keyof Filters, value: string | boolean) {
     setFilters((current) => ({ ...current, [key]: value }));
@@ -182,7 +183,7 @@ export function FlipFinder() {
           </div>
           </section>
 
-          <div className="main-grid">
+          <div className={`main-grid${detailPanelOpen ? "" : " detail-panel-closed"}`}>
           <section className="table-wrap" aria-label="Ranked flips">
           {error ? <div className="error">{error}</div> : null}
           {loading ? <div className="empty">Loading live margins...</div> : null}
@@ -209,11 +210,17 @@ export function FlipFinder() {
                   {flips.map((flip) => (
                     <tr
                       aria-label={`Select ${flip.name}`}
-                      className={selected?.id === flip.id ? "selected" : ""}
+                      className={detailPanelOpen && selected?.id === flip.id ? "selected" : ""}
                       key={flip.id}
-                      onClick={() => setSelectedId(flip.id)}
+                      onClick={() => {
+                        setSelectedId(flip.id);
+                        setDetailPanelOpen(true);
+                      }}
                       onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") setSelectedId(flip.id);
+                        if (event.key === "Enter" || event.key === " ") {
+                          setSelectedId(flip.id);
+                          setDetailPanelOpen(true);
+                        }
                       }}
                       tabIndex={0}
                     >
@@ -244,19 +251,30 @@ export function FlipFinder() {
           ) : null}
           </section>
 
-        <aside className="detail-panel" aria-label="Selected item details">
+        {detailPanelOpen ? <aside className="detail-panel" aria-label="Selected item details">
           {selected ? (
             <>
-              <div className="detail-head">
-                <ItemIcon flip={selected} className="detail-icon" />
-                <div>
-                  <h2>
-                    <Link className="detail-title-link" href={`/lookup/${selected.id}`}>
-                      {selected.name}
-                    </Link>
-                  </h2>
-                  <p className="subtitle">{selected.members ? "Members item" : "Free-to-play item"}</p>
+              <div className="detail-panel-head">
+                <div className="detail-head">
+                  <ItemIcon flip={selected} className="detail-icon" />
+                  <div>
+                    <h2>
+                      <Link className="detail-title-link" href={`/lookup/${selected.id}`}>
+                        {selected.name}
+                      </Link>
+                    </h2>
+                    <p className="subtitle">{selected.members ? "Members item" : "Free-to-play item"}</p>
+                  </div>
                 </div>
+                <button
+                  aria-label="Close item details"
+                  className="detail-panel-close"
+                  onClick={() => setDetailPanelOpen(false)}
+                  title="Close item details"
+                  type="button"
+                >
+                  <X size={17} />
+                </button>
               </div>
               <div className="metric-grid">
                 <Metric label="Net profit" value={formatGp(selected.netProfit)} tone="profit" />
@@ -276,7 +294,7 @@ export function FlipFinder() {
                         <XAxis dataKey="time" stroke={chartColors(theme).axis} tick={{ fontSize: 11 }} />
                         <YAxis stroke={chartColors(theme).axis} tick={{ fontSize: 11 }} width={72} tickFormatter={formatCompact} />
                         <Tooltip
-                          contentStyle={{ background: chartColors(theme).tooltip, border: `1px solid ${chartColors(theme).grid}`, borderRadius: 6, color: chartColors(theme).axis }}
+                          contentStyle={{ background: chartColors(theme).tooltip, border: 0, borderRadius: 8, color: chartColors(theme).axis }}
                           formatter={(value) => formatGp(Number(value))}
                         />
                         <Area dataKey="high" stroke={chartColors(theme).high} fill={`${chartColors(theme).high}26`} name="High" />
@@ -293,7 +311,7 @@ export function FlipFinder() {
           ) : (
             <div className="empty">Select a flip to inspect the math.</div>
           )}
-          </aside>
+          </aside> : null}
           </div>
         </>
       )}
@@ -303,8 +321,8 @@ export function FlipFinder() {
 
 function chartColors(theme: Theme) {
   return theme === "dark"
-    ? { grid: "#34485d", axis: "#9aafc2", tooltip: "#18232e", high: "#72b99b", low: "#8fa7bb" }
-    : { grid: "#d8e0e7", axis: "#7d9ab3", tooltip: "#ffffff", high: "#398066", low: "#587b9b" };
+    ? { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", high: "#72b99b", low: "#8fa7bb" }
+    : { grid: "#e9edf1", axis: "#7d9ab3", tooltip: "#ffffff", high: "#398066", low: "#587b9b" };
 }
 
 function NumberField({

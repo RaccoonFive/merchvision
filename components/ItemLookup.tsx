@@ -186,7 +186,7 @@ function QuoteDetails({ data, chartData, theme }: { data: ItemQuoteResponse; cha
                 <XAxis dataKey="time" stroke={colors.axis} tick={{ fontSize: 11 }} />
                 <YAxis stroke={colors.axis} tick={{ fontSize: 11 }} width={72} tickFormatter={formatCompact} />
                 <Tooltip
-                  contentStyle={{ background: colors.tooltip, border: `1px solid ${colors.grid}`, borderRadius: 6, color: colors.axis }}
+                  contentStyle={{ background: colors.tooltip, border: 0, borderRadius: 8, color: colors.axis }}
                   formatter={(value) => formatGp(Number(value))}
                 />
                 <Area dataKey="high" stroke={colors.high} fill={`${colors.high}26`} name="High" />
@@ -221,8 +221,8 @@ function valueTone(value: number | null): "positive" | "negative" | "muted" {
 
 function chartColors(theme: Theme) {
   return theme === "dark"
-    ? { grid: "#34485d", axis: "#9aafc2", tooltip: "#18232e", high: "#72b99b", low: "#8fa7bb" }
-    : { grid: "#d8e0e7", axis: "#7d9ab3", tooltip: "#ffffff", high: "#398066", low: "#587b9b" };
+    ? { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", high: "#72b99b", low: "#8fa7bb" }
+    : { grid: "#e9edf1", axis: "#7d9ab3", tooltip: "#ffffff", high: "#398066", low: "#587b9b" };
 }
 
 function toChartPoint(point: PricePoint) {
