@@ -288,20 +288,25 @@ h3 {
 .theme-toggle {
   align-items: center;
   background: var(--glass-bg);
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 999px;
   color: var(--muted);
   display: flex;
-  height: 38px;
+  flex: 0 0 34px;
+  height: 34px;
   justify-content: center;
   padding: 0;
-  width: 38px;
+  width: 34px;
 }
 
 .theme-toggle:hover {
-  background: var(--panel);
-  border-color: var(--ice-400);
+  background: var(--panel-2);
   color: var(--text);
+}
+
+.theme-toggle:focus-visible {
+  box-shadow: 0 0 0 3px rgb(88 123 155 / 20%);
+  outline: none;
 }
 
 .main-grid {
