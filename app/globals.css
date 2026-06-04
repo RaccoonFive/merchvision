@@ -630,6 +630,66 @@ tbody tr.selected {
   text-align: center;
 }
 
+.loading-state {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  gap: 10px;
+}
+
+.loading-state-panel {
+  justify-content: center;
+  min-height: 110px;
+  padding: 24px;
+}
+
+.chart > .loading-state-panel,
+.lookup-chart > .loading-state-panel {
+  height: 100%;
+}
+
+.loading-state-inline {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.loading-state-button {
+  color: inherit;
+  gap: 8px;
+  justify-content: center;
+}
+
+.loading-spinner {
+  animation: loading-spin 700ms linear infinite;
+  border: 2px solid color-mix(in srgb, currentColor 24%, transparent);
+  border-radius: 999px;
+  border-top-color: currentColor;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.loading-spinner-small {
+  height: 14px;
+  width: 14px;
+}
+
+.loading-spinner-medium {
+  height: 22px;
+  width: 22px;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation-duration: 1400ms;
+  }
+}
+
 .error {
   color: var(--bad);
 }
@@ -648,6 +708,11 @@ tbody tr.selected {
 
 .refresh-btn:hover {
   background: var(--accent-strong);
+}
+
+.refresh-btn:disabled {
+  cursor: wait;
+  opacity: 0.8;
 }
 
 .lookup-layout {

@@ -4,6 +4,7 @@ import { Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import type { FavoriteItem } from "@/lib/types";
 
 type FavoritesResponse = {
@@ -49,7 +50,7 @@ export function FavoritesPage() {
       {() => (
         <section className="favorites-panel" aria-label="Favorite items">
           {error ? <div className="error">{error}</div> : null}
-          {loading ? <div className="empty">Loading favorite items...</div> : null}
+          {loading ? <LoadingSpinner label="Loading favorite items..." /> : null}
           {!loading && !error && favorites.length === 0 ? (
             <div className="favorites-empty">
               <Star size={24} />
@@ -98,7 +99,7 @@ export function FavoritesPage() {
                           title="Remove favorite"
                           type="button"
                         >
-                          <Trash2 size={16} />
+                          {removingId === item.id ? <LoadingSpinner size="small" variant="button" /> : <Trash2 size={16} />}
                         </button>
                       </td>
                     </tr>

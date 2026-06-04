@@ -19,7 +19,7 @@ Last updated: 2026-06-04
 ## Current State
 
 - Flip Finder ranks profitable items using current net profit, ROI, recent volume, freshness, and buy limits.
-- Investment Finder ranks the top 100 liquid items with positive 24-hour and 7-day midpoint-price trends using a risk-adjusted momentum score.
+- Investment Finder ranks the top 250 liquid items with positive 24-hour and 7-day midpoint-price trends using a risk-adjusted momentum score.
 - Item Lookup shows current quote metrics, warnings, recent hourly prices, and favorite controls.
 - Signed-in users can save favorites and view their live quotes on a protected Favorites page.
 - Email/password accounts, sessions, MySQL persistence, Prisma migrations, light/dark themes, and responsive layouts are implemented.

@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { authClient } from "@/lib/auth-client";
 
 type UserSummary = {
@@ -101,7 +102,7 @@ export function AccountPage({ callbackUrl, initialUser }: { callbackUrl: string;
                 ) : null}
                 {error ? <p className="form-error">{error}</p> : null}
                 <button className="primary-btn" disabled={pending} type="submit">
-                  {pending ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
+                  {pending ? <LoadingSpinner label="Please wait..." size="small" variant="button" /> : mode === "signin" ? "Sign in" : "Create account"}
                 </button>
               </form>
             </section>

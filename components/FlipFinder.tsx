@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import type { FlipCandidate, PricePoint } from "@/lib/types";
 import { AppShell, type Theme } from "@/components/AppShell";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 type FlipsResponse = {
   data?: FlipCandidate[];
@@ -136,9 +137,8 @@ export function FlipFinder() {
         <div className="status-pill">
           <RefreshCw size={15} />
           {generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}
-          <button className="refresh-btn" onClick={loadFlips} type="button" aria-label="Refresh flips">
-            <RefreshCw size={16} />
-            Refresh
+          <button className="refresh-btn" disabled={loading} onClick={loadFlips} type="button" aria-label="Refresh flips">
+            {loading ? <LoadingSpinner label="Refreshing..." size="small" variant="button" /> : <><RefreshCw size={16} /> Refresh</>}
           </button>
         </div>
       }
@@ -186,7 +186,7 @@ export function FlipFinder() {
           <div className={`main-grid${detailPanelOpen ? "" : " detail-panel-closed"}`}>
           <section className="table-wrap" aria-label="Ranked flips">
           {error ? <div className="error">{error}</div> : null}
-          {loading ? <div className="empty">Loading live margins...</div> : null}
+          {loading ? <LoadingSpinner label="Loading live margins..." /> : null}
           {!loading && !error && flips.length === 0 ? <div className="empty">No flips match these filters.</div> : null}
           {!loading && !error && flips.length > 0 ? (
             <div className="table-scroll">
@@ -286,7 +286,7 @@ export function FlipFinder() {
                 <h3>Recent prices</h3>
                 <div className="chart">
                   {chartLoading ? (
-                    <div className="empty">Loading chart...</div>
+                    <LoadingSpinner label="Loading chart..." />
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData.map(toChartPoint)}>

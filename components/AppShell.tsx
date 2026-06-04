@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export type Theme = "light" | "dark";
 
@@ -101,7 +102,7 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
           ) : (
             <Link className={`account-action${activePath === "/account" ? " active" : ""}`} href="/account" title="Sign in">
               <LogIn size={18} />
-              <span>{sessionPending ? "Checking account..." : "Sign in"}</span>
+              <span>{sessionPending ? <LoadingSpinner label="Checking account..." size="small" variant="button" /> : "Sign in"}</span>
             </Link>
           )}
         </div>

@@ -29,29 +29,29 @@ function history(multiplier = 1.001) {
 describe("GET /api/investments", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockedGetItems.mockResolvedValue(Array.from({ length: 105 }, (_, index) => ({
+    mockedGetItems.mockResolvedValue(Array.from({ length: 255 }, (_, index) => ({
       id: index + 1,
       name: index === 0 ? "Air rune" : `Item ${index + 1}`,
       members: false
     })));
-    mockedGet24hPrices.mockResolvedValue(Array.from({ length: 105 }, (_, index) => ({
+    mockedGet24hPrices.mockResolvedValue(Array.from({ length: 255 }, (_, index) => ({
       id: index + 1,
-      highPriceVolume: 105 - index,
-      lowPriceVolume: 105 - index
+      highPriceVolume: 255 - index,
+      lowPriceVolume: 255 - index
     })));
     mockedGetTimeseries.mockResolvedValue(history());
   });
 
-  it("shortlists the top 100 liquid items and returns filtered investments", async () => {
+  it("shortlists the top 250 liquid items and returns filtered investments", async () => {
     const response = await GET(new Request("http://localhost/api/investments?search=air"));
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(mockedGetTimeseries).toHaveBeenCalledTimes(100);
-    expect(mockedGetTimeseries).not.toHaveBeenCalledWith(105, "1h");
+    expect(mockedGetTimeseries).toHaveBeenCalledTimes(250);
+    expect(mockedGetTimeseries).not.toHaveBeenCalledWith(255, "1h");
     expect(payload.data).toHaveLength(1);
     expect(payload.data[0]).toMatchObject({ id: 1, name: "Air rune" });
-    expect(payload.meta).toMatchObject({ shortlisted: 100, analyzed: 100, skipped: 0 });
+    expect(payload.meta).toMatchObject({ shortlisted: 250, analyzed: 250, skipped: 0, qualified: 250 });
   });
 
   it("tolerates individual timeseries failures", async () => {
@@ -65,7 +65,7 @@ describe("GET /api/investments", () => {
 
     expect(response.status).toBe(200);
     expect(payload.data.some((candidate: { id: number }) => candidate.id === 1)).toBe(false);
-    expect(payload.meta).toMatchObject({ analyzed: 99, skipped: 1 });
+    expect(payload.meta).toMatchObject({ analyzed: 249, skipped: 1, qualified: 249 });
   });
 
   it("returns a server error when the market summary cannot load", async () => {

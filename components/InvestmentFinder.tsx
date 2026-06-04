@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import type { InvestmentCandidate, PricePoint } from "@/lib/types";
 
 type InvestmentsResponse = {
@@ -13,6 +14,7 @@ type InvestmentsResponse = {
   meta?: {
     generatedAt: string;
     analyzed: number;
+    qualified: number;
     skipped: number;
   };
 };
@@ -76,7 +78,7 @@ export function InvestmentFinder() {
       setGeneratedAt(payload.meta?.generatedAt ?? null);
       setAnalysisStatus(
         payload.meta
-          ? `Analyzed ${payload.meta.analyzed} liquid items${payload.meta.skipped ? `, skipped ${payload.meta.skipped}` : ""}`
+          ? `${payload.meta.qualified} opportunities from ${payload.meta.analyzed} liquid items${payload.meta.skipped ? `, skipped ${payload.meta.skipped}` : ""}`
           : "Market analysis complete"
       );
       setSelectedId((current) =>
@@ -133,10 +135,9 @@ export function InvestmentFinder() {
       headerActions={
         <div className="status-pill">
           <RefreshCw size={15} />
-          {generatedAt ? `Updated ${formatClock(generatedAt)}` : analysisStatus}
-          <button className="refresh-btn" onClick={loadInvestments} type="button" aria-label="Refresh investments">
-            <RefreshCw size={16} />
-            Refresh
+          {generatedAt ? `${analysisStatus} · Updated ${formatClock(generatedAt)}` : analysisStatus}
+          <button className="refresh-btn" disabled={loading} onClick={loadInvestments} type="button" aria-label="Refresh investments">
+            {loading ? <LoadingSpinner label="Refreshing..." size="small" variant="button" /> : <><RefreshCw size={16} /> Refresh</>}
           </button>
         </div>
       }
@@ -180,7 +181,7 @@ export function InvestmentFinder() {
           <div className={`main-grid${detailPanelOpen ? "" : " detail-panel-closed"}`}>
             <section className="table-wrap" aria-label="Ranked investments">
               {error ? <div className="error">{error}</div> : null}
-              {loading ? <div className="empty">Analyzing liquid markets and price history...</div> : null}
+              {loading ? <LoadingSpinner label="Analyzing liquid markets and price history..." /> : null}
               {!loading && !error && investments.length === 0 ? <div className="empty">No investments match these filters.</div> : null}
               {!loading && !error && investments.length > 0 ? (
                 <div className="table-scroll">
@@ -280,7 +281,7 @@ export function InvestmentFinder() {
                     <div>
                       <h3>7-day midpoint price</h3>
                       <div className="chart">
-                        {chartLoading ? <div className="empty">Loading chart...</div> : chartData.length === 0 ? (
+                        {chartLoading ? <LoadingSpinner label="Loading chart..." /> : chartData.length === 0 ? (
                           <div className="empty">No recent chart data is available.</div>
                         ) : (
                           <ResponsiveContainer width="100%" height="100%">

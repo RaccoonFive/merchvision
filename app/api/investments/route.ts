@@ -4,7 +4,7 @@ import { get24hPrices, getItems, getTimeseries } from "@/lib/osrsWiki";
 import { parseInvestmentFilters } from "@/lib/query";
 import type { PricePoint } from "@/lib/types";
 
-const SHORTLIST_SIZE = 100;
+const SHORTLIST_SIZE = 250;
 const HISTORY_CONCURRENCY = 10;
 
 export async function GET(request: Request) {
@@ -25,6 +25,7 @@ export async function GET(request: Request) {
       data,
       meta: {
         count: data.length,
+        qualified: candidates.length,
         shortlisted: shortlist.length,
         analyzed: histories.size,
         skipped: shortlist.length - histories.size,

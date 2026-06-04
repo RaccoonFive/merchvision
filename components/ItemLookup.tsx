@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { searchItems } from "@/lib/itemSearch";
 import { buildItemQuoteWarnings } from "@/lib/quote";
 import type { ItemMeta, ItemQuoteResponse, PricePoint } from "@/lib/types";
@@ -186,7 +187,7 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
                 value={query}
               />
             </div>
-            {itemsLoading ? <p className="muted">Loading item list...</p> : null}
+            {itemsLoading ? <LoadingSpinner label="Loading item list..." size="small" variant="inline" /> : null}
             {!itemsLoading && query.trim() && suggestions.length === 0 ? <p className="muted">No matching items.</p> : null}
             {suggestions.length > 0 && query !== quoteData?.item.name ? (
               <div className="lookup-suggestions" role="listbox" aria-label="Matching items">
@@ -205,7 +206,7 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
 
           <section className="lookup-result" aria-label="Item quote">
             {error ? <div className="error">{error}</div> : null}
-            {quoteLoading ? <div className="empty">Loading item quote...</div> : null}
+            {quoteLoading ? <LoadingSpinner label="Loading item quote..." /> : null}
             {!initialItemId && !error ? <div className="empty">Search for an item to inspect its current margin.</div> : null}
             {!quoteLoading && quoteData ? (
               <QuoteDetails
@@ -278,8 +279,14 @@ function QuoteDetails({
             title={favorited ? "Remove favorite" : "Add favorite"}
             type="button"
           >
-            <Star fill={favorited ? "currentColor" : "none"} size={17} />
-            <span>{favorited ? "Favorited" : "Favorite"}</span>
+            {favoriteLoading ? (
+              <LoadingSpinner label="Updating..." size="small" variant="button" />
+            ) : (
+              <>
+                <Star fill={favorited ? "currentColor" : "none"} size={17} />
+                <span>{favorited ? "Favorited" : "Favorite"}</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -325,7 +332,7 @@ function QuoteDetails({
         </div>
         <div className="lookup-chart">
           {chartLoading ? (
-            <div className="empty">Loading {chartRange} price history...</div>
+            <LoadingSpinner label={`Loading ${chartRange} price history...`} />
           ) : chartData.length === 0 ? (
             <div className="empty">No recent chart data is available.</div>
           ) : (
