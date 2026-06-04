@@ -94,6 +94,10 @@ button {
   grid-template-columns: 68px minmax(0, 1fr);
 }
 
+:root[data-sidebar-collapsed="true"] .app-frame {
+  grid-template-columns: 68px minmax(0, 1fr);
+}
+
 .sidebar {
   align-self: start;
   background: var(--sidebar-bg);
@@ -188,19 +192,26 @@ button {
   color: var(--accent-strong);
 }
 
-.sidebar-collapsed .sidebar-head {
+.sidebar-collapsed .sidebar-head,
+:root[data-sidebar-collapsed="true"] .sidebar-head {
   flex-direction: column;
 }
 
 .sidebar-collapsed .sidebar-brand-copy,
 .sidebar-collapsed .nav-item span,
-.sidebar-collapsed .sidebar-account span {
+.sidebar-collapsed .sidebar-account span,
+:root[data-sidebar-collapsed="true"] .sidebar-brand-copy,
+:root[data-sidebar-collapsed="true"] .nav-item span,
+:root[data-sidebar-collapsed="true"] .sidebar-account span {
   display: none;
 }
 
 .sidebar-collapsed .nav-item,
 .sidebar-collapsed .account-action,
-.sidebar-collapsed .account-summary {
+.sidebar-collapsed .account-summary,
+:root[data-sidebar-collapsed="true"] .nav-item,
+:root[data-sidebar-collapsed="true"] .account-action,
+:root[data-sidebar-collapsed="true"] .account-summary {
   justify-content: center;
   padding: 0;
 }

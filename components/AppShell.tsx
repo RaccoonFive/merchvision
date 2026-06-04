@@ -25,6 +25,7 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
 
   useEffect(() => {
     setTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
+    setSidebarCollapsed(document.documentElement.dataset.sidebarCollapsed === "true");
   }, []);
 
   function toggleTheme() {
@@ -33,6 +34,15 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
       document.documentElement.dataset.theme = nextTheme;
       window.localStorage.setItem("merchvision-theme", nextTheme);
       return nextTheme;
+    });
+  }
+
+  function toggleSidebar() {
+    setSidebarCollapsed((current) => {
+      const nextCollapsed = !current;
+      document.documentElement.dataset.sidebarCollapsed = String(nextCollapsed);
+      window.localStorage.setItem("merchvision-sidebar-collapsed", String(nextCollapsed));
+      return nextCollapsed;
     });
   }
 
@@ -57,7 +67,7 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
             aria-expanded={!sidebarCollapsed}
             aria-label={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
             className="sidebar-toggle"
-            onClick={() => setSidebarCollapsed((current) => !current)}
+            onClick={toggleSidebar}
             title={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
             type="button"
           >

@@ -16,8 +16,11 @@ const themeScript = `
   try {
     document.documentElement.dataset.theme =
       localStorage.getItem("merchvision-theme") === "light" ? "light" : "dark";
+    document.documentElement.dataset.sidebarCollapsed =
+      localStorage.getItem("merchvision-sidebar-collapsed") === "true" ? "true" : "false";
   } catch {
     document.documentElement.dataset.theme = "dark";
+    document.documentElement.dataset.sidebarCollapsed = "false";
   }
 `;
 
@@ -28,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html data-theme="dark" lang="en" suppressHydrationWarning>
+    <html data-sidebar-collapsed="false" data-theme="dark" lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
