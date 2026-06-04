@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { StickyTable } from "@/components/StickyTable";
 import type { InvestmentCandidate, PricePoint } from "@/lib/types";
 
 type InvestmentsResponse = {
@@ -184,7 +185,7 @@ export function InvestmentFinder() {
               {loading ? <LoadingSpinner label="Analyzing liquid markets and price history..." /> : null}
               {!loading && !error && investments.length === 0 ? <div className="empty">No investments match these filters.</div> : null}
               {!loading && !error && investments.length > 0 ? (
-                <div className="table-scroll">
+                <StickyTable>
                   <table>
                     <thead>
                       <tr>
@@ -236,7 +237,7 @@ export function InvestmentFinder() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </StickyTable>
               ) : null}
             </section>
 

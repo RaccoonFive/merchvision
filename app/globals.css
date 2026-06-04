@@ -428,11 +428,56 @@ h3 {
 }
 
 .table-wrap {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .table-scroll {
   overflow-x: auto;
+}
+
+.sticky-table-shell {
+  border-radius: inherit;
+  position: relative;
+}
+
+.sticky-table-header {
+  background: var(--subtle-bg);
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 1px 0 var(--line), 0 8px 14px rgb(0 0 0 / 8%);
+  left: 0;
+  overflow: hidden;
+  position: sticky;
+  right: 0;
+  top: 0;
+  transition: border-radius 120ms ease;
+  width: 100%;
+  z-index: 4;
+}
+
+.sticky-table-header.is-pinned {
+  border-radius: 0;
+}
+
+.sticky-table-header table {
+  table-layout: fixed;
+  transform-origin: left top;
+}
+
+.sticky-table-header th {
+  box-shadow: none;
+}
+
+.sticky-table-shell > .table-scroll thead {
+  height: 0;
+  visibility: hidden;
+}
+
+.sticky-table-shell > .table-scroll thead th {
+  border-bottom: 0;
+  height: 0;
+  line-height: 0;
+  padding-bottom: 0;
+  padding-top: 0;
 }
 
 table {
@@ -454,8 +499,6 @@ th {
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
-  position: sticky;
-  top: 0;
 }
 
 th:first-child,
@@ -978,7 +1021,7 @@ tbody tr.selected {
 .favorites-panel {
   margin-top: 18px;
   min-height: 220px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .favorites-table {

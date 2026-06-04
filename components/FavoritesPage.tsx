@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { StickyTable } from "@/components/StickyTable";
 import type { FavoriteItem } from "@/lib/types";
 
 type FavoritesResponse = {
@@ -60,7 +61,7 @@ export function FavoritesPage() {
             </div>
           ) : null}
           {!loading && favorites.length > 0 ? (
-            <div className="table-scroll">
+            <StickyTable>
               <table className="favorites-table">
                 <thead>
                   <tr>
@@ -106,7 +107,7 @@ export function FavoritesPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </StickyTable>
           ) : null}
         </section>
       )}

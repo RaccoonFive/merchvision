@@ -15,6 +15,7 @@ import {
 import type { FlipCandidate, PricePoint } from "@/lib/types";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { StickyTable } from "@/components/StickyTable";
 
 type FlipsResponse = {
   data?: FlipCandidate[];
@@ -189,7 +190,7 @@ export function FlipFinder() {
           {loading ? <LoadingSpinner label="Loading live margins..." /> : null}
           {!loading && !error && flips.length === 0 ? <div className="empty">No flips match these filters.</div> : null}
           {!loading && !error && flips.length > 0 ? (
-            <div className="table-scroll">
+            <StickyTable>
               <table>
                 <thead>
                   <tr>
@@ -247,7 +248,7 @@ export function FlipFinder() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </StickyTable>
           ) : null}
           </section>
 
