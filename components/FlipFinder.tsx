@@ -56,14 +56,14 @@ export function FlipFinder() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [flips, setFlips] = useState<FlipCandidate[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [detailPanelOpen, setDetailPanelOpen] = useState(true);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
   const [chartData, setChartData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
 
-  const selected = flips.find((flip) => flip.id === selectedId) ?? flips[0];
+  const selected = flips.find((flip) => flip.id === selectedId);
   const query = useMemo(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
@@ -87,7 +87,7 @@ export function FlipFinder() {
       const nextFlips = payload.data ?? [];
       setFlips(nextFlips);
       setGeneratedAt(payload.meta?.generatedAt ?? null);
-      setSelectedId((current) => (current && nextFlips.some((flip) => flip.id === current) ? current : nextFlips[0]?.id ?? null));
+      setSelectedId((current) => (current && nextFlips.some((flip) => flip.id === current) ? current : null));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load flips.");
     } finally {

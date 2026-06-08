@@ -49,7 +49,7 @@ export function InvestmentFinder() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [investments, setInvestments] = useState<InvestmentCandidate[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [detailPanelOpen, setDetailPanelOpen] = useState(true);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
   const [chartData, setChartData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(false);
@@ -57,7 +57,7 @@ export function InvestmentFinder() {
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
   const [analysisStatus, setAnalysisStatus] = useState<string>("Waiting for market data");
 
-  const selected = investments.find((candidate) => candidate.id === selectedId) ?? investments[0];
+  const selected = investments.find((candidate) => candidate.id === selectedId);
   const query = useMemo(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
@@ -85,7 +85,7 @@ export function InvestmentFinder() {
       setSelectedId((current) =>
         current && nextInvestments.some((candidate) => candidate.id === current)
           ? current
-          : nextInvestments[0]?.id ?? null
+          : null
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load investments.");
