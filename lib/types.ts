@@ -88,6 +88,21 @@ export type InvestmentFilters = {
   sort?: "score" | "shortTrend" | "mediumTrend" | "volume" | "volatility";
 };
 
+export type MarketAnalysis = {
+  historicalNetMarginMedian: number;
+  historicalNetMarginVariability: number;
+  positiveSpreadRatio: number;
+  midpointPriceVolatility: number;
+  medianMatchedHourlyVolume: number;
+  sampleCount: number;
+  sampleCoverage: number;
+  estimatedExecutableUnitsPerHour: number;
+  rawExpectedGpPerHour: number;
+  confidence: number;
+  volatilityPenalty: number;
+  riskAdjustedGpPerHour: number;
+};
+
 export type FlipCandidate = {
   id: number;
   name: string;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildFlipCandidates, filterAndSortFlips } from "./scoring";
-import type { ItemMeta, LatestPrice } from "./types";
+import { analyzeMarket, buildFlipCandidates, filterAndSortFlips } from "./scoring";
+import type { ItemMeta, LatestPrice, PricePoint } from "./types";
 
 const nowSeconds = 1_700_000_000;
 
@@ -72,5 +72,104 @@ describe("filterAndSortFlips", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe(1);
+  });
+});
+
+describe("analyzeMarket", () => {
+  it("estimates risk-adjusted gp per hour from stable hourly samples", () => {
+    const points = Array.from({ length: 24 }, (_, index): PricePoint => ({
+      timestamp: nowSeconds - (23 - index) * 3_600,
+      avgHighPrice: 1_100,
+      avgLowPrice: 1_000,
+      highPriceVolume: 20_000,
+      lowPriceVolume: 15_000
+    }));
+
+    expect(analyzeMarket(points, 1_000)).toEqual({
+      historicalNetMarginMedian: 78,
+      historicalNetMarginVariability: 0,
+      positiveSpreadRatio: 1,
+      midpointPriceVolatility: 0,
+      medianMatchedHourlyVolume: 15_000,
+      sampleCount: 24,
+      sampleCoverage: 1,
+      estimatedExecutableUnitsPerHour: 150,
+      rawExpectedGpPerHour: 11_700,
+      confidence: 1,
+      volatilityPenalty: 0,
+      riskAdjustedGpPerHour: 11_700
+    });
+  });
+
+  it("caps executable units by the hourly buy-limit allowance", () => {
+    const points = Array.from({ length: 24 }, (_, index): PricePoint => ({
+      timestamp: nowSeconds - (23 - index) * 3_600,
+      avgHighPrice: 1_100,
+      avgLowPrice: 1_000,
+      highPriceVolume: 20_000,
+      lowPriceVolume: 15_000
+    }));
+
+    const analysis = analyzeMarket(points, 200);
+
+    expect(analysis.estimatedExecutableUnitsPerHour).toBe(50);
+    expect(analysis.rawExpectedGpPerHour).toBe(3_900);
+    expect(analysis.riskAdjustedGpPerHour).toBe(3_900);
+  });
+
+  it("handles missing prices, zero volume, negative spreads, and partial windows", () => {
+    const analysis = analyzeMarket([
+      {
+        timestamp: nowSeconds - 3_600,
+        avgHighPrice: 100,
+        avgLowPrice: 120,
+        highPriceVolume: 0,
+        lowPriceVolume: 0
+      },
+      {
+        timestamp: nowSeconds,
+        avgHighPrice: 150,
+        avgLowPrice: 100,
+        highPriceVolume: 0,
+        lowPriceVolume: 0
+      },
+      {
+        timestamp: nowSeconds + 3_600,
+        avgHighPrice: 200,
+        highPriceVolume: 500
+      }
+    ]);
+
+    expect(analysis).toMatchObject({
+      historicalNetMarginMedian: 12.5,
+      historicalNetMarginVariability: 2.76,
+      positiveSpreadRatio: 0.5,
+      medianMatchedHourlyVolume: 0,
+      sampleCount: 2,
+      sampleCoverage: 0.0833,
+      estimatedExecutableUnitsPerHour: 0,
+      rawExpectedGpPerHour: 0,
+      confidence: 0.1958,
+      riskAdjustedGpPerHour: 0
+    });
+    expect(analysis.midpointPriceVolatility).toBeCloseTo(0.0638, 4);
+    expect(analysis.volatilityPenalty).toBeCloseTo(0.7777, 4);
+  });
+
+  it("returns zeroed analysis when there are no usable samples", () => {
+    expect(analyzeMarket([{ timestamp: nowSeconds }])).toEqual({
+      historicalNetMarginMedian: 0,
+      historicalNetMarginVariability: 0,
+      positiveSpreadRatio: 0,
+      midpointPriceVolatility: 0,
+      medianMatchedHourlyVolume: 0,
+      sampleCount: 0,
+      sampleCoverage: 0,
+      estimatedExecutableUnitsPerHour: 0,
+      rawExpectedGpPerHour: 0,
+      confidence: 0,
+      volatilityPenalty: 0.4,
+      riskAdjustedGpPerHour: 0
+    });
   });
 });

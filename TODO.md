@@ -36,7 +36,7 @@ Replace the basic score with an explainable market-quality model that estimates 
 
 ### Market Analysis
 
-- [ ] Define a `MarketAnalysis` type with:
+- [x] Define a `MarketAnalysis` type with:
   - Historical net-margin median.
   - Historical net-margin variability.
   - Positive-spread ratio.
@@ -49,11 +49,11 @@ Replace the basic score with an explainable market-quality model that estimates 
   - Volatility/stability penalty.
   - Final risk-adjusted GP/hour.
 - [ ] Analyze a recent rolling hourly window from the existing timeseries endpoint.
-- [ ] Treat matched hourly volume as `min(highPriceVolume, lowPriceVolume)` for each sample.
-- [ ] Estimate executable units/hour as approximately 1% of median matched hourly volume.
-- [ ] Cap executable units/hour by the item's hourly buy-limit allowance when the buy limit is known.
-- [ ] Calculate historical margins after GE tax, using only samples with both valid high and low prices.
-- [ ] Make all formulas deterministic, documented, and resilient to missing or partial samples.
+- [x] Treat matched hourly volume as `min(highPriceVolume, lowPriceVolume)` for each sample.
+- [x] Estimate executable units/hour as approximately 1% of median matched hourly volume.
+- [x] Cap executable units/hour by the item's hourly buy-limit allowance when the buy limit is known.
+- [x] Calculate historical margins after GE tax, using only samples with both valid high and low prices.
+- [x] Make all formulas deterministic, documented, and resilient to missing or partial samples.
 
 ### Candidate Selection and Ranking
 
@@ -82,7 +82,7 @@ Replace the basic score with an explainable market-quality model that estimates 
 
 ### Tests and Acceptance Criteria
 
-- [ ] Add deterministic unit tests for every market-analysis formula.
+- [x] Add deterministic unit tests for every market-analysis formula.
 - [ ] Cover missing prices, zero volume, unknown buy limits, negative spreads, stale data, and partial windows.
 - [ ] Add route tests confirming balanced shortlisting and the new filter/sort behavior.
 - [ ] Verify ranking explanations match the numerical score components returned by the API.

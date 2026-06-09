@@ -1,8 +1,11 @@
 import { calculateGeTax } from "./tax";
-import type { FlipCandidate, FlipFilters, ItemMeta, LatestPrice, PricePoint } from "./types";
+import type { FlipCandidate, FlipFilters, ItemMeta, LatestPrice, MarketAnalysis, PricePoint } from "./types";
 
 const STALE_AFTER_SECONDS = 15 * 60;
 const VERY_STALE_AFTER_SECONDS = 60 * 60;
+const MARKET_ANALYSIS_WINDOW_HOURS = 24;
+const MIN_CONFIDENT_SAMPLES = 12;
+const BUY_LIMIT_WINDOW_HOURS = 4;
 
 type BuildCandidatesInput = {
   items: ItemMeta[];
@@ -91,6 +94,68 @@ export function volumeFromTimeseries(points: PricePoint[]): number {
   return points.reduce((total, point) => total + (point.highPriceVolume ?? 0) + (point.lowPriceVolume ?? 0), 0);
 }
 
+export function analyzeMarket(points: PricePoint[], buyLimit?: number): MarketAnalysis {
+  const window = points.slice(-MARKET_ANALYSIS_WINDOW_HOURS);
+  const marginSamples = window
+    .map((point) => {
+      if (!hasPositiveNumber(point.avgHighPrice) || !hasPositiveNumber(point.avgLowPrice)) {
+        return undefined;
+      }
+
+      return {
+        margin: point.avgHighPrice - point.avgLowPrice - calculateGeTax(point.avgHighPrice),
+        midpoint: (point.avgHighPrice + point.avgLowPrice) / 2
+      };
+    })
+    .filter((sample): sample is { margin: number; midpoint: number } => sample !== undefined);
+  const matchedVolumes = window
+    .map((point) => matchedHourlyVolume(point))
+    .filter((volume): volume is number => volume !== undefined);
+  const margins = marginSamples.map((sample) => sample.margin);
+  const midpoints = marginSamples.map((sample) => sample.midpoint);
+  const historicalNetMarginMedian = median(margins);
+  const marginDeviation = medianAbsoluteDeviation(margins, historicalNetMarginMedian);
+  const historicalNetMarginVariability =
+    Math.abs(historicalNetMarginMedian) > 0 ? marginDeviation / Math.abs(historicalNetMarginMedian) : 0;
+  const positiveSpreadRatio =
+    margins.length > 0 ? margins.filter((margin) => margin > 0).length / margins.length : 0;
+  const midpointMedian = median(midpoints);
+  const midpointPriceVolatility =
+    midpointMedian > 0 ? standardDeviation(midpoints) / midpointMedian : 0;
+  const medianMatchedHourlyVolume = median(matchedVolumes);
+  const estimatedExecutableUnitsPerHour = executableUnitsPerHour(medianMatchedHourlyVolume, buyLimit);
+  const rawExpectedGpPerHour = Math.max(0, historicalNetMarginMedian * estimatedExecutableUnitsPerHour);
+  const sampleCount = margins.length;
+  const sampleCoverage = sampleCount / MARKET_ANALYSIS_WINDOW_HOURS;
+  const confidence = confidenceScore({
+    sampleCoverage,
+    sampleCount,
+    positiveSpreadRatio,
+    medianMatchedHourlyVolume
+  });
+  const volatilityPenalty = volatilityPenaltyScore({
+    historicalNetMarginVariability,
+    midpointPriceVolatility,
+    positiveSpreadRatio
+  });
+  const riskAdjustedGpPerHour = rawExpectedGpPerHour * confidence * Math.max(0, 1 - volatilityPenalty);
+
+  return {
+    historicalNetMarginMedian: roundMetric(historicalNetMarginMedian),
+    historicalNetMarginVariability: roundMetric(historicalNetMarginVariability),
+    positiveSpreadRatio: roundMetric(positiveSpreadRatio),
+    midpointPriceVolatility: roundMetric(midpointPriceVolatility),
+    medianMatchedHourlyVolume: roundMetric(medianMatchedHourlyVolume),
+    sampleCount,
+    sampleCoverage: roundMetric(sampleCoverage),
+    estimatedExecutableUnitsPerHour: roundMetric(estimatedExecutableUnitsPerHour),
+    rawExpectedGpPerHour: roundMetric(rawExpectedGpPerHour),
+    confidence: roundMetric(confidence),
+    volatilityPenalty: roundMetric(volatilityPenalty),
+    riskAdjustedGpPerHour: roundMetric(riskAdjustedGpPerHour)
+  };
+}
+
 function buildWarnings({
   item,
   netProfit,
@@ -146,4 +211,94 @@ function getSortValue(candidate: FlipCandidate, sort: NonNullable<FlipFilters["s
     default:
       return candidate.score;
   }
+}
+
+function hasPositiveNumber(value: number | undefined): value is number {
+  return value !== undefined && Number.isFinite(value) && value > 0;
+}
+
+function matchedHourlyVolume(point: PricePoint): number | undefined {
+  if (!hasNonNegativeNumber(point.highPriceVolume) || !hasNonNegativeNumber(point.lowPriceVolume)) {
+    return undefined;
+  }
+
+  return Math.min(point.highPriceVolume, point.lowPriceVolume);
+}
+
+function hasNonNegativeNumber(value: number | undefined): value is number {
+  return value !== undefined && Number.isFinite(value) && value >= 0;
+}
+
+function executableUnitsPerHour(medianMatchedHourlyVolume: number, buyLimit?: number): number {
+  const estimatedMarketShare = medianMatchedHourlyVolume * 0.01;
+  const hourlyLimit = buyLimit && buyLimit > 0 ? buyLimit / BUY_LIMIT_WINDOW_HOURS : undefined;
+
+  return hourlyLimit === undefined ? estimatedMarketShare : Math.min(estimatedMarketShare, hourlyLimit);
+}
+
+function confidenceScore({
+  sampleCoverage,
+  sampleCount,
+  positiveSpreadRatio,
+  medianMatchedHourlyVolume
+}: {
+  sampleCoverage: number;
+  sampleCount: number;
+  positiveSpreadRatio: number;
+  medianMatchedHourlyVolume: number;
+}): number {
+  const sampleScore = clamp(sampleCount / MIN_CONFIDENT_SAMPLES, 0, 1);
+  const volumeScore = clamp(Math.log10(medianMatchedHourlyVolume + 1) / 4, 0, 1);
+
+  return clamp(sampleCoverage * 0.35 + sampleScore * 0.25 + positiveSpreadRatio * 0.25 + volumeScore * 0.15, 0, 1);
+}
+
+function volatilityPenaltyScore({
+  historicalNetMarginVariability,
+  midpointPriceVolatility,
+  positiveSpreadRatio
+}: {
+  historicalNetMarginVariability: number;
+  midpointPriceVolatility: number;
+  positiveSpreadRatio: number;
+}): number {
+  const marginPenalty = clamp(historicalNetMarginVariability / 2, 0, 0.45);
+  const midpointPenalty = clamp(midpointPriceVolatility * 2, 0, 0.35);
+  const negativeSpreadPenalty = clamp((1 - positiveSpreadRatio) * 0.4, 0, 0.4);
+
+  return clamp(marginPenalty + midpointPenalty + negativeSpreadPenalty, 0, 0.9);
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+
+  return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
+}
+
+function medianAbsoluteDeviation(values: number[], center: number): number {
+  return median(values.map((value) => Math.abs(value - center)));
+}
+
+function standardDeviation(values: number[]): number {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  const mean = values.reduce((total, value) => total + value, 0) / values.length;
+  const variance = values.reduce((total, value) => total + (value - mean) ** 2, 0) / values.length;
+
+  return Math.sqrt(variance);
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(Math.max(value, minimum), maximum);
+}
+
+function roundMetric(value: number): number {
+  return Math.round(value * 10_000) / 10_000;
 }
