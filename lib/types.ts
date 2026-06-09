@@ -100,7 +100,6 @@ export type MarketAnalysis = {
   rawExpectedGpPerHour: number;
   confidence: number;
   volatilityPenalty: number;
-  riskAdjustedGpPerHour: number;
 };
 
 export type FlipCandidate = {
@@ -120,6 +119,10 @@ export type FlipCandidate = {
   freshnessSeconds: number;
   volume: number;
   score: number;
+  marketAnalysis?: MarketAnalysis;
+  confidence: number;
+  stability: number;
+  totalBuyLimitProfit: number;
   warnings: string[];
 };
 
@@ -128,10 +131,13 @@ export type FlipFilters = {
   minProfit?: number;
   minRoi?: number;
   minVolume?: number;
+  minConfidence?: number;
+  minStability?: number;
+  minTotalBuyLimitProfit?: number;
   maxPrice?: number;
   members?: "all" | "members" | "f2p";
   includeStale?: boolean;
-  sort?: "score" | "profit" | "roi" | "volume" | "freshness";
+  sort?: "score" | "confidence" | "stability" | "totalBuyLimitProfit" | "profit" | "roi" | "volume" | "freshness";
 };
 
 export type TaxConfig = {

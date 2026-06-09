@@ -9,11 +9,21 @@ export function parseFlipFilters(searchParams: URLSearchParams): FlipFilters {
     minProfit: numericParam(searchParams, "minProfit"),
     minRoi: numericParam(searchParams, "minRoi"),
     minVolume: numericParam(searchParams, "minVolume"),
+    minConfidence: numericParam(searchParams, "minConfidence"),
+    minStability: numericParam(searchParams, "minStability"),
+    minTotalBuyLimitProfit: numericParam(searchParams, "minTotalBuyLimitProfit"),
     maxPrice: numericParam(searchParams, "maxPrice"),
     members: members === "members" || members === "f2p" ? members : "all",
     includeStale: searchParams.get("includeStale") === "true",
     sort:
-      sort === "profit" || sort === "roi" || sort === "volume" || sort === "freshness" || sort === "score"
+      sort === "confidence" ||
+      sort === "stability" ||
+      sort === "totalBuyLimitProfit" ||
+      sort === "profit" ||
+      sort === "roi" ||
+      sort === "volume" ||
+      sort === "freshness" ||
+      sort === "score"
         ? sort
         : "score"
   };

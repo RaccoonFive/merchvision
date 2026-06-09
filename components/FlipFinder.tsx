@@ -35,6 +35,9 @@ type Filters = {
   minProfit: string;
   minRoi: string;
   minVolume: string;
+  minConfidence: string;
+  minStability: string;
+  minTotalBuyLimitProfit: string;
   maxPrice: string;
   members: string;
   sort: string;
@@ -46,6 +49,9 @@ const DEFAULT_FILTERS: Filters = {
   minProfit: "",
   minRoi: "0.5",
   minVolume: "",
+  minConfidence: "",
+  minStability: "",
+  minTotalBuyLimitProfit: "",
   maxPrice: "",
   members: "all",
   sort: "score",
@@ -161,6 +167,9 @@ export function FlipFinder() {
           <NumberField id="minProfit" label="Min profit" value={filters.minProfit} onChange={(value) => updateFilter("minProfit", value)} />
           <NumberField id="minRoi" label="Min ROI %" value={filters.minRoi} onChange={(value) => updateFilter("minRoi", value)} />
           <NumberField id="minVolume" label="Min volume" value={filters.minVolume} onChange={(value) => updateFilter("minVolume", value)} />
+          <NumberField id="minConfidence" label="Min conf. %" value={filters.minConfidence} onChange={(value) => updateFilter("minConfidence", value)} />
+          <NumberField id="minStability" label="Min stable %" value={filters.minStability} onChange={(value) => updateFilter("minStability", value)} />
+          <NumberField id="minTotalBuyLimitProfit" label="Min limit profit" value={filters.minTotalBuyLimitProfit} onChange={(value) => updateFilter("minTotalBuyLimitProfit", value)} />
           <NumberField id="maxPrice" label="Max buy price" value={filters.maxPrice} onChange={(value) => updateFilter("maxPrice", value)} />
           <div className="field">
             <label htmlFor="members">Market</label>
@@ -176,6 +185,9 @@ export function FlipFinder() {
             </label>
             <select id="sort" value={filters.sort} onChange={(event) => updateFilter("sort", event.target.value)}>
               <option value="score">Score</option>
+              <option value="confidence">Confidence</option>
+              <option value="stability">Stability</option>
+              <option value="totalBuyLimitProfit">Buy-limit profit</option>
               <option value="profit">Profit</option>
               <option value="roi">ROI</option>
               <option value="volume">Volume</option>
@@ -201,10 +213,11 @@ export function FlipFinder() {
                     <th>Tax</th>
                     <th>Net</th>
                     <th>ROI</th>
+                    <th>Score</th>
+                    <th>Conf.</th>
                     <th>Volume</th>
                     <th>Fresh</th>
                     <th>Limit</th>
-                    <th>Score</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -240,10 +253,11 @@ export function FlipFinder() {
                       <td>{formatGp(flip.tax)}</td>
                       <td className="profit">{formatGp(flip.netProfit)}</td>
                       <td>{formatPercent(flip.roi)}</td>
+                      <td className="score">{flip.score}</td>
+                      <td>{formatPercent(flip.confidence)}</td>
                       <td>{formatNumber(flip.volume)}</td>
                       <td>{formatAge(flip.freshnessSeconds)}</td>
                       <td>{flip.buyLimit ? formatNumber(flip.buyLimit) : "?"}</td>
-                      <td className="score">{flip.score}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -277,11 +291,26 @@ export function FlipFinder() {
                   <X size={17} />
                 </button>
               </div>
-              <div className="metric-grid">
-                <Metric label="Net profit" value={formatGp(selected.netProfit)} tone="profit" />
+              <div className="score-summary">
+                <span>Score</span>
+                <strong>{selected.score}</strong>
+              </div>
+              {selected.warnings.length > 0 ? (
+                <div className="warning-chips" aria-label="Market notes">
+                  {selected.warnings.slice(0, 4).map((warning) => (
+                    <span key={warning}>{warning}</span>
+                  ))}
+                </div>
+              ) : null}
+              <div className="metric-grid compact">
+                <Metric label="Net" value={formatGp(selected.netProfit)} tone="profit" />
                 <Metric label="ROI" value={formatPercent(selected.roi)} />
                 <Metric label="Buy limit" value={selected.buyLimit ? formatNumber(selected.buyLimit) : "Unknown"} />
+                <Metric label="Confidence" value={formatPercent(selected.confidence)} />
+                <Metric label="Matched vol/hr" value={formatNumber(selected.marketAnalysis?.medianMatchedHourlyVolume ?? 0)} />
+                <Metric label="Units/hr" value={formatNumber(selected.marketAnalysis?.estimatedExecutableUnitsPerHour ?? 0)} />
                 <Metric label="Freshness" value={formatAge(selected.freshnessSeconds)} />
+                <Metric label="Stability" value={formatPercent(selected.stability)} />
               </div>
               <div>
                 <h3>Recent prices</h3>
@@ -305,9 +334,6 @@ export function FlipFinder() {
                   )}
                 </div>
               </div>
-              <p className="muted">
-                Conservative flip math uses current low as buy price, current high as sell price, then subtracts GE tax.
-              </p>
             </>
           ) : (
             <div className="empty">Select a flip to inspect the math.</div>

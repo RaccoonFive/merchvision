@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-06-04
+Last updated: 2026-06-09
 
 ## Goal
 
@@ -8,10 +8,10 @@ Last updated: 2026-06-04
 
 ## Product Principles
 
-- Optimize recommendations for conservative, risk-adjusted GP/hour rather than impressive-looking margins.
+- Optimize recommendations for conservative, market-quality scoring rather than impressive-looking margins.
 - Explain every recommendation, assumption, uncertainty, and important risk.
 - Use public OSRS Wiki/RuneLite market data as the source of market truth.
-- Treat fill rates and GP/hour as estimates, never guarantees.
+- Treat fill rates and projected profit as estimates, never guarantees.
 - Keep Flip Finder rankings independent of the user's bankroll.
 - Do not build trade journaling, actual-position tracking, or RuneLite trade synchronization.
 - Do not save bankroll. Portfolio budgets are temporary inputs used only for one recommendation run.
@@ -23,16 +23,16 @@ Last updated: 2026-06-04
 - Item Lookup shows current quote metrics, warnings, recent hourly prices, and favorite controls.
 - Signed-in users can save favorites and view their live quotes on a protected Favorites page.
 - Email/password accounts, sessions, MySQL persistence, Prisma migrations, light/dark themes, and responsive layouts are implemented.
-- Current scoring is useful for discovery, but it does not measure spread stability, volatility, confidence, likely fill speed, or risk-adjusted GP/hour.
+- Current scoring is useful for discovery, but it does not measure spread stability, volatility, confidence, or likely fill speed.
 - The flips API currently fetches hourly volume data only for the top 100 preliminary candidates ranked by current net profit.
 
-## Current Focus: Milestone 1 - Explainable Risk-Adjusted GP/Hour Scoring
+## Current Focus: Milestone 1 - Explainable Market-Quality Scoring
 
 Status: **Active**
 
 ### Outcome
 
-Replace the basic score with an explainable market-quality model that estimates how much profit an opportunity could conservatively generate per hour while penalizing unstable, stale, or poorly sampled markets.
+Replace the basic score with an explainable market-quality model that rewards strong margins, liquidity, confidence, and stability while penalizing unstable, stale, or poorly sampled markets.
 
 ### Market Analysis
 
@@ -44,11 +44,10 @@ Replace the basic score with an explainable market-quality model that estimates 
   - Median matched hourly volume.
   - Sample count and sample coverage.
   - Estimated executable units/hour.
-  - Raw expected GP/hour.
+  - Raw expected profit estimate.
   - Confidence score.
   - Volatility/stability penalty.
-  - Final risk-adjusted GP/hour.
-- [ ] Analyze a recent rolling hourly window from the existing timeseries endpoint.
+- [x] Analyze a recent rolling hourly window from the existing timeseries endpoint.
 - [x] Treat matched hourly volume as `min(highPriceVolume, lowPriceVolume)` for each sample.
 - [x] Estimate executable units/hour as approximately 1% of median matched hourly volume.
 - [x] Cap executable units/hour by the item's hourly buy-limit allowance when the buy limit is known.
@@ -57,20 +56,19 @@ Replace the basic score with an explainable market-quality model that estimates 
 
 ### Candidate Selection and Ranking
 
-- [ ] Replace the net-profit-only preliminary shortlist with a balanced shortlist that retains:
+- [x] Replace the net-profit-only preliminary shortlist with a balanced shortlist that retains:
   - High net-profit candidates.
   - High-ROI candidates.
   - High-liquidity candidates.
-- [ ] Avoid unnecessary Wiki API load and remain within acceptable-use expectations.
-- [ ] Add risk-adjusted GP/hour, confidence, stability, and total buy-limit profit to `FlipCandidate`.
-- [ ] Make risk-adjusted GP/hour the default ranking.
-- [ ] Add filters and sorting for risk-adjusted GP/hour, confidence, stability, and total buy-limit profit.
+- [x] Avoid unnecessary Wiki API load and remain within acceptable-use expectations.
+- [x] Add confidence, stability, and total buy-limit profit to `FlipCandidate`.
+- [x] Make market-quality score the default ranking.
+- [x] Add filters and sorting for confidence, stability, and total buy-limit profit.
 - [ ] Preserve existing filters and clearly label legacy metrics.
 
 ### Explainability UI
 
-- [ ] Show estimated executable units/hour and risk-adjusted GP/hour in the Flip Finder table.
-- [ ] Show all score components and assumptions in the selected-item detail panel.
+- [x] Show a compact score and relevant item market facts in the selected-item detail panel.
 - [ ] Show clear warnings for:
   - Low sample coverage.
   - Low confidence.
@@ -78,13 +76,12 @@ Replace the basic score with an explainable market-quality model that estimates 
   - High midpoint volatility.
   - Stale quotes.
   - Thin matched volume.
-- [ ] State in the UI that GP/hour is a conservative heuristic and not a guaranteed fill estimate.
 
 ### Tests and Acceptance Criteria
 
 - [x] Add deterministic unit tests for every market-analysis formula.
 - [ ] Cover missing prices, zero volume, unknown buy limits, negative spreads, stale data, and partial windows.
-- [ ] Add route tests confirming balanced shortlisting and the new filter/sort behavior.
+- [x] Add route tests confirming balanced shortlisting and the new filter/sort behavior.
 - [ ] Verify ranking explanations match the numerical score components returned by the API.
 - [ ] Run `npm run typecheck`, `npm test`, and `npm run build`.
 - [ ] Milestone is complete only when a user can understand why one opportunity ranks above another.
@@ -105,8 +102,8 @@ Generate a diversified basket of actionable flips from Scoring V2 using a tempor
 - [ ] Limit each item to at most 25% of the entered budget.
 - [ ] Respect known buy limits and estimated executable units/hour.
 - [ ] Exclude stale and low-confidence opportunities by default.
-- [ ] Allocate capital by risk-adjusted GP/hour per invested GP while avoiding excessive concentration.
-- [ ] Show quantity, required capital, estimated risk-adjusted GP/hour, confidence, risks, and unused budget.
+- [ ] Allocate capital by market-quality score per invested GP while avoiding excessive concentration.
+- [ ] Show quantity, required capital, score, confidence, risks, and unused budget.
 - [ ] Allow users to regenerate suggestions without saving the budget or recommendations.
 
 ### Acceptance Criteria
@@ -128,7 +125,7 @@ Notify signed-in users inside Merchvision when favorites or market-wide opportun
 ### Tasks
 
 - [ ] Add user-owned alert rules for favorite items and market-wide scoring thresholds.
-- [ ] Support thresholds for risk-adjusted GP/hour, confidence, stability, ROI, and freshness.
+- [ ] Support thresholds for score, confidence, stability, ROI, and freshness.
 - [ ] Add a secret-protected cron endpoint that evaluates alert rules on a schedule.
 - [ ] Store notifications with the triggering metrics and a human-readable explanation.
 - [ ] Deduplicate repeated alerts with a configurable cooldown.

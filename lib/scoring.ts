@@ -11,6 +11,7 @@ type BuildCandidatesInput = {
   items: ItemMeta[];
   prices: LatestPrice[];
   volumesByItem?: Map<number, number>;
+  analysesByItem?: Map<number, MarketAnalysis>;
   nowSeconds?: number;
 };
 
@@ -18,6 +19,7 @@ export function buildFlipCandidates({
   items,
   prices,
   volumesByItem = new Map<number, number>(),
+  analysesByItem = new Map<number, MarketAnalysis>(),
   nowSeconds = Math.floor(Date.now() / 1000)
 }: BuildCandidatesInput): FlipCandidate[] {
   const itemsById = new Map(items.map((item) => [item.id, item]));
@@ -38,8 +40,12 @@ export function buildFlipCandidates({
     const freshestTrade = Math.max(price.highTime, price.lowTime);
     const freshnessSeconds = Math.max(0, nowSeconds - freshestTrade);
     const volume = volumesByItem.get(price.id) ?? 0;
-    const warnings = buildWarnings({ item, netProfit, freshnessSeconds, volume });
-    const score = scoreFlip({ netProfit, roi, volume, freshnessSeconds, buyLimit: item.limit });
+    const marketAnalysis = analysesByItem.get(price.id);
+    const confidence = marketAnalysis?.confidence ?? 0;
+    const stability = marketAnalysis ? Math.max(0, 1 - marketAnalysis.volatilityPenalty) : 0;
+    const totalBuyLimitProfit = item.limit ? netProfit * item.limit : 0;
+    const warnings = buildWarnings({ item, netProfit, freshnessSeconds, volume, marketAnalysis });
+    const score = scoreFlip({ netProfit, roi, volume, freshnessSeconds, buyLimit: item.limit, marketAnalysis });
 
     if (netProfit <= 0) {
       continue;
@@ -62,6 +68,10 @@ export function buildFlipCandidates({
       freshnessSeconds,
       volume,
       score,
+      marketAnalysis,
+      confidence,
+      stability,
+      totalBuyLimitProfit,
       warnings
     });
   }
@@ -80,6 +90,9 @@ export function filterAndSortFlips(candidates: FlipCandidate[], filters: FlipFil
       if ((filters.minProfit ?? 0) > candidate.netProfit) return false;
       if ((filters.minRoi ?? 0) / 100 > candidate.roi) return false;
       if ((filters.minVolume ?? 0) > candidate.volume) return false;
+      if ((filters.minConfidence ?? 0) / 100 > candidate.confidence) return false;
+      if ((filters.minStability ?? 0) / 100 > candidate.stability) return false;
+      if ((filters.minTotalBuyLimitProfit ?? 0) > candidate.totalBuyLimitProfit) return false;
       if ((filters.maxPrice ?? 0) > 0 && candidate.buyPrice > (filters.maxPrice ?? 0)) return false;
       if (filters.members === "members" && !candidate.members) return false;
       if (filters.members === "f2p" && candidate.members) return false;
@@ -138,7 +151,6 @@ export function analyzeMarket(points: PricePoint[], buyLimit?: number): MarketAn
     midpointPriceVolatility,
     positiveSpreadRatio
   });
-  const riskAdjustedGpPerHour = rawExpectedGpPerHour * confidence * Math.max(0, 1 - volatilityPenalty);
 
   return {
     historicalNetMarginMedian: roundMetric(historicalNetMarginMedian),
@@ -151,8 +163,7 @@ export function analyzeMarket(points: PricePoint[], buyLimit?: number): MarketAn
     estimatedExecutableUnitsPerHour: roundMetric(estimatedExecutableUnitsPerHour),
     rawExpectedGpPerHour: roundMetric(rawExpectedGpPerHour),
     confidence: roundMetric(confidence),
-    volatilityPenalty: roundMetric(volatilityPenalty),
-    riskAdjustedGpPerHour: roundMetric(riskAdjustedGpPerHour)
+    volatilityPenalty: roundMetric(volatilityPenalty)
   };
 }
 
@@ -160,16 +171,22 @@ function buildWarnings({
   item,
   netProfit,
   freshnessSeconds,
-  volume
+  volume,
+  marketAnalysis
 }: {
   item: ItemMeta;
   netProfit: number;
   freshnessSeconds: number;
   volume: number;
+  marketAnalysis?: MarketAnalysis;
 }): string[] {
   const warnings: string[] = [];
   if (!item.limit) warnings.push("Unknown buy limit");
-  if (volume < 100) warnings.push("Thin volume");
+  if (marketAnalysis && marketAnalysis.sampleCoverage < 0.5) warnings.push("Low sample coverage");
+  if (marketAnalysis && marketAnalysis.confidence < 0.45) warnings.push("Low confidence");
+  if (marketAnalysis && marketAnalysis.positiveSpreadRatio < 0.7) warnings.push("Unstable spread");
+  if (marketAnalysis && marketAnalysis.midpointPriceVolatility > 0.08) warnings.push("High volatility");
+  if ((marketAnalysis?.medianMatchedHourlyVolume ?? volume) < 100) warnings.push("Thin volume");
   if (freshnessSeconds > STALE_AFTER_SECONDS) warnings.push("Stale quotes");
   if (netProfit < 100) warnings.push("Small margin");
   return warnings;
@@ -180,25 +197,39 @@ function scoreFlip({
   roi,
   volume,
   freshnessSeconds,
-  buyLimit
+  buyLimit,
+  marketAnalysis
 }: {
   netProfit: number;
   roi: number;
   volume: number;
   freshnessSeconds: number;
   buyLimit?: number;
+  marketAnalysis?: MarketAnalysis;
 }): number {
   const profitScore = Math.log10(Math.max(netProfit, 1)) * 22;
   const roiScore = Math.min(Math.max(roi, 0), 0.2) * 180;
   const volumeScore = Math.min(Math.log10(Math.max(volume, 1)) * 12, 48);
   const limitScore = buyLimit ? Math.min(Math.log10(buyLimit) * 5, 20) : -15;
   const stalePenalty = Math.min(freshnessSeconds / 90, 45);
+  const analysisScore = marketAnalysis
+    ? marketAnalysis.confidence * 28 +
+      Math.max(0, 1 - marketAnalysis.volatilityPenalty) * 24 +
+      marketAnalysis.positiveSpreadRatio * 18 +
+      Math.min(Math.log10(marketAnalysis.estimatedExecutableUnitsPerHour + 1) * 8, 24)
+    : 0;
 
-  return Math.max(0, Math.round(profitScore + roiScore + volumeScore + limitScore - stalePenalty));
+  return Math.max(0, Math.round(profitScore + roiScore + volumeScore + limitScore + analysisScore - stalePenalty));
 }
 
 function getSortValue(candidate: FlipCandidate, sort: NonNullable<FlipFilters["sort"]>): number {
   switch (sort) {
+    case "confidence":
+      return candidate.confidence;
+    case "stability":
+      return candidate.stability;
+    case "totalBuyLimitProfit":
+      return candidate.totalBuyLimitProfit;
     case "profit":
       return candidate.netProfit;
     case "roi":

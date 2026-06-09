@@ -76,7 +76,7 @@ describe("filterAndSortFlips", () => {
 });
 
 describe("analyzeMarket", () => {
-  it("estimates risk-adjusted gp per hour from stable hourly samples", () => {
+  it("summarizes stable hourly market samples", () => {
     const points = Array.from({ length: 24 }, (_, index): PricePoint => ({
       timestamp: nowSeconds - (23 - index) * 3_600,
       avgHighPrice: 1_100,
@@ -96,8 +96,7 @@ describe("analyzeMarket", () => {
       estimatedExecutableUnitsPerHour: 150,
       rawExpectedGpPerHour: 11_700,
       confidence: 1,
-      volatilityPenalty: 0,
-      riskAdjustedGpPerHour: 11_700
+      volatilityPenalty: 0
     });
   });
 
@@ -114,7 +113,6 @@ describe("analyzeMarket", () => {
 
     expect(analysis.estimatedExecutableUnitsPerHour).toBe(50);
     expect(analysis.rawExpectedGpPerHour).toBe(3_900);
-    expect(analysis.riskAdjustedGpPerHour).toBe(3_900);
   });
 
   it("handles missing prices, zero volume, negative spreads, and partial windows", () => {
@@ -149,8 +147,7 @@ describe("analyzeMarket", () => {
       sampleCoverage: 0.0833,
       estimatedExecutableUnitsPerHour: 0,
       rawExpectedGpPerHour: 0,
-      confidence: 0.1958,
-      riskAdjustedGpPerHour: 0
+      confidence: 0.1958
     });
     expect(analysis.midpointPriceVolatility).toBeCloseTo(0.0638, 4);
     expect(analysis.volatilityPenalty).toBeCloseTo(0.7777, 4);
@@ -168,8 +165,7 @@ describe("analyzeMarket", () => {
       estimatedExecutableUnitsPerHour: 0,
       rawExpectedGpPerHour: 0,
       confidence: 0,
-      volatilityPenalty: 0.4,
-      riskAdjustedGpPerHour: 0
+      volatilityPenalty: 0.4
     });
   });
 });
