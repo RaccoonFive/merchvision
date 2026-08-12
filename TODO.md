@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-06-09
+Last updated: 2026-08-12
 
 ## Goal
 
@@ -23,8 +23,8 @@ Last updated: 2026-06-09
 - Item Lookup shows current quote metrics, warnings, recent hourly prices, and favorite controls.
 - Signed-in users can save favorites and view their live quotes on a protected Favorites page.
 - Email/password accounts, sessions, MySQL persistence, Prisma migrations, light/dark themes, and responsive layouts are implemented.
-- Current scoring is useful for discovery, but it does not measure spread stability, volatility, confidence, or likely fill speed.
-- The flips API currently fetches hourly volume data only for the top 100 preliminary candidates ranked by current net profit.
+- Flip Finder now analyzes up to 100 balanced shortlisted candidates for spread stability, volatility, confidence, matched volume, and estimated executability.
+- The flips API bounds hourly timeseries enrichment to a balanced shortlist that retains candidates across net profit, ROI, and volume/score signals.
 
 ## Current Focus: Milestone 1 - Explainable Market-Quality Scoring
 
