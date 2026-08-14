@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { LogoMark } from "@/components/LogoMark";
 
 export type Theme = "light" | "dark";
 
@@ -57,7 +58,7 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
       <aside className="sidebar">
         <div className="sidebar-head">
           <Link className="brand" href="/" aria-label="Merchvision home">
-            <div className="brand-mark">MV</div>
+            <LogoMark className="brand-mark" />
             <div className="sidebar-brand-copy">
               <strong>Merchvision</strong>
               <span>Market tools</span>

@@ -290,16 +290,11 @@ button {
 }
 
 .brand-mark {
-  align-items: center;
-  background: linear-gradient(145deg, var(--accent-strong), var(--ice-700));
-  border-radius: 6px;
+  border-radius: 8px;
   box-shadow: 0 5px 14px rgb(52 72 93 / 18%);
-  color: #ffffff;
-  display: grid;
-  font-family: var(--font-space-grotesk), var(--font-open-sans), sans-serif;
-  font-weight: 700;
+  display: block;
+  flex: 0 0 38px;
   height: 38px;
-  place-items: center;
   width: 38px;
 }
 
