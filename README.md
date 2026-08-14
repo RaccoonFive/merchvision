@@ -69,6 +69,8 @@ You need Node.js, npm, and a local or reachable MySQL server.
 
    Open `http://localhost:3000`.
 
+   Port 3000 is reserved for the developer-run server. Automated coding-agent validation uses port 3100, or another available non-3000 port, and must stop the server before completing the task.
+
 ## Commands
 
 | Command | Purpose |
