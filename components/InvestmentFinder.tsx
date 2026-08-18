@@ -6,8 +6,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
 import type { InvestmentCandidate, PricePoint } from "@/lib/types";
+import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 
 type InvestmentsResponse = {
   data?: InvestmentCandidate[];
@@ -45,6 +47,16 @@ const DEFAULT_FILTERS: Filters = {
   sort: "score"
 };
 
+type InvestmentSortKey =
+  | "name"
+  | "currentMidpoint"
+  | "shortTrend"
+  | "mediumTrend"
+  | "matchedVolume"
+  | "volatility"
+  | "confidence"
+  | "score";
+
 export function InvestmentFinder() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [investments, setInvestments] = useState<InvestmentCandidate[]>([]);
@@ -56,8 +68,16 @@ export function InvestmentFinder() {
   const [error, setError] = useState<string | null>(null);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
   const [analysisStatus, setAnalysisStatus] = useState<string>("Waiting for market data");
+  const [tableSort, setTableSort] = useState<{ key: InvestmentSortKey; direction: SortDirection }>({
+    key: "score",
+    direction: "desc"
+  });
 
   const selected = investments.find((candidate) => candidate.id === selectedId);
+  const sortedInvestments = useMemo(
+    () => sortTableRows(investments, (candidate) => investmentSortValue(candidate, tableSort.key), tableSort.direction),
+    [investments, tableSort]
+  );
   const query = useMemo(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
@@ -128,6 +148,18 @@ export function InvestmentFinder() {
     setFilters((current) => ({ ...current, [key]: value }));
   }
 
+  function toggleTableSort(key: InvestmentSortKey) {
+    setTableSort((current) => ({
+      key,
+      direction: current.key === key && current.direction === "asc" ? "desc" : "asc"
+    }));
+  }
+
+  function updateRanking(sort: InvestmentSortKey) {
+    updateFilter("sort", sort === "matchedVolume" ? "volume" : sort);
+    setTableSort({ key: sort, direction: sort === "volatility" ? "asc" : "desc" });
+  }
+
   return (
     <AppShell
       activePath="/investments"
@@ -169,7 +201,11 @@ export function InvestmentFinder() {
             </div>
             <div className="field">
               <label htmlFor="investment-sort"><SlidersHorizontal size={13} /> Sort</label>
-              <select id="investment-sort" value={filters.sort} onChange={(event) => updateFilter("sort", event.target.value)}>
+              <select
+                id="investment-sort"
+                value={filters.sort}
+                onChange={(event) => updateRanking(event.target.value === "volume" ? "matchedVolume" : event.target.value as InvestmentSortKey)}
+              >
                 <option value="score">Risk-adjusted score</option>
                 <option value="shortTrend">24h trend</option>
                 <option value="mediumTrend">7d trend</option>
@@ -189,18 +225,18 @@ export function InvestmentFinder() {
                   <table>
                     <thead>
                       <tr>
-                        <th>Item</th>
-                        <th>Midpoint</th>
-                        <th>24h trend</th>
-                        <th>7d trend</th>
-                        <th>24h volume</th>
-                        <th>Volatility</th>
-                        <th>Confidence</th>
-                        <th>Score</th>
+                        <SortableTableHeader label="Item" active={tableSort.key === "name"} direction={tableSort.direction} onSort={() => toggleTableSort("name")} />
+                        <SortableTableHeader label="Midpoint" active={tableSort.key === "currentMidpoint"} direction={tableSort.direction} onSort={() => toggleTableSort("currentMidpoint")} />
+                        <SortableTableHeader label="24h trend" active={tableSort.key === "shortTrend"} direction={tableSort.direction} onSort={() => toggleTableSort("shortTrend")} />
+                        <SortableTableHeader label="7d trend" active={tableSort.key === "mediumTrend"} direction={tableSort.direction} onSort={() => toggleTableSort("mediumTrend")} />
+                        <SortableTableHeader label="24h volume" active={tableSort.key === "matchedVolume"} direction={tableSort.direction} onSort={() => toggleTableSort("matchedVolume")} />
+                        <SortableTableHeader label="Volatility" active={tableSort.key === "volatility"} direction={tableSort.direction} onSort={() => toggleTableSort("volatility")} />
+                        <SortableTableHeader label="Confidence" active={tableSort.key === "confidence"} direction={tableSort.direction} onSort={() => toggleTableSort("confidence")} />
+                        <SortableTableHeader label="Score" active={tableSort.key === "score"} direction={tableSort.direction} onSort={() => toggleTableSort("score")} />
                       </tr>
                     </thead>
                     <tbody>
-                      {investments.map((candidate) => (
+                      {sortedInvestments.map((candidate) => (
                         <tr
                           aria-label={`Select ${candidate.name}`}
                           className={detailPanelOpen && selected?.id === candidate.id ? "selected" : ""}
@@ -375,4 +411,17 @@ function formatCompact(value: number): string {
 
 function formatClock(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function investmentSortValue(candidate: InvestmentCandidate, key: InvestmentSortKey): number | string {
+  switch (key) {
+    case "name": return candidate.name;
+    case "currentMidpoint": return candidate.currentMidpoint;
+    case "shortTrend": return candidate.shortTrend;
+    case "mediumTrend": return candidate.mediumTrend;
+    case "matchedVolume": return candidate.matchedVolume;
+    case "volatility": return candidate.volatility;
+    case "confidence": return candidate.confidence;
+    case "score": return candidate.score;
+  }
 }

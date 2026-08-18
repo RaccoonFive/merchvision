@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
+import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 import type { FavoriteItem } from "@/lib/types";
 
 type FavoritesResponse = {
@@ -13,11 +15,22 @@ type FavoritesResponse = {
   error?: string;
 };
 
+type FavoriteSortKey = "name" | "low" | "high" | "netProfit" | "roi" | "freshnessSeconds";
+
 export function FavoritesPage() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<number | null>(null);
+  const [tableSort, setTableSort] = useState<{ key: FavoriteSortKey; direction: SortDirection }>({
+    key: "name",
+    direction: "asc"
+  });
+  const sortedFavorites = sortTableRows(
+    favorites,
+    (favorite) => favoriteSortValue(favorite, tableSort.key),
+    tableSort.direction
+  );
 
   useEffect(() => {
     fetch("/api/favorites")
@@ -46,6 +59,13 @@ export function FavoritesPage() {
     }
   }
 
+  function toggleTableSort(key: FavoriteSortKey) {
+    setTableSort((current) => ({
+      key,
+      direction: current.key === key && current.direction === "asc" ? "desc" : "asc"
+    }));
+  }
+
   return (
     <AppShell activePath="/favorites" title="Favorites" subtitle="Your saved Grand Exchange items">
       {() => (
@@ -65,17 +85,17 @@ export function FavoritesPage() {
               <table className="favorites-table">
                 <thead>
                   <tr>
-                    <th>Item</th>
-                    <th>Buy</th>
-                    <th>Sell</th>
-                    <th>Net margin</th>
-                    <th>ROI</th>
-                    <th>Freshness</th>
+                    <SortableTableHeader label="Item" active={tableSort.key === "name"} direction={tableSort.direction} onSort={() => toggleTableSort("name")} />
+                    <SortableTableHeader label="Buy" active={tableSort.key === "low"} direction={tableSort.direction} onSort={() => toggleTableSort("low")} />
+                    <SortableTableHeader label="Sell" active={tableSort.key === "high"} direction={tableSort.direction} onSort={() => toggleTableSort("high")} />
+                    <SortableTableHeader label="Net margin" active={tableSort.key === "netProfit"} direction={tableSort.direction} onSort={() => toggleTableSort("netProfit")} />
+                    <SortableTableHeader label="ROI" active={tableSort.key === "roi"} direction={tableSort.direction} onSort={() => toggleTableSort("roi")} />
+                    <SortableTableHeader label="Freshness" active={tableSort.key === "freshnessSeconds"} direction={tableSort.direction} onSort={() => toggleTableSort("freshnessSeconds")} />
                     <th aria-label="Actions" />
                   </tr>
                 </thead>
                 <tbody>
-                  {favorites.map(({ item, quote }) => (
+                  {sortedFavorites.map(({ item, quote }) => (
                     <tr key={item.id}>
                       <td>
                         <Link className="favorite-item-link" href={`/lookup/${item.id}`}>
@@ -132,4 +152,15 @@ function formatAge(seconds: number): string {
 function valueTone(value: number | null): "positive" | "negative" | "muted" {
   if (value === null || value === 0) return "muted";
   return value > 0 ? "positive" : "negative";
+}
+
+function favoriteSortValue(favorite: FavoriteItem, key: FavoriteSortKey): number | string | null {
+  switch (key) {
+    case "name": return favorite.item.name;
+    case "low": return favorite.quote.low;
+    case "high": return favorite.quote.high;
+    case "netProfit": return favorite.quote.netProfit;
+    case "roi": return favorite.quote.roi;
+    case "freshnessSeconds": return favorite.quote.freshnessSeconds;
+  }
 }

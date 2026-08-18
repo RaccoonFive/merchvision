@@ -65,7 +65,7 @@ export function StickyTable({ children }: { children: TableElement }) {
 
   return (
     <div className="sticky-table-shell">
-      <div aria-hidden="true" className="sticky-table-header" ref={stickyHeaderRef}>
+      <div className="sticky-table-header" ref={stickyHeaderRef}>
         <table className={children.props.className} ref={stickyTableRef}>
           {header}
         </table>

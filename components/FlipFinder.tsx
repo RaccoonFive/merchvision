@@ -15,7 +15,9 @@ import {
 import type { FlipCandidate, PricePoint } from "@/lib/types";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
+import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 
 type FlipsResponse = {
   data?: FlipCandidate[];
@@ -58,6 +60,22 @@ const DEFAULT_FILTERS: Filters = {
   includeStale: false
 };
 
+type FlipSortKey =
+  | "name"
+  | "buyPrice"
+  | "sellPrice"
+  | "margin"
+  | "tax"
+  | "netProfit"
+  | "roi"
+  | "score"
+  | "confidence"
+  | "stability"
+  | "totalBuyLimitProfit"
+  | "volume"
+  | "freshnessSeconds"
+  | "buyLimit";
+
 export function FlipFinder() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [flips, setFlips] = useState<FlipCandidate[]>([]);
@@ -68,8 +86,16 @@ export function FlipFinder() {
   const [chartLoading, setChartLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
+  const [tableSort, setTableSort] = useState<{ key: FlipSortKey; direction: SortDirection }>({
+    key: "score",
+    direction: "desc"
+  });
 
   const selected = flips.find((flip) => flip.id === selectedId);
+  const sortedFlips = useMemo(
+    () => sortTableRows(flips, (flip) => flipSortValue(flip, tableSort.key), tableSort.direction),
+    [flips, tableSort]
+  );
   const query = useMemo(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
@@ -135,6 +161,18 @@ export function FlipFinder() {
     setFilters((current) => ({ ...current, [key]: value }));
   }
 
+  function toggleTableSort(key: FlipSortKey) {
+    setTableSort((current) => ({
+      key,
+      direction: current.key === key && current.direction === "asc" ? "desc" : "asc"
+    }));
+  }
+
+  function updateRanking(sort: FlipSortKey) {
+    updateFilter("sort", sort === "netProfit" ? "profit" : sort === "freshnessSeconds" ? "freshness" : sort);
+    setTableSort({ key: sort, direction: sort === "freshnessSeconds" ? "asc" : "desc" });
+  }
+
   return (
     <AppShell
       activePath="/"
@@ -183,7 +221,11 @@ export function FlipFinder() {
             <label htmlFor="sort">
               <SlidersHorizontal size={13} /> Sort
             </label>
-            <select id="sort" value={filters.sort} onChange={(event) => updateFilter("sort", event.target.value)}>
+            <select
+              id="sort"
+              value={filters.sort}
+              onChange={(event) => updateRanking(event.target.value === "profit" ? "netProfit" : event.target.value === "freshness" ? "freshnessSeconds" : event.target.value as FlipSortKey)}
+            >
               <option value="score">Score</option>
               <option value="confidence">Confidence</option>
               <option value="stability">Stability</option>
@@ -206,22 +248,22 @@ export function FlipFinder() {
               <table>
                 <thead>
                   <tr>
-                    <th>Item</th>
-                    <th>Buy</th>
-                    <th>Sell</th>
-                    <th>Margin</th>
-                    <th>Tax</th>
-                    <th>Net</th>
-                    <th>ROI</th>
-                    <th>Score</th>
-                    <th>Conf.</th>
-                    <th>Volume</th>
-                    <th>Fresh</th>
-                    <th>Limit</th>
+                    <SortableTableHeader label="Item" active={tableSort.key === "name"} direction={tableSort.direction} onSort={() => toggleTableSort("name")} />
+                    <SortableTableHeader label="Buy" active={tableSort.key === "buyPrice"} direction={tableSort.direction} onSort={() => toggleTableSort("buyPrice")} />
+                    <SortableTableHeader label="Sell" active={tableSort.key === "sellPrice"} direction={tableSort.direction} onSort={() => toggleTableSort("sellPrice")} />
+                    <SortableTableHeader label="Margin" active={tableSort.key === "margin"} direction={tableSort.direction} onSort={() => toggleTableSort("margin")} />
+                    <SortableTableHeader label="Tax" active={tableSort.key === "tax"} direction={tableSort.direction} onSort={() => toggleTableSort("tax")} />
+                    <SortableTableHeader label="Net" active={tableSort.key === "netProfit"} direction={tableSort.direction} onSort={() => toggleTableSort("netProfit")} />
+                    <SortableTableHeader label="ROI" active={tableSort.key === "roi"} direction={tableSort.direction} onSort={() => toggleTableSort("roi")} />
+                    <SortableTableHeader label="Score" active={tableSort.key === "score"} direction={tableSort.direction} onSort={() => toggleTableSort("score")} />
+                    <SortableTableHeader label="Conf." active={tableSort.key === "confidence"} direction={tableSort.direction} onSort={() => toggleTableSort("confidence")} />
+                    <SortableTableHeader label="Volume" active={tableSort.key === "volume"} direction={tableSort.direction} onSort={() => toggleTableSort("volume")} />
+                    <SortableTableHeader label="Fresh" active={tableSort.key === "freshnessSeconds"} direction={tableSort.direction} onSort={() => toggleTableSort("freshnessSeconds")} />
+                    <SortableTableHeader label="Limit" active={tableSort.key === "buyLimit"} direction={tableSort.direction} onSort={() => toggleTableSort("buyLimit")} />
                   </tr>
                 </thead>
                 <tbody>
-                  {flips.map((flip) => (
+                  {sortedFlips.map((flip) => (
                     <tr
                       aria-label={`Select ${flip.name}`}
                       className={detailPanelOpen && selected?.id === flip.id ? "selected" : ""}
@@ -420,4 +462,23 @@ function formatAge(seconds: number): string {
 
 function formatClock(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function flipSortValue(flip: FlipCandidate, key: FlipSortKey): number | string | undefined {
+  switch (key) {
+    case "name": return flip.name;
+    case "buyPrice": return flip.buyPrice;
+    case "sellPrice": return flip.sellPrice;
+    case "margin": return flip.margin;
+    case "tax": return flip.tax;
+    case "netProfit": return flip.netProfit;
+    case "roi": return flip.roi;
+    case "score": return flip.score;
+    case "confidence": return flip.confidence;
+    case "stability": return flip.stability;
+    case "totalBuyLimitProfit": return flip.totalBuyLimitProfit;
+    case "volume": return flip.volume;
+    case "freshnessSeconds": return flip.freshnessSeconds;
+    case "buyLimit": return flip.buyLimit;
+  }
 }
