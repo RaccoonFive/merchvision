@@ -40,7 +40,7 @@
 Common commands:
 
 - Install dependencies: `npm install`
-- Start development: `npm run dev`
+- Start agent-run development: `npm run dev -- -p 3100`
 - Run tests: `npm test`
 - Run type checking: `npm run typecheck`
 - Run a production build: `npm run build`
@@ -57,8 +57,8 @@ Common commands:
 - Do not manually edit generated files such as `next-env.d.ts` or `tsconfig.tsbuildinfo`.
 - Add comments for non-obvious policy or algorithm decisions, not to narrate straightforward code.
 - Update `README.md`, `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, or `TODO.md` when a change makes them inaccurate.
-- Agents may start a temporary development or preview server when it materially helps validate the requested work, but must not use port 3000. Use port 3100 by default, or another confirmed-free non-3000 port when necessary.
-- Run agent-started servers in a tracked foreground terminal session, never as an untracked background process. Before finishing, interrupt the session, stop its exact process group if needed, and verify that the selected port no longer has a listener. Never leave suspended or background Next.js processes behind.
+- Never start an agent-run development, preview, or production server on port 3000. Use port 3100 by default, or another confirmed-free non-3000 port when necessary.
+- Run agent-started servers in a tracked foreground terminal session, never as an untracked background process. Immediately after testing, interrupt the session, stop its exact process group if needed, and verify that the selected port no longer has a listener. Never leave suspended or background Next.js processes behind.
 
 ## Data And API Rules
 
