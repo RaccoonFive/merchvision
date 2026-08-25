@@ -1307,6 +1307,25 @@ tbody tr.selected {
   gap: 14px;
 }
 
+.account-form .field small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.account-form .text-btn {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 13px;
+  justify-self: start;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.account-form .text-btn:hover {
+  color: var(--text);
+}
+
 .eyebrow {
   color: var(--accent);
   font-size: 11px;

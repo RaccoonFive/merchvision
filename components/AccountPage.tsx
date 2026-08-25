@@ -11,12 +11,15 @@ type UserSummary = {
   id: string;
   name: string;
   email: string;
+  username?: string | null;
+  displayUsername?: string | null;
 };
 
 export function AccountPage({ callbackUrl, initialUser }: { callbackUrl: string; initialUser: UserSummary | null }) {
   const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [name, setName] = useState("");
+  const [signInWithEmail, setSignInWithEmail] = useState(false);
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -34,8 +37,15 @@ export function AccountPage({ callbackUrl, initialUser }: { callbackUrl: string;
 
     setPending(true);
     const result = mode === "signup"
-      ? await authClient.signUp.email({ name: name.trim(), email: email.trim(), password })
-      : await authClient.signIn.email({ email: email.trim(), password });
+      ? await authClient.signUp.email({
+        name: username.trim(),
+        username: username.trim(),
+        email: email.trim(),
+        password
+      })
+      : signInWithEmail
+        ? await authClient.signIn.email({ email: email.trim(), password })
+        : await authClient.signIn.username({ username: username.trim(), password });
     setPending(false);
 
     if (result.error) {
@@ -61,7 +71,7 @@ export function AccountPage({ callbackUrl, initialUser }: { callbackUrl: string;
             <section className="account-panel">
               <div>
                 <p className="eyebrow">Signed in</p>
-                <h2>{initialUser.name}</h2>
+                <h2>{initialUser.displayUsername ?? initialUser.username ?? initialUser.name}</h2>
                 <p className="subtitle">{initialUser.email}</p>
               </div>
               <button className="secondary-btn" onClick={signOut} type="button">
@@ -82,14 +92,32 @@ export function AccountPage({ callbackUrl, initialUser }: { callbackUrl: string;
               <form className="account-form" onSubmit={submit}>
                 {mode === "signup" ? (
                   <div className="field">
-                    <label htmlFor="account-name">Name</label>
-                    <input autoComplete="name" id="account-name" onChange={(event) => setName(event.target.value)} required value={name} />
+                    <label htmlFor="account-username">Username</label>
+                    <input
+                      autoComplete="username"
+                      id="account-username"
+                      maxLength={30}
+                      minLength={3}
+                      onChange={(event) => setUsername(event.target.value)}
+                      pattern="[A-Za-z0-9_.]+"
+                      required
+                      value={username}
+                    />
+                    <small>3–30 characters: letters, numbers, underscores, or periods.</small>
                   </div>
                 ) : null}
-                <div className="field">
-                  <label htmlFor="account-email">Email</label>
-                  <input autoComplete="email" id="account-email" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} />
-                </div>
+                {mode === "signin" && !signInWithEmail ? (
+                  <div className="field">
+                    <label htmlFor="account-username">Username</label>
+                    <input autoComplete="username" id="account-username" onChange={(event) => setUsername(event.target.value)} required value={username} />
+                  </div>
+                ) : null}
+                {mode === "signup" || signInWithEmail ? (
+                  <div className="field">
+                    <label htmlFor="account-email">Email</label>
+                    <input autoComplete="email" id="account-email" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} />
+                  </div>
+                ) : null}
                 <div className="field">
                   <label htmlFor="account-password">Password</label>
                   <input autoComplete={mode === "signup" ? "new-password" : "current-password"} id="account-password" minLength={8} onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />
@@ -104,6 +132,11 @@ export function AccountPage({ callbackUrl, initialUser }: { callbackUrl: string;
                 <button className="primary-btn" disabled={pending} type="submit">
                   {pending ? <LoadingSpinner label="Please wait..." size="small" variant="button" /> : mode === "signin" ? "Sign in" : "Create account"}
                 </button>
+                {mode === "signin" ? (
+                  <button className="text-btn" onClick={() => setSignInWithEmail((current) => !current)} type="button">
+                    {signInWithEmail ? "Use username instead" : "Use email for an existing account"}
+                  </button>
+                ) : null}
               </form>
             </section>
           )}

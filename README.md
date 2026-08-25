@@ -10,7 +10,7 @@ The application is decision support, not a profit guarantee. It does not track t
 - **Investment Finder:** identifies liquid items with positive 24-hour and 7-day midpoint trends and ranks them with a risk-adjusted momentum score.
 - **Item Lookup:** shows current quotes, net margin, warnings, recent price history, and a local-time heatmap of the latest seven days of observed hourly market activity.
 - **Favorites:** lets signed-in users save items and view their current quotes.
-- **Accounts:** provides email/password authentication backed by Better Auth, Prisma, and MySQL.
+- **Accounts:** provides username/password authentication backed by Better Auth, Prisma, and MySQL. Email remains required for the account record, with a fallback sign-in path for pre-username accounts.
 - **Responsive application shell:** supports dark and light themes, collapsible navigation, dense tables, and detail panels.
 
 See [the product contract](docs/PRODUCT.md), [architecture](docs/ARCHITECTURE.md), and [roadmap](TODO.md) for the reasoning behind the project and its current priorities.

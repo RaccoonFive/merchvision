@@ -50,7 +50,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 ### Authentication And Persistence
 
-- Better Auth is configured in `lib/auth.ts` with the Prisma adapter and email/password login.
+- Better Auth is configured in `lib/auth.ts` with the Prisma adapter, email/password account creation, and username/password login. Email is retained on the account record; normalized usernames are unique case-insensitively, the separate display username preserves a user's capitalization, and usernames are the primary sign-in credential. Existing accounts without a username retain an email sign-in fallback.
 - Server page sessions and route-request sessions are resolved in `lib/session.ts`.
 - `lib/prisma.ts` provides a development-safe Prisma client singleton.
 - `prisma/schema.prisma` defines Better Auth records and the user-owned `Favorite` model.

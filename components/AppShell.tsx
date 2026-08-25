@@ -101,10 +101,10 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
         <div className="sidebar-account">
           {session?.user ? (
             <>
-              <Link className={`account-summary${activePath === "/account" ? " active" : ""}`} href="/account" title={session.user.email}>
+              <Link className={`account-summary${activePath === "/account" ? " active" : ""}`} href="/account" title={session.user.displayUsername ?? session.user.username ?? session.user.email}>
                 <User size={18} />
                 <span>
-                  <strong>{session.user.name}</strong>
+                  <strong>{session.user.displayUsername ?? session.user.username ?? session.user.name}</strong>
                   <small>{session.user.email}</small>
                 </span>
               </Link>
