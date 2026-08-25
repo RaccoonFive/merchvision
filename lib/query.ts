@@ -15,6 +15,7 @@ export function parseFlipFilters(searchParams: URLSearchParams): FlipFilters {
     maxPrice: numericParam(searchParams, "maxPrice"),
     members: members === "members" || members === "f2p" ? members : "all",
     includeStale: searchParams.get("includeStale") === "true",
+    includeLowConfidence: searchParams.get("includeLowConfidence") === "true",
     sort:
       sort === "confidence" ||
       sort === "stability" ||

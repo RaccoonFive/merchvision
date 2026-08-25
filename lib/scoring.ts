@@ -1,11 +1,20 @@
 import { calculateGeTax } from "./tax";
-import type { FlipCandidate, FlipFilters, ItemMeta, LatestPrice, MarketAnalysis, PricePoint } from "./types";
+import type {
+  FlipCandidate,
+  FlipFilters,
+  FlipScoreBreakdown,
+  ItemMeta,
+  LatestPrice,
+  MarketAnalysis,
+  PricePoint
+} from "./types";
 
 const STALE_AFTER_SECONDS = 15 * 60;
 const VERY_STALE_AFTER_SECONDS = 60 * 60;
 const MARKET_ANALYSIS_WINDOW_HOURS = 24;
 const MIN_CONFIDENT_SAMPLES = 12;
 const BUY_LIMIT_WINDOW_HOURS = 4;
+export const MIN_DEFAULT_CONFIDENCE = 0.45;
 
 type BuildCandidatesInput = {
   items: ItemMeta[];
@@ -45,7 +54,7 @@ export function buildFlipCandidates({
     const stability = marketAnalysis ? Math.max(0, 1 - marketAnalysis.volatilityPenalty) : 0;
     const totalBuyLimitProfit = item.limit ? netProfit * item.limit : 0;
     const warnings = buildWarnings({ item, netProfit, freshnessSeconds, volume, marketAnalysis });
-    const score = scoreFlip({ netProfit, roi, volume, freshnessSeconds, buyLimit: item.limit, marketAnalysis });
+    const scoreBreakdown = scoreFlip({ netProfit, roi, volume, freshnessSeconds, buyLimit: item.limit, marketAnalysis });
 
     if (netProfit <= 0) {
       continue;
@@ -67,7 +76,8 @@ export function buildFlipCandidates({
       lowTime: price.lowTime,
       freshnessSeconds,
       volume,
-      score,
+      score: scoreBreakdown.score,
+      scoreBreakdown,
       marketAnalysis,
       confidence,
       stability,
@@ -82,6 +92,7 @@ export function buildFlipCandidates({
 export function filterAndSortFlips(candidates: FlipCandidate[], filters: FlipFilters): FlipCandidate[] {
   const search = filters.search?.trim().toLowerCase();
   const includeStale = filters.includeStale ?? false;
+  const includeLowConfidence = filters.includeLowConfidence ?? false;
   const sort = filters.sort ?? "score";
 
   return candidates
@@ -97,6 +108,7 @@ export function filterAndSortFlips(candidates: FlipCandidate[], filters: FlipFil
       if (filters.members === "members" && !candidate.members) return false;
       if (filters.members === "f2p" && candidate.members) return false;
       if (!includeStale && candidate.freshnessSeconds > VERY_STALE_AFTER_SECONDS) return false;
+      if (!includeLowConfidence && candidate.confidence < MIN_DEFAULT_CONFIDENCE) return false;
       return true;
     })
     .sort((a, b) => getSortValue(b, sort) - getSortValue(a, sort))
@@ -192,7 +204,7 @@ function buildWarnings({
   return warnings;
 }
 
-function scoreFlip({
+export function scoreFlip({
   netProfit,
   roi,
   volume,
@@ -206,20 +218,46 @@ function scoreFlip({
   freshnessSeconds: number;
   buyLimit?: number;
   marketAnalysis?: MarketAnalysis;
-}): number {
+}): FlipScoreBreakdown {
   const profitScore = Math.log10(Math.max(netProfit, 1)) * 22;
   const roiScore = Math.min(Math.max(roi, 0), 0.2) * 180;
   const volumeScore = Math.min(Math.log10(Math.max(volume, 1)) * 12, 48);
   const limitScore = buyLimit ? Math.min(Math.log10(buyLimit) * 5, 20) : -15;
   const stalePenalty = Math.min(freshnessSeconds / 90, 45);
-  const analysisScore = marketAnalysis
-    ? marketAnalysis.confidence * 28 +
-      Math.max(0, 1 - marketAnalysis.volatilityPenalty) * 24 +
-      marketAnalysis.positiveSpreadRatio * 18 +
-      Math.min(Math.log10(marketAnalysis.estimatedExecutableUnitsPerHour + 1) * 8, 24)
-    : 0;
+  const components = [
+    scoreComponent("Current net profit", profitScore),
+    scoreComponent("Current ROI", roiScore),
+    scoreComponent("Trailing traded volume", volumeScore),
+    scoreComponent(buyLimit ? "Known buy limit" : "Unknown buy limit", limitScore)
+  ];
 
-  return Math.max(0, Math.round(profitScore + roiScore + volumeScore + limitScore + analysisScore - stalePenalty));
+  if (marketAnalysis) {
+    components.push(
+      scoreComponent("Historical confidence", marketAnalysis.confidence * 28),
+      scoreComponent("Spread stability", Math.max(0, 1 - marketAnalysis.volatilityPenalty) * 24),
+      scoreComponent("Positive-spread history", marketAnalysis.positiveSpreadRatio * 18),
+      scoreComponent(
+        "Estimated executable units",
+        Math.min(Math.log10(marketAnalysis.estimatedExecutableUnitsPerHour + 1) * 8, 24)
+      )
+    );
+  }
+
+  if (stalePenalty > 0) {
+    components.push(scoreComponent("Quote freshness", -stalePenalty));
+  }
+
+  const rawScore = components.reduce((total, component) => total + component.points, 0);
+
+  return {
+    components,
+    rawScore,
+    score: Math.max(0, Math.round(rawScore))
+  };
+}
+
+function scoreComponent(label: string, points: number) {
+  return { label, points, kind: points < 0 ? "penalty" as const : "driver" as const };
 }
 
 function getSortValue(candidate: FlipCandidate, sort: NonNullable<FlipFilters["sort"]>): number {

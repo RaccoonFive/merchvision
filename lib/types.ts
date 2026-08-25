@@ -102,6 +102,18 @@ export type MarketAnalysis = {
   volatilityPenalty: number;
 };
 
+export type FlipScoreComponent = {
+  label: string;
+  points: number;
+  kind: "driver" | "penalty";
+};
+
+export type FlipScoreBreakdown = {
+  components: FlipScoreComponent[];
+  rawScore: number;
+  score: number;
+};
+
 export type FlipCandidate = {
   id: number;
   name: string;
@@ -119,6 +131,7 @@ export type FlipCandidate = {
   freshnessSeconds: number;
   volume: number;
   score: number;
+  scoreBreakdown: FlipScoreBreakdown;
   marketAnalysis?: MarketAnalysis;
   confidence: number;
   stability: number;
@@ -137,6 +150,7 @@ export type FlipFilters = {
   maxPrice?: number;
   members?: "all" | "members" | "f2p";
   includeStale?: boolean;
+  includeLowConfidence?: boolean;
   sort?: "score" | "confidence" | "stability" | "totalBuyLimitProfit" | "profit" | "roi" | "volume" | "freshness";
 };
 

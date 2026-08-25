@@ -52,6 +52,21 @@ describe("GET /api/flips", () => {
     expect(payload.data).toHaveLength(0);
   });
 
+  it("excludes low-confidence candidates by default and returns them with the weak-data opt-in", async () => {
+    mockedGetTimeseries.mockResolvedValue([]);
+
+    const defaultResponse = await GET(new Request("http://localhost/api/flips"));
+    const defaultPayload = await defaultResponse.json();
+    const optInResponse = await GET(
+      new Request("http://localhost/api/flips?includeStale=true&includeLowConfidence=true")
+    );
+    const optInPayload = await optInResponse.json();
+
+    expect(defaultPayload.data).toHaveLength(0);
+    expect(optInPayload.data).toHaveLength(1);
+    expect(optInPayload.data[0].confidence).toBe(0);
+  });
+
   it("ranks by score by default", async () => {
     mockedGetItems.mockResolvedValue([
       { id: 1, name: "Big unstable spread", members: false, limit: 100 },
@@ -72,6 +87,7 @@ describe("GET /api/flips", () => {
 
     expect(payload.data.map((candidate: { id: number }) => candidate.id)).toEqual([2, 1]);
     expect(payload.data[0].score).toBeGreaterThan(payload.data[1].score);
+    expect(payload.data[0].scoreBreakdown.score).toBe(payload.data[0].score);
   });
 
   it("includes high-ROI candidates in the balanced volume shortlist", async () => {

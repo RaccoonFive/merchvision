@@ -44,6 +44,7 @@ type Filters = {
   members: string;
   sort: string;
   includeStale: boolean;
+  includeLowConfidence: boolean;
 };
 
 const DEFAULT_FILTERS: Filters = {
@@ -57,7 +58,8 @@ const DEFAULT_FILTERS: Filters = {
   maxPrice: "",
   members: "all",
   sort: "score",
-  includeStale: false
+  includeStale: false,
+  includeLowConfidence: false
 };
 
 type FlipSortKey =
@@ -236,6 +238,21 @@ export function FlipFinder() {
               <option value="freshness">Freshness</option>
             </select>
           </div>
+          <div className="field field-toggle">
+            <label htmlFor="includeWeakData">
+              <input
+                checked={filters.includeStale && filters.includeLowConfidence}
+                id="includeWeakData"
+                onChange={(event) => {
+                  updateFilter("includeStale", event.target.checked);
+                  updateFilter("includeLowConfidence", event.target.checked);
+                }}
+                type="checkbox"
+              />
+              Include weak data
+            </label>
+            <p>Default results exclude quotes over 1 hour old and confidence below 45%.</p>
+          </div>
           </section>
 
           <div className={`main-grid${detailPanelOpen ? "" : " detail-panel-closed"}`}>
@@ -285,7 +302,9 @@ export function FlipFinder() {
                           <ItemIcon flip={flip} className="item-icon" />
                           <div>
                             <div className="item-name">{flip.name}</div>
-                            <div className="item-meta">{flip.members ? "Members" : "F2P"} {flip.warnings[0] ? `- ${flip.warnings[0]}` : ""}</div>
+                            <div className="item-meta">
+                              {flip.members ? "Members" : "F2P"} · {topScoreDrivers(flip).join(" · ")}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -339,21 +358,41 @@ export function FlipFinder() {
               </div>
               {selected.warnings.length > 0 ? (
                 <div className="warning-chips" aria-label="Market notes">
-                  {selected.warnings.slice(0, 4).map((warning) => (
+                  {selected.warnings.map((warning) => (
                     <span key={warning}>{warning}</span>
                   ))}
                 </div>
               ) : null}
               <div className="metric-grid compact">
-                <Metric label="Net" value={formatGp(selected.netProfit)} tone="profit" />
-                <Metric label="ROI" value={formatPercent(selected.roi)} />
+                <Metric label="Current net profit" value={formatGp(selected.netProfit)} tone="profit" />
+                <Metric label="Current ROI" value={formatPercent(selected.roi)} />
                 <Metric label="Buy limit" value={selected.buyLimit ? formatNumber(selected.buyLimit) : "Unknown"} />
-                <Metric label="Confidence" value={formatPercent(selected.confidence)} />
-                <Metric label="Matched vol/hr" value={formatNumber(selected.marketAnalysis?.medianMatchedHourlyVolume ?? 0)} />
-                <Metric label="Units/hr" value={formatNumber(selected.marketAnalysis?.estimatedExecutableUnitsPerHour ?? 0)} />
-                <Metric label="Freshness" value={formatAge(selected.freshnessSeconds)} />
-                <Metric label="Stability" value={formatPercent(selected.stability)} />
+                <Metric label="Buy-limit profit (estimate)" value={formatGp(selected.totalBuyLimitProfit)} tone="profit" />
+                <Metric label="Historical confidence" value={formatPercent(selected.confidence)} />
+                <Metric label="Historical matched vol/hr" value={formatNumber(selected.marketAnalysis?.medianMatchedHourlyVolume ?? 0)} />
+                <Metric label="Estimated units/hr" value={formatNumber(selected.marketAnalysis?.estimatedExecutableUnitsPerHour ?? 0)} />
+                <Metric label="Current quote age" value={formatAge(selected.freshnessSeconds)} />
+                <Metric label="Historical stability" value={formatPercent(selected.stability)} />
               </div>
+              <p className="research-note">
+                Trailing traded volume combines recent high- and low-side trades. Matched volume is the lower side per hour;
+                estimated units assume 1% of that median and are capped by a known four-hour buy limit.
+              </p>
+              <section className="score-breakdown" aria-label="Score breakdown">
+                <div className="score-breakdown-head">
+                  <h3>Score breakdown</h3>
+                  <span>Rounded from {formatScorePoints(selected.scoreBreakdown.rawScore)}</span>
+                </div>
+                <p className="muted">Current observations, historical measures, and execution estimates are scored separately.</p>
+                <ul>
+                  {selected.scoreBreakdown.components.map((component) => (
+                    <li className={component.kind} key={component.label}>
+                      <span>{component.label}</span>
+                      <strong>{formatScorePoints(component.points, true)}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </section>
               <div>
                 <h3>Recent prices</h3>
                 <div className="chart">
@@ -462,6 +501,19 @@ function formatAge(seconds: number): string {
 
 function formatClock(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatScorePoints(value: number, signed = false): string {
+  const prefix = signed && value > 0 ? "+" : "";
+  return `${prefix}${value.toFixed(2)} pts`;
+}
+
+function topScoreDrivers(flip: FlipCandidate): string[] {
+  return flip.scoreBreakdown.components
+    .filter((component) => component.kind === "driver" && component.points > 0)
+    .sort((a, b) => b.points - a.points)
+    .slice(0, 2)
+    .map((component) => component.label);
 }
 
 function flipSortValue(flip: FlipCandidate, key: FlipSortKey): number | string | undefined {

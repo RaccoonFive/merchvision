@@ -45,6 +45,28 @@ describe("buildFlipCandidates", () => {
     expect(stale?.warnings).toContain("Thin volume");
     expect(stale?.warnings).toContain("Stale quotes");
   });
+
+  it("returns score components that reproduce the aggregate score", () => {
+    const analysis = analyzeMarket(stablePoints());
+    const [candidate] = buildFlipCandidates({
+      items,
+      prices,
+      volumesByItem: new Map([[1, 10_000]]),
+      analysesByItem: new Map([[1, analysis]]),
+      nowSeconds
+    });
+    const componentTotal = candidate.scoreBreakdown.components.reduce(
+      (total, component) => total + component.points,
+      0
+    );
+
+    expect(candidate.scoreBreakdown.rawScore).toBe(componentTotal);
+    expect(candidate.scoreBreakdown.score).toBe(candidate.score);
+    expect(candidate.score).toBe(Math.max(0, Math.round(componentTotal)));
+    expect(candidate.scoreBreakdown.components.map((component) => component.label)).toEqual(
+      expect.arrayContaining(["Current net profit", "Historical confidence", "Spread stability"])
+    );
+  });
 });
 
 describe("filterAndSortFlips", () => {
@@ -67,11 +89,40 @@ describe("filterAndSortFlips", () => {
       maxPrice: 1_000,
       members: "f2p",
       includeStale: false,
+      includeLowConfidence: true,
       sort: "profit"
     });
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe(1);
+  });
+
+  it("hides stale and low-confidence candidates unless explicitly included", () => {
+    const analysis = analyzeMarket(stablePoints());
+    const candidates = buildFlipCandidates({
+      items,
+      prices,
+      volumesByItem: new Map([[1, 10_000]]),
+      analysesByItem: new Map([[1, analysis]]),
+      nowSeconds
+    });
+    const reliableCandidate = candidates.find((candidate) => candidate.id === 1)!;
+    const lowConfidenceFreshCandidate = {
+      ...reliableCandidate,
+      id: 99,
+      confidence: 0.44,
+      freshnessSeconds: 0
+    };
+
+    expect(filterAndSortFlips([...candidates, lowConfidenceFreshCandidate], {})).toEqual([
+      expect.objectContaining({ id: 1 })
+    ]);
+    expect(
+      filterAndSortFlips([...candidates, lowConfidenceFreshCandidate], {
+        includeStale: true,
+        includeLowConfidence: true
+      }).map((candidate) => candidate.id)
+    ).toEqual(expect.arrayContaining([1, 3, 99]));
   });
 });
 
@@ -169,3 +220,13 @@ describe("analyzeMarket", () => {
     });
   });
 });
+
+function stablePoints(): PricePoint[] {
+  return Array.from({ length: 24 }, (_, index) => ({
+    timestamp: nowSeconds - (23 - index) * 3_600,
+    avgHighPrice: 140,
+    avgLowPrice: 100,
+    highPriceVolume: 10_000,
+    lowPriceVolume: 10_000
+  }));
+}

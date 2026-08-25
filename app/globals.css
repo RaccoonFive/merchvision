@@ -433,6 +433,39 @@ h3 {
   outline: none;
 }
 
+.field-toggle {
+  align-content: start;
+}
+
+.field-toggle label {
+  align-items: center;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 38px;
+}
+
+.field-toggle input {
+  accent-color: var(--accent);
+  background: initial;
+  border: initial;
+  height: 16px;
+  margin: 0;
+  min-height: 0;
+  padding: 0;
+  width: 16px;
+}
+
+.field-toggle p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+  margin: 0;
+}
+
 .table-wrap {
   overflow: visible;
 }
@@ -729,6 +762,54 @@ tbody tr.selected {
   padding: 6px 8px;
 }
 
+.score-breakdown {
+  display: grid;
+  gap: 8px;
+}
+
+.score-breakdown-head {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.score-breakdown h3,
+.score-breakdown p {
+  margin: 0;
+}
+
+.score-breakdown-head span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.score-breakdown ul {
+  display: grid;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.score-breakdown li {
+  align-items: center;
+  background: var(--soft-subtle);
+  border-radius: 6px;
+  display: flex;
+  font-size: 12px;
+  justify-content: space-between;
+  padding: 7px 8px;
+}
+
+.score-breakdown li.driver strong {
+  color: var(--good);
+}
+
+.score-breakdown li.penalty strong {
+  color: var(--bad);
+}
+
 .metric {
   background: var(--subtle-bg);
   border: 1px solid var(--line);
@@ -746,6 +827,13 @@ tbody tr.selected {
   display: block;
   font-size: 17px;
   margin-top: 4px;
+}
+
+.research-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: -4px 0 0;
 }
 
 .chart {

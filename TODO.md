@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-08-14
+Last updated: 2026-08-24
 
 ## Product Direction
 
@@ -36,26 +36,26 @@ An active merchant can scan the shortlist, understand why one candidate outranks
 
 ### Ranking Policy
 
-- [ ] Hide stale and low-confidence candidates by default, with an explicit opt-in that explains why they were excluded.
+- [x] Hide stale and low-confidence candidates by default, with an explicit opt-in that explains why they were excluded.
 - [ ] Keep the default ranking focused on liquidity, stable after-tax spreads, freshness, sample quality, and estimated executability.
 - [ ] Preserve the existing search, membership, price, profit, ROI, volume, confidence, stability, buy-limit-profit, freshness, and sorting controls.
 - [ ] Keep one fixed scoring model; do not add risk presets or user-configurable score weights.
 
 ### Explanation And UI
 
-- [ ] Return named positive score drivers and penalties with every flip instead of only an aggregate score.
-- [ ] Derive the component breakdown, aggregate score, displayed explanation, and ranking order from the same deterministic scoring path.
-- [ ] Show the most important score drivers in the results table and the full breakdown in the selected-item panel.
-- [ ] Label current observations, historical measures, and estimates distinctly.
-- [ ] Clarify trailing traded volume, matched hourly volume, per-item net profit, buy-limit profit, and estimated units per hour.
-- [ ] Surface every material warning without silently hiding warnings after the first four.
+- [x] Return named positive score drivers and penalties with every flip instead of only an aggregate score.
+- [x] Derive the component breakdown, aggregate score, displayed explanation, and ranking order from the same deterministic scoring path.
+- [x] Show the most important score drivers in the results table and the full breakdown in the selected-item panel.
+- [x] Label current observations, historical measures, and estimates distinctly.
+- [x] Clarify trailing traded volume, matched hourly volume, per-item net profit, buy-limit profit, and estimated units per hour.
+- [x] Surface every material warning without silently hiding warnings after the first four.
 - [ ] Keep loading, empty, stale, partial-history, and upstream-failure states clear on desktop and narrow screens.
 
 ### Tuning And Verification
 
 - [ ] Document the reason and expected ranking effect whenever hands-on testing leads to a scoring threshold or weight change.
-- [ ] Add focused tests for score-component arithmetic, warning thresholds, explanation consistency, filters, and ranking effects.
-- [ ] Cover weak-data opt-in behavior and confirm stale or low-confidence results never enter the default list accidentally.
+- [ ] Add focused tests for warning thresholds and ranking effects.
+- [x] Cover score-component arithmetic, explanation consistency, filters, and weak-data opt-in behavior; confirm stale or low-confidence results never enter the default list accidentally.
 - [ ] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
 
 ### Completion Gate
