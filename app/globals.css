@@ -876,7 +876,12 @@ tbody tr.selected {
 }
 
 .detail-title-link {
+  background: transparent;
+  border: 0;
   color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
   text-decoration-color: transparent;
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
@@ -886,6 +891,62 @@ tbody tr.selected {
 .detail-title-link:focus-visible {
   color: var(--accent-strong);
   text-decoration-color: currentColor;
+}
+
+.detail-title-actions {
+  align-items: center;
+  display: flex;
+  gap: 5px;
+}
+
+.detail-title-new-tab {
+  align-items: center;
+  border-radius: 5px;
+  color: var(--muted);
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.detail-title-new-tab:hover,
+.detail-title-new-tab:focus-visible {
+  background: var(--panel-2);
+  color: var(--accent-strong);
+  outline: none;
+}
+
+.item-lookup-dialog {
+  background: var(--soft-panel-raised);
+  border: 0;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  color: var(--text);
+  max-height: min(900px, calc(100dvh - 32px));
+  max-width: min(1100px, calc(100vw - 32px));
+  padding: 0;
+  width: 1100px;
+}
+
+.item-lookup-dialog::backdrop {
+  background: rgb(11 18 25 / 55%);
+}
+
+.item-lookup-dialog-content {
+  max-height: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px;
+}
+
+.item-lookup-dialog-head {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.item-lookup-dialog .lookup-layout {
+  margin-top: 12px;
 }
 
 .detail-icon {

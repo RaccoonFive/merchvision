@@ -19,13 +19,13 @@ Last updated: 2026-08-25
 
 ## Current Baseline
 
-- Flip Finder ranks positive after-tax opportunities using current quotes, ROI, volume, freshness, buy limits, and 24-hour market-quality analysis.
+- Flip Finder ranks positive after-tax opportunities with a conservative 0–100 score using current quotes, seven-day median after-tax margins, matched liquidity, freshness, buy limits, confidence, consistency, and stability.
 - Flip enrichment is bounded to balanced shortlists and produces deterministic confidence, stability, spread-quality, and executability estimates.
 - Item Lookup exposes current quote math, warnings, Favorites, and 1-day, 7-day, 3-month, and 1-year price history.
 - Item Lookup includes Market Rhythm: a local-time heatmap of observed hourly after-tax spread quality and matched volume from the latest seven days, with explicit missing-data and non-forecast caveats.
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, light/dark themes, request caching, and request coalescing are implemented.
-- The current validation baseline passes 62 tests, type checking, and a production build.
+- The current validation baseline passes 73 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 
@@ -38,9 +38,9 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 ### Ranking Policy
 
 - [x] Include stale and low-confidence candidates by default, with an explicit toggle to exclude weak data.
-- [ ] Tune the default ranking through hands-on reviews to favor liquidity, stable after-tax spreads, freshness, and sample quality over impressive-looking paper margins.
-- [ ] Preserve the existing search, membership, price, profit, ROI, volume, confidence, stability, buy-limit-profit, freshness, and sorting controls.
-- [ ] Keep one fixed scoring model; do not add risk presets or user-configurable score weights.
+- [x] Tune the default ranking to favor seven-day repeatable after-tax profit, matched liquidity, freshness, and sample quality over isolated paper-margin spikes.
+- [x] Preserve the existing search, membership, price, profit, ROI, volume, confidence, stability, buy-limit-profit, freshness, and sorting controls.
+- [x] Keep one fixed scoring model; do not add risk presets or user-configurable score weights.
 
 ### Explanation And UI
 
@@ -54,8 +54,8 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 
 ### Tuning And Verification
 
-- [ ] Document the reason and expected ranking effect whenever hands-on review leads to a scoring threshold or weight change.
-- [ ] Add focused tests for warning thresholds and ranking effects.
+- [x] Document the repeatability tuning: cap scored per-item profit at the seven-day median, make conservative GP/hour the largest driver, and penalize current-margin spikes so liquid steady markets outrank thin windfalls.
+- [x] Add focused tests for warning thresholds and ranking effects.
 - [x] Cover score-component arithmetic, explanation consistency, filters, and weak-data toggle behavior; confirm stale or low-confidence results are excluded only when requested.
 - [x] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
 

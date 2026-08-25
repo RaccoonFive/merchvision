@@ -11,9 +11,14 @@ import type {
 
 const STALE_AFTER_SECONDS = 15 * 60;
 const VERY_STALE_AFTER_SECONDS = 60 * 60;
-const MARKET_ANALYSIS_WINDOW_HOURS = 24;
-const MIN_CONFIDENT_SAMPLES = 12;
+const MARKET_ANALYSIS_WINDOW_HOURS = 7 * 24;
+const MIN_CONFIDENT_SAMPLES = 84;
 const BUY_LIMIT_WINDOW_HOURS = 4;
+const FRESH_QUOTE_SECONDS = 15 * 60;
+const SCORE_STALE_SECONDS = 60 * 60;
+const CURRENT_MARGIN_SPIKE_START = 1.5;
+const CURRENT_MARGIN_SPIKE_WARNING_RATIO = 2;
+const CURRENT_MARGIN_SPIKE_WARNING_MINIMUM_GP = 100;
 export const MIN_DEFAULT_CONFIDENCE = 0.45;
 
 type BuildCandidatesInput = {
@@ -51,10 +56,19 @@ export function buildFlipCandidates({
     const volume = volumesByItem.get(price.id) ?? 0;
     const marketAnalysis = analysesByItem.get(price.id);
     const confidence = marketAnalysis?.confidence ?? 0;
-    const stability = marketAnalysis ? Math.max(0, 1 - marketAnalysis.volatilityPenalty) : 0;
+    const stability = marketAnalysis && marketAnalysis.sampleCount > 0
+      ? Math.max(0, 1 - marketAnalysis.volatilityPenalty)
+      : 0;
     const totalBuyLimitProfit = item.limit ? netProfit * item.limit : 0;
-    const warnings = buildWarnings({ item, netProfit, freshnessSeconds, volume, marketAnalysis });
-    const scoreBreakdown = scoreFlip({ netProfit, roi, volume, freshnessSeconds, buyLimit: item.limit, marketAnalysis });
+    const warnings = buildWarnings({ item, netProfit, freshnessSeconds, marketAnalysis });
+    const repeatable = repeatableProfitMetrics(netProfit, marketAnalysis);
+    const scoreBreakdown = scoreFlip({
+      netProfit,
+      buyPrice,
+      freshnessSeconds,
+      buyLimit: item.limit,
+      marketAnalysis
+    });
 
     if (netProfit <= 0) {
       continue;
@@ -76,6 +90,8 @@ export function buildFlipCandidates({
       lowTime: price.lowTime,
       freshnessSeconds,
       volume,
+      repeatableNetProfit: repeatable?.netProfit ?? null,
+      conservativeExpectedGpPerHour: repeatable?.expectedGpPerHour ?? null,
       score: scoreBreakdown.score,
       scoreBreakdown,
       marketAnalysis,
@@ -183,22 +199,33 @@ function buildWarnings({
   item,
   netProfit,
   freshnessSeconds,
-  volume,
   marketAnalysis
 }: {
   item: ItemMeta;
   netProfit: number;
   freshnessSeconds: number;
-  volume: number;
   marketAnalysis?: MarketAnalysis;
 }): string[] {
   const warnings: string[] = [];
+  const analysis = marketAnalysis && marketAnalysis.sampleCount > 0 ? marketAnalysis : undefined;
   if (!item.limit) warnings.push("Unknown buy limit");
-  if (marketAnalysis && marketAnalysis.sampleCoverage < 0.5) warnings.push("Low sample coverage");
-  if (marketAnalysis && marketAnalysis.confidence < 0.45) warnings.push("Low confidence");
-  if (marketAnalysis && marketAnalysis.positiveSpreadRatio < 0.7) warnings.push("Unstable spread");
-  if (marketAnalysis && marketAnalysis.midpointPriceVolatility > 0.08) warnings.push("High volatility");
-  if ((marketAnalysis?.medianMatchedHourlyVolume ?? volume) < 100) warnings.push("Thin volume");
+  if (!marketAnalysis) warnings.push("Seven-day history not analyzed");
+  if (marketAnalysis && !analysis) warnings.push("Seven-day history unavailable");
+  if (analysis) {
+    if (analysis.sampleCoverage < 0.5) warnings.push("Low sample coverage");
+    if (analysis.confidence < 0.45) warnings.push("Low confidence");
+    if (analysis.positiveSpreadRatio < 0.7) warnings.push("Unstable spread");
+    if (analysis.midpointPriceVolatility > 0.08) warnings.push("High volatility");
+    if (analysis.medianMatchedHourlyVolume < 100) warnings.push("Thin volume");
+    if (analysis.historicalNetMarginMedian <= 0) {
+      warnings.push("Seven-day median margin is not profitable");
+    } else if (
+      netProfit / analysis.historicalNetMarginMedian >= CURRENT_MARGIN_SPIKE_WARNING_RATIO &&
+      netProfit - analysis.historicalNetMarginMedian >= CURRENT_MARGIN_SPIKE_WARNING_MINIMUM_GP
+    ) {
+      warnings.push("Current margin is far above its seven-day norm");
+    }
+  }
   if (freshnessSeconds > STALE_AFTER_SECONDS) warnings.push("Stale quotes");
   if (netProfit < 100) warnings.push("Small margin");
   return warnings;
@@ -206,45 +233,59 @@ function buildWarnings({
 
 export function scoreFlip({
   netProfit,
-  roi,
-  volume,
+  buyPrice,
   freshnessSeconds,
   buyLimit,
   marketAnalysis
 }: {
   netProfit: number;
-  roi: number;
-  volume: number;
+  buyPrice: number;
   freshnessSeconds: number;
   buyLimit?: number;
   marketAnalysis?: MarketAnalysis;
 }): FlipScoreBreakdown {
-  const profitScore = Math.log10(Math.max(netProfit, 1)) * 22;
-  const roiScore = Math.min(Math.max(roi, 0), 0.2) * 180;
-  const volumeScore = Math.min(Math.log10(Math.max(volume, 1)) * 12, 48);
-  const limitScore = buyLimit ? Math.min(Math.log10(buyLimit) * 5, 20) : -15;
-  const stalePenalty = Math.min(freshnessSeconds / 90, 45);
+  const analysis = marketAnalysis && marketAnalysis.sampleCount > 0 ? marketAnalysis : undefined;
+  const confidence = analysis?.confidence ?? 0;
+  const coverage = analysis?.sampleCoverage ?? 0;
+  const repeatable = repeatableProfitMetrics(netProfit, marketAnalysis);
+  const repeatableNetProfit = repeatable?.netProfit ?? 0;
+  const conservativeExpectedGpPerHour = repeatable?.expectedGpPerHour ?? 0;
+  const repeatableRoi = buyPrice > 0 ? repeatableNetProfit / buyPrice : 0;
+  const medianMatchedHourlyVolume = analysis?.medianMatchedHourlyVolume ?? 0;
+  const positiveSpreadRatio = analysis?.positiveSpreadRatio ?? 0;
+  const stability = analysis ? Math.max(0, 1 - analysis.volatilityPenalty) : 0;
   const components = [
-    scoreComponent("Current net profit", profitScore),
-    scoreComponent("Current ROI", roiScore),
-    scoreComponent("Trailing traded volume", volumeScore),
-    scoreComponent(buyLimit ? "Known buy limit" : "Unknown buy limit", limitScore)
+    scoreComponent("Conservative estimated GP/hour", logScale(conservativeExpectedGpPerHour, 1_000_000) * 30 * confidence),
+    scoreComponent("Repeatable net margin", logScale(repeatableNetProfit, 100_000) * 15 * confidence),
+    scoreComponent("Repeatable ROI", clamp(repeatableRoi / 0.1, 0, 1) * 5 * confidence),
+    scoreComponent("Historical matched volume", logScale(medianMatchedHourlyVolume, 100_000) * 15 * confidence),
+    scoreComponent("Positive-spread consistency", positiveSpreadRatio * 15 * coverage),
+    scoreComponent("Seven-day spread stability", stability * 10 * coverage),
+    scoreComponent("Historical confidence", confidence * 10)
   ];
 
-  if (marketAnalysis) {
-    components.push(
-      scoreComponent("Historical confidence", marketAnalysis.confidence * 28),
-      scoreComponent("Spread stability", Math.max(0, 1 - marketAnalysis.volatilityPenalty) * 24),
-      scoreComponent("Positive-spread history", marketAnalysis.positiveSpreadRatio * 18),
-      scoreComponent(
-        "Estimated executable units",
-        Math.min(Math.log10(marketAnalysis.estimatedExecutableUnitsPerHour + 1) * 8, 24)
-      )
-    );
+  const freshnessPenalty = clamp(
+    (freshnessSeconds - FRESH_QUOTE_SECONDS) / (SCORE_STALE_SECONDS - FRESH_QUOTE_SECONDS),
+    0,
+    1
+  ) * 20;
+  if (freshnessPenalty > 0) {
+    components.push(scoreComponent("Quote freshness", -freshnessPenalty));
   }
 
-  if (stalePenalty > 0) {
-    components.push(scoreComponent("Quote freshness", -stalePenalty));
+  const historicalMedian = analysis?.historicalNetMarginMedian ?? 0;
+  const spikePenalty = historicalMedian <= 0
+    ? 25
+    : Math.min(
+      25,
+      Math.max(0, Math.log2((netProfit / historicalMedian) / CURRENT_MARGIN_SPIKE_START) * 15)
+    );
+  if (spikePenalty > 0) {
+    components.push(scoreComponent("Current-margin spike", -spikePenalty));
+  }
+
+  if (!buyLimit) {
+    components.push(scoreComponent("Unknown buy limit", -5));
   }
 
   const rawScore = components.reduce((total, component) => total + component.points, 0);
@@ -252,7 +293,7 @@ export function scoreFlip({
   return {
     components,
     rawScore,
-    score: Math.max(0, Math.round(rawScore))
+    score: clamp(Math.round(rawScore), 0, 100)
   };
 }
 
@@ -270,6 +311,12 @@ function getSortValue(candidate: FlipCandidate, sort: NonNullable<FlipFilters["s
       return candidate.totalBuyLimitProfit;
     case "profit":
       return candidate.netProfit;
+    case "typicalProfit":
+      return candidate.marketAnalysis && candidate.marketAnalysis.sampleCount > 0
+        ? candidate.marketAnalysis.historicalNetMarginMedian
+        : Number.NEGATIVE_INFINITY;
+    case "expectedGpPerHour":
+      return candidate.conservativeExpectedGpPerHour ?? Number.NEGATIVE_INFINITY;
     case "roi":
       return candidate.roi;
     case "volume":
@@ -366,6 +413,25 @@ function standardDeviation(values: number[]): number {
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(Math.max(value, minimum), maximum);
+}
+
+function logScale(value: number, cap: number): number {
+  return clamp(Math.log10(Math.max(0, value) + 1) / Math.log10(cap + 1), 0, 1);
+}
+
+function repeatableProfitMetrics(
+  currentNetProfit: number,
+  marketAnalysis?: MarketAnalysis
+): { netProfit: number; expectedGpPerHour: number } | undefined {
+  if (!marketAnalysis || marketAnalysis.sampleCount === 0) {
+    return undefined;
+  }
+
+  const netProfit = Math.max(0, Math.min(currentNetProfit, marketAnalysis.historicalNetMarginMedian));
+  return {
+    netProfit: roundMetric(netProfit),
+    expectedGpPerHour: roundMetric(netProfit * marketAnalysis.estimatedExecutableUnitsPerHour)
+  };
 }
 
 function roundMetric(value: number): number {

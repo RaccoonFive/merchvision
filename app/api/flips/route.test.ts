@@ -2,14 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
 vi.mock("@/lib/osrsWiki", () => ({
+  get24hPrices: vi.fn(),
   getItems: vi.fn(),
   getLatestPrices: vi.fn(),
   getTimeseries: vi.fn()
 }));
 
-import { getItems, getLatestPrices, getTimeseries } from "@/lib/osrsWiki";
+import { get24hPrices, getItems, getLatestPrices, getTimeseries } from "@/lib/osrsWiki";
 import type { PricePoint } from "@/lib/types";
 
+const mockedGet24hPrices = vi.mocked(get24hPrices);
 const mockedGetItems = vi.mocked(getItems);
 const mockedGetLatestPrices = vi.mocked(getLatestPrices);
 const mockedGetTimeseries = vi.mocked(getTimeseries);
@@ -21,6 +23,9 @@ describe("GET /api/flips", () => {
     mockedGetItems.mockResolvedValue([{ id: 1, name: "Air rune", members: false, limit: 30_000 }]);
     mockedGetLatestPrices.mockResolvedValue([
       { id: 1, low: 4, high: 6, lowTime: currentSeconds(), highTime: currentSeconds() }
+    ]);
+    mockedGet24hPrices.mockResolvedValue([
+      { id: 1, avgLowPrice: 4, avgHighPrice: 6, lowPriceVolume: 10_000, highPriceVolume: 10_000 }
     ]);
     mockedGetTimeseries.mockResolvedValue(stablePoints({ low: 4, high: 6, matchedVolume: 10_000 }));
   });
@@ -115,6 +120,54 @@ describe("GET /api/flips", () => {
 
     expect(mockedGetTimeseries).toHaveBeenCalledWith(999, "1h");
   });
+
+  it("includes a highly liquid item outside the top current-profit and ROI groups", async () => {
+    const marketItems = Array.from({ length: 130 }, (_, index) => ({
+      id: index + 1,
+      name: `Market ${index + 1}`,
+      members: false,
+      limit: 10_000
+    }));
+    mockedGetItems.mockResolvedValue(marketItems);
+    mockedGetLatestPrices.mockResolvedValue(marketItems.map((item) => item.id === 130
+      ? { id: item.id, low: 100_000, high: 102_100, lowTime: currentSeconds(), highTime: currentSeconds() }
+      : { id: item.id, low: 1_000, high: 2_000 + item.id, lowTime: currentSeconds(), highTime: currentSeconds() }
+    ));
+    mockedGet24hPrices.mockResolvedValue(marketItems.map((item) => ({
+      id: item.id,
+      highPriceVolume: item.id === 130 ? 1_000_000 : 100,
+      lowPriceVolume: item.id === 130 ? 1_000_000 : 100
+    })));
+
+    const response = await GET(new Request("http://localhost/api/flips"));
+
+    expect(response.status).toBe(200);
+    expect(mockedGetTimeseries).toHaveBeenCalledTimes(100);
+    expect(mockedGetTimeseries).toHaveBeenCalledWith(130, "1h");
+  });
+
+  it("falls back to a bounded profit and ROI shortlist when 24-hour summaries fail", async () => {
+    const marketItems = Array.from({ length: 130 }, (_, index) => ({
+      id: index + 1,
+      name: `Fallback ${index + 1}`,
+      members: false,
+      limit: 10_000
+    }));
+    mockedGetItems.mockResolvedValue(marketItems);
+    mockedGetLatestPrices.mockResolvedValue(marketItems.map((item) => ({
+      id: item.id,
+      low: 1_000,
+      high: 1_500 + item.id,
+      lowTime: currentSeconds(),
+      highTime: currentSeconds()
+    })));
+    mockedGet24hPrices.mockRejectedValue(new Error("summary unavailable"));
+
+    const response = await GET(new Request("http://localhost/api/flips"));
+
+    expect(response.status).toBe(200);
+    expect(mockedGetTimeseries).toHaveBeenCalledTimes(100);
+  });
 });
 
 function stablePoints({
@@ -126,8 +179,8 @@ function stablePoints({
   high: number;
   matchedVolume: number;
 }): PricePoint[] {
-  return Array.from({ length: 24 }, (_, index) => ({
-    timestamp: nowSeconds - (23 - index) * 3_600,
+  return Array.from({ length: 168 }, (_, index) => ({
+    timestamp: nowSeconds - (167 - index) * 3_600,
     avgHighPrice: high,
     avgLowPrice: low,
     highPriceVolume: matchedVolume,

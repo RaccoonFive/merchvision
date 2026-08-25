@@ -21,6 +21,8 @@ export function parseFlipFilters(searchParams: URLSearchParams): FlipFilters {
       sort === "stability" ||
       sort === "totalBuyLimitProfit" ||
       sort === "profit" ||
+      sort === "typicalProfit" ||
+      sort === "expectedGpPerHour" ||
       sort === "roi" ||
       sort === "volume" ||
       sort === "freshness" ||

@@ -47,7 +47,7 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 
 ### Flip Finder
 
-Provide a ranked, filterable view of short-term buy-low/sell-high opportunities. Rankings should combine current after-tax profitability with freshness, liquidity, buy limits, historical spread quality, volatility, confidence, and an estimate of executability.
+Provide a ranked, filterable view of short-term buy-low/sell-high opportunities. The default ranking serves lower-risk, repeatable flips: it caps scored per-item upside at the seven-day median after-tax margin, then combines conservative estimated profit per hour with freshness, liquidity, buy limits, historical spread quality, volatility, and confidence. Isolated current-margin spikes remain discoverable but must be visibly warned and strongly down-ranked.
 
 ### Investment Finder
 
@@ -106,7 +106,6 @@ Specific targets should be chosen only after deployment has enough baseline data
 
 These questions should be answered by the product owner as evidence accumulates:
 
-- Should default rankings primarily serve lower-risk repeatable flips or a broader range of risk appetites?
 - Which confidence and freshness thresholds should hide a candidate by default versus show it with warnings?
 - What is the most useful privacy-preserving measure of a successful recommendation session?
 - How much scoring detail belongs in the table versus the detail panel?

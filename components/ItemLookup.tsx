@@ -22,6 +22,12 @@ type ItemLookupProps = {
   initialItemId?: number;
 };
 
+type ItemLookupContentProps = ItemLookupProps & {
+  onItemSelect?: (itemId: number) => void;
+  showSearch?: boolean;
+  theme: Theme;
+};
+
 type ChartRange = "1D" | "7D" | "3M" | "1Y";
 
 const CHART_RANGES: { label: ChartRange; timestep: string }[] = [
@@ -32,6 +38,14 @@ const CHART_RANGES: { label: ChartRange; timestep: string }[] = [
 ];
 
 export function ItemLookup({ initialItemId }: ItemLookupProps) {
+  return (
+    <AppShell activePath="/lookup" title="Item Lookup" subtitle="Inspect the latest margin for any tradeable GE item">
+      {(theme) => <ItemLookupContent initialItemId={initialItemId} theme={theme} />}
+    </AppShell>
+  );
+}
+
+export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = true, theme }: ItemLookupContentProps) {
   const router = useRouter();
   const [items, setItems] = useState<ItemMeta[]>([]);
   const [query, setQuery] = useState("");
@@ -50,6 +64,11 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
   const suggestions = useMemo(() => searchItems(items, query), [items, query]);
 
   useEffect(() => {
+    if (!showSearch) {
+      setItemsLoading(false);
+      return;
+    }
+
     fetch("/api/items")
       .then(async (response) => {
         const payload = (await response.json()) as ApiResponse<ItemMeta[]>;
@@ -58,7 +77,7 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Unable to load items."))
       .finally(() => setItemsLoading(false));
-  }, []);
+  }, [showSearch]);
 
   useEffect(() => {
     if (!initialItemId) {
@@ -189,6 +208,10 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
 
   function selectItem(item: ItemMeta) {
     setQuery(item.name);
+    if (onItemSelect) {
+      onItemSelect(item.id);
+      return;
+    }
     router.push(`/lookup/${item.id}`);
   }
 
@@ -215,9 +238,8 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
   }
 
   return (
-    <AppShell activePath="/lookup" title="Item Lookup" subtitle="Inspect the latest margin for any tradeable GE item">
-      {(theme) => (
-        <div className="lookup-layout">
+    <div className="lookup-layout">
+      {showSearch ? (
           <section className="lookup-search-panel" aria-label="Item search">
             <div className="field lookup-search-field">
               <label htmlFor="item-search">
@@ -247,6 +269,7 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
               </div>
             ) : null}
           </section>
+      ) : null}
 
           <section className="lookup-result" aria-label="Item quote">
             {error ? <div className="error">{error}</div> : null}
@@ -269,9 +292,7 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
               />
             ) : null}
           </section>
-        </div>
-      )}
-    </AppShell>
+    </div>
   );
 }
 

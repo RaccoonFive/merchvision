@@ -17,4 +17,9 @@ describe("parseFlipFilters", () => {
       includeLowConfidence: false
     });
   });
+
+  it("accepts repeatability sorting values", () => {
+    expect(parseFlipFilters(new URLSearchParams("sort=typicalProfit")).sort).toBe("typicalProfit");
+    expect(parseFlipFilters(new URLSearchParams("sort=expectedGpPerHour")).sort).toBe("expectedGpPerHour");
+  });
 });

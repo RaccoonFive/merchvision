@@ -145,6 +145,8 @@ export type FlipCandidate = {
   lowTime: number;
   freshnessSeconds: number;
   volume: number;
+  repeatableNetProfit: number | null;
+  conservativeExpectedGpPerHour: number | null;
   score: number;
   scoreBreakdown: FlipScoreBreakdown;
   marketAnalysis?: MarketAnalysis;
@@ -166,7 +168,7 @@ export type FlipFilters = {
   members?: "all" | "members" | "f2p";
   includeStale?: boolean;
   includeLowConfidence?: boolean;
-  sort?: "score" | "confidence" | "stability" | "totalBuyLimitProfit" | "profit" | "roi" | "volume" | "freshness";
+  sort?: "score" | "confidence" | "stability" | "totalBuyLimitProfit" | "profit" | "typicalProfit" | "expectedGpPerHour" | "roi" | "volume" | "freshness";
 };
 
 export type TaxConfig = {

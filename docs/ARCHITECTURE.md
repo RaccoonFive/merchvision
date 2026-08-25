@@ -41,7 +41,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 ### Market Domain
 
 - `lib/osrsWiki.ts` is the only direct Wiki Prices API client.
-- `lib/scoring.ts` owns flip construction, 24-hour market analysis, warnings, filtering, and sorting.
+- `lib/scoring.ts` owns flip construction, seven-day market analysis, warnings, filtering, and sorting.
 - `lib/investments.ts` owns midpoint trend, volatility, consistency, confidence, filtering, and ranking for investments.
 - `lib/tax.ts` owns the GE tax rule.
 - `lib/marketRhythm.ts` derives Item Lookup's latest-seven-days hourly observations, after-tax spread quality, matched volume, and volatility summary.
@@ -116,13 +116,11 @@ Any move to multiple production instances should explicitly revisit shared cachi
 
 1. Parse and normalize filters from the request URL.
 2. Load item mapping and latest prices concurrently.
-3. Build profitable preliminary candidates using the latest low as buy price and latest high as sell price.
-4. Create a balanced shortlist of at most 100 candidates drawn from high net profit, high ROI, and current volume when available (falling back to score before volume enrichment).
+3. Load the cached 24-hour market summary when available and build profitable preliminary candidates using the latest low as buy price and latest high as sell price.
+4. Create a shortlist of at most 100 candidates: 50 places by matched 24-hour volume, 25 by current net profit, and 25 by current ROI, then fill deduplication gaps by liquidity. If the summary is unavailable, use an even profit/ROI shortlist.
 5. Fetch one-hour timeseries for the bounded shortlist. A failed item history becomes an empty series rather than failing the entire ranking.
-6. Calculate recent volume and rebuild candidates.
-7. Create a second balanced shortlist of at most 100 candidates for 24-hour market analysis.
-8. Add confidence, stability, estimated executability, warnings, and market-quality scoring.
-9. Apply user filters, sort, and return at most 250 candidates.
+6. Calculate trailing 12-hour traded volume and seven-day market analysis, then rebuild candidates with repeatability metrics and the final score.
+7. Apply user filters, sort, and return at most 250 candidates. Profitable candidates without usable history remain visible but receive no history-supported score upside.
 
 Key invariants:
 
@@ -134,7 +132,9 @@ Key invariants:
 - Candidates require complete price/timestamp data and positive current net profit.
 - Quotes older than one hour and candidates with low confidence are included by default, with filters available to exclude them.
 
-Market analysis uses the latest 24 hourly points. It derives the median after-tax historical margin, median absolute margin variability, positive-spread ratio, normalized midpoint volatility, median matched hourly volume, sample coverage, confidence, and a volatility penalty. Estimated executable units per hour are 1% of median matched hourly volume, capped by one quarter of a known four-hour buy limit. These are explicit estimates, not observed fills.
+Market analysis uses the latest 168 hourly points. It derives the seven-day median after-tax margin, median absolute margin variability, positive-spread ratio, normalized midpoint volatility, median matched hourly volume, sample coverage, confidence, and a volatility penalty. Estimated executable units per hour are 1% of median matched hourly volume, capped by one quarter of a known four-hour buy limit.
+
+The 0–100 score uses `min(current net profit, seven-day median net margin)` as repeatable per-item profit. Conservative estimated GP/hour multiplies that amount by estimated executable units. Positive points reward this estimate, repeatable margin and ROI, matched liquidity, positive-spread consistency, stability, and confidence. Stale quotes, a current margin far above its historical norm, and an unknown buy limit subtract points. These are explicit estimates, not observed fills or guaranteed profit.
 
 ## Investment Finder Data Flow
 

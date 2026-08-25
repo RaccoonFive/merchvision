@@ -1,11 +1,12 @@
 "use client";
 
-import { RefreshCw, X } from "lucide-react";
+import { ExternalLink, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
+import { ItemLookupDialog } from "@/components/ItemLookupDialog";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
@@ -65,6 +66,7 @@ export function InvestmentFinder() {
   const [investments, setInvestments] = useState<InvestmentCandidate[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);
+  const [lookupItemId, setLookupItemId] = useState<number | null>(null);
   const [chartData, setChartData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(false);
@@ -273,7 +275,16 @@ export function InvestmentFinder() {
                       <div className="detail-head">
                         <ItemIcon icon={selected.icon} className="detail-icon" />
                         <div>
-                          <h2><Link className="detail-title-link" href={`/lookup/${selected.id}`}>{selected.name}</Link></h2>
+                          <div className="detail-title-actions">
+                            <h2>
+                              <button className="detail-title-link" onClick={() => setLookupItemId(selected.id)} type="button">
+                                {selected.name}
+                              </button>
+                            </h2>
+                            <Link aria-label={`Open ${selected.name} in a new tab`} className="detail-title-new-tab" href={`/lookup/${selected.id}`} rel="noreferrer" target="_blank" title="Open in a new tab">
+                              <ExternalLink aria-hidden="true" size={14} />
+                            </Link>
+                          </div>
                           <p className="subtitle">{selected.members ? "Members item" : "Free-to-play item"}</p>
                         </div>
                       </div>
@@ -335,6 +346,14 @@ export function InvestmentFinder() {
               </aside>
             ) : null}
           </div>
+          {lookupItemId ? (
+            <ItemLookupDialog
+              itemId={lookupItemId}
+              itemName={investments.find((candidate) => candidate.id === lookupItemId)?.name ?? "item"}
+              onClose={() => setLookupItemId(null)}
+              theme={theme}
+            />
+          ) : null}
         </>
       )}
     </AppShell>

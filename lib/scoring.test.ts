@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeMarket, buildFlipCandidates, filterAndSortFlips } from "./scoring";
+import { analyzeMarket, buildFlipCandidates, filterAndSortFlips, scoreFlip } from "./scoring";
 import type { ItemMeta, LatestPrice, PricePoint } from "./types";
 
 const nowSeconds = 1_700_000_000;
@@ -37,12 +37,12 @@ describe("buildFlipCandidates", () => {
     });
   });
 
-  it("adds risk warnings for stale, thin, and unknown-limit flips", () => {
+  it("adds risk warnings for stale quotes, missing history, and unknown limits", () => {
     const candidates = buildFlipCandidates({ items, prices, nowSeconds });
     const stale = candidates.find((candidate) => candidate.id === 3);
 
     expect(stale?.warnings).toContain("Unknown buy limit");
-    expect(stale?.warnings).toContain("Thin volume");
+    expect(stale?.warnings).toContain("Seven-day history not analyzed");
     expect(stale?.warnings).toContain("Stale quotes");
   });
 
@@ -62,10 +62,86 @@ describe("buildFlipCandidates", () => {
 
     expect(candidate.scoreBreakdown.rawScore).toBe(componentTotal);
     expect(candidate.scoreBreakdown.score).toBe(candidate.score);
-    expect(candidate.score).toBe(Math.max(0, Math.round(componentTotal)));
+    expect(candidate.score).toBe(Math.min(100, Math.max(0, Math.round(componentTotal))));
     expect(candidate.scoreBreakdown.components.map((component) => component.label)).toEqual(
-      expect.arrayContaining(["Current net profit", "Historical confidence", "Spread stability"])
+      expect.arrayContaining([
+        "Conservative estimated GP/hour",
+        "Repeatable net margin",
+        "Historical confidence",
+        "Seven-day spread stability"
+      ])
     );
+    expect(candidate.repeatableNetProfit).toBe(38);
+    expect(candidate.conservativeExpectedGpPerHour).toBe(3_800);
+  });
+
+  it("ranks a liquid repeatable margin above an isolated current windfall", () => {
+    const comparisonItems: ItemMeta[] = [
+      { id: 10, name: "Thin windfall", members: false, limit: 10_000 },
+      { id: 11, name: "Steady market", members: false, limit: 10_000 }
+    ];
+    const comparisonPrices: LatestPrice[] = [
+      { id: 10, low: 1_000, high: 2_000, lowTime: nowSeconds, highTime: nowSeconds },
+      { id: 11, low: 1_000, high: 1_200, lowTime: nowSeconds, highTime: nowSeconds }
+    ];
+    const analyses = new Map([
+      [10, analyzeMarket(stablePoints({ low: 1_000, high: 1_050, matchedVolume: 50 }), 10_000)],
+      [11, analyzeMarket(stablePoints({ low: 1_000, high: 1_200, matchedVolume: 10_000 }), 10_000)]
+    ]);
+
+    const ranked = filterAndSortFlips(buildFlipCandidates({
+      items: comparisonItems,
+      prices: comparisonPrices,
+      analysesByItem: analyses,
+      nowSeconds
+    }), {});
+
+    expect(ranked.map((candidate) => candidate.id)).toEqual([11, 10]);
+    expect(ranked[1].repeatableNetProfit).toBe(29);
+    expect(ranked[1].warnings).toContain("Current margin is far above its seven-day norm");
+  });
+
+  it("warns when seven-day history has no profitable median", () => {
+    const analysis = analyzeMarket(stablePoints({ low: 100, high: 101, matchedVolume: 1_000 }));
+    const [candidate] = buildFlipCandidates({
+      items: [{ id: 1, name: "Occasional margin", members: false, limit: 1_000 }],
+      prices: [{ id: 1, low: 100, high: 300, lowTime: nowSeconds, highTime: nowSeconds }],
+      analysesByItem: new Map([[1, analysis]]),
+      nowSeconds
+    });
+
+    expect(candidate.repeatableNetProfit).toBe(0);
+    expect(candidate.conservativeExpectedGpPerHour).toBe(0);
+    expect(candidate.warnings).toContain("Seven-day median margin is not profitable");
+  });
+
+  it("adds the spike warning at twice the median and a 100 GP premium", () => {
+    const analysis = analyzeMarket(stablePoints({ low: 880, high: 1_000, matchedVolume: 1_000 }));
+    const warningItems: ItemMeta[] = [
+      { id: 20, name: "At warning threshold", members: false, limit: 1_000 },
+      { id: 21, name: "Below warning threshold", members: false, limit: 1_000 }
+    ];
+    const candidates = buildFlipCandidates({
+      items: warningItems,
+      prices: [
+        { id: 20, low: 780, high: 1_000, lowTime: nowSeconds, highTime: nowSeconds },
+        { id: 21, low: 781, high: 1_000, lowTime: nowSeconds, highTime: nowSeconds }
+      ],
+      analysesByItem: new Map([[20, analysis], [21, analysis]]),
+      nowSeconds
+    });
+
+    expect(candidates[0].warnings).toContain("Current margin is far above its seven-day norm");
+    expect(candidates[1].warnings).not.toContain("Current margin is far above its seven-day norm");
+  });
+
+  it("returns unavailable repeatability metrics and no upside when history is missing", () => {
+    const [candidate] = buildFlipCandidates({ items, prices, nowSeconds });
+
+    expect(candidate.repeatableNetProfit).toBeNull();
+    expect(candidate.conservativeExpectedGpPerHour).toBeNull();
+    expect(candidate.score).toBe(0);
+    expect(candidate.warnings).toContain("Seven-day history not analyzed");
   });
 });
 
@@ -128,8 +204,8 @@ describe("filterAndSortFlips", () => {
 
 describe("analyzeMarket", () => {
   it("summarizes stable hourly market samples", () => {
-    const points = Array.from({ length: 24 }, (_, index): PricePoint => ({
-      timestamp: nowSeconds - (23 - index) * 3_600,
+    const points = Array.from({ length: 168 }, (_, index): PricePoint => ({
+      timestamp: nowSeconds - (167 - index) * 3_600,
       avgHighPrice: 1_100,
       avgLowPrice: 1_000,
       highPriceVolume: 20_000,
@@ -142,7 +218,7 @@ describe("analyzeMarket", () => {
       positiveSpreadRatio: 1,
       midpointPriceVolatility: 0,
       medianMatchedHourlyVolume: 15_000,
-      sampleCount: 24,
+      sampleCount: 168,
       sampleCoverage: 1,
       estimatedExecutableUnitsPerHour: 150,
       rawExpectedGpPerHour: 11_700,
@@ -152,8 +228,8 @@ describe("analyzeMarket", () => {
   });
 
   it("caps executable units by the hourly buy-limit allowance", () => {
-    const points = Array.from({ length: 24 }, (_, index): PricePoint => ({
-      timestamp: nowSeconds - (23 - index) * 3_600,
+    const points = Array.from({ length: 168 }, (_, index): PricePoint => ({
+      timestamp: nowSeconds - (167 - index) * 3_600,
       avgHighPrice: 1_100,
       avgLowPrice: 1_000,
       highPriceVolume: 20_000,
@@ -195,10 +271,10 @@ describe("analyzeMarket", () => {
       positiveSpreadRatio: 0.5,
       medianMatchedHourlyVolume: 0,
       sampleCount: 2,
-      sampleCoverage: 0.0833,
+      sampleCoverage: 0.0119,
       estimatedExecutableUnitsPerHour: 0,
       rawExpectedGpPerHour: 0,
-      confidence: 0.1958
+      confidence: 0.1351
     });
     expect(analysis.midpointPriceVolatility).toBeCloseTo(0.0638, 4);
     expect(analysis.volatilityPenalty).toBeCloseTo(0.7777, 4);
@@ -219,14 +295,84 @@ describe("analyzeMarket", () => {
       volatilityPenalty: 0.4
     });
   });
+
+  it("uses the seven-day median instead of one or two margin spikes", () => {
+    const normal = stablePoints({ low: 1_000, high: 1_100, matchedVolume: 10_000 }).slice(0, 166);
+    const spikes: PricePoint[] = [
+      { timestamp: nowSeconds - 3_600, avgHighPrice: 5_000, avgLowPrice: 1_000, highPriceVolume: 10, lowPriceVolume: 10 },
+      { timestamp: nowSeconds, avgHighPrice: 6_000, avgLowPrice: 1_000, highPriceVolume: 10, lowPriceVolume: 10 }
+    ];
+    const analysis = analyzeMarket([...normal, ...spikes], 10_000);
+
+    expect(analysis.historicalNetMarginMedian).toBe(78);
+    expect(analysis.medianMatchedHourlyVolume).toBe(10_000);
+    expect(analysis.sampleCount).toBe(168);
+  });
+
+  it("treats 84 samples as full sample confidence but only half coverage", () => {
+    const analysis = analyzeMarket(stablePoints().slice(0, 84));
+
+    expect(analysis.sampleCount).toBe(84);
+    expect(analysis.sampleCoverage).toBe(0.5);
+    expect(analysis.confidence).toBe(0.825);
+  });
 });
 
-function stablePoints(): PricePoint[] {
-  return Array.from({ length: 24 }, (_, index) => ({
-    timestamp: nowSeconds - (23 - index) * 3_600,
-    avgHighPrice: 140,
-    avgLowPrice: 100,
-    highPriceVolume: 10_000,
-    lowPriceVolume: 10_000
+describe("scoreFlip", () => {
+  const analysis = analyzeMarket(stablePoints({ low: 1_000, high: 1_200, matchedVolume: 10_000 }), 10_000);
+
+  it("starts the spike penalty above 1.5 times the seven-day median", () => {
+    const atThreshold = scoreFlip({
+      netProfit: analysis.historicalNetMarginMedian * 1.5,
+      buyPrice: 1_000,
+      freshnessSeconds: 900,
+      buyLimit: 10_000,
+      marketAnalysis: analysis
+    });
+    const aboveThreshold = scoreFlip({
+      netProfit: analysis.historicalNetMarginMedian * 3,
+      buyPrice: 1_000,
+      freshnessSeconds: 900,
+      buyLimit: 10_000,
+      marketAnalysis: analysis
+    });
+
+    expect(atThreshold.components.find((component) => component.label === "Current-margin spike")).toBeUndefined();
+    expect(aboveThreshold.components.find((component) => component.label === "Current-margin spike")?.points).toBe(-15);
+  });
+
+  it("caps freshness and spike penalties and penalizes an unknown limit", () => {
+    const score = scoreFlip({
+      netProfit: analysis.historicalNetMarginMedian * 10,
+      buyPrice: 1_000,
+      freshnessSeconds: 7_200,
+      marketAnalysis: analysis
+    });
+
+    expect(score.components).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: "Quote freshness", points: -20 }),
+      expect.objectContaining({ label: "Current-margin spike", points: -25 }),
+      expect.objectContaining({ label: "Unknown buy limit", points: -5 })
+    ]));
+    expect(score.score).toBeGreaterThanOrEqual(0);
+    expect(score.score).toBeLessThanOrEqual(100);
+  });
+});
+
+function stablePoints({
+  low = 100,
+  high = 140,
+  matchedVolume = 10_000
+}: {
+  low?: number;
+  high?: number;
+  matchedVolume?: number;
+} = {}): PricePoint[] {
+  return Array.from({ length: 168 }, (_, index) => ({
+    timestamp: nowSeconds - (167 - index) * 3_600,
+    avgHighPrice: high,
+    avgLowPrice: low,
+    highPriceVolume: matchedVolume,
+    lowPriceVolume: matchedVolume
   }));
 }

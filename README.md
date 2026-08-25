@@ -6,7 +6,7 @@ The application is decision support, not a profit guarantee. It does not track t
 
 ## Features
 
-- **Flip Finder:** ranks currently profitable candidates using margin, GE tax, ROI, recent volume, quote freshness, buy limits, market confidence, and stability.
+- **Flip Finder:** ranks currently profitable candidates with a conservative 0–100 score based on seven-day median after-tax margin, matched liquidity, estimated executability, consistency, confidence, and freshness.
 - **Investment Finder:** identifies liquid items with positive 24-hour and 7-day midpoint trends and ranks them with a risk-adjusted momentum score.
 - **Item Lookup:** shows current quotes, net margin, warnings, recent price history, and a local-time heatmap of the latest seven days of observed hourly market activity.
 - **Favorites:** lets signed-in users save items and view their current quotes.

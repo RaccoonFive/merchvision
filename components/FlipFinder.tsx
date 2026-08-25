@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw, X } from "lucide-react";
+import { AlertTriangle, ExternalLink, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -15,6 +15,7 @@ import {
 import type { FlipCandidate, PricePoint } from "@/lib/types";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
+import { ItemLookupDialog } from "@/components/ItemLookupDialog";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
@@ -72,6 +73,8 @@ type FlipSortKey =
   | "margin"
   | "tax"
   | "netProfit"
+  | "historicalNetMarginMedian"
+  | "conservativeExpectedGpPerHour"
   | "roi"
   | "score"
   | "confidence"
@@ -86,6 +89,7 @@ export function FlipFinder() {
   const [flips, setFlips] = useState<FlipCandidate[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);
+  const [lookupItemId, setLookupItemId] = useState<number | null>(null);
   const [chartData, setChartData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(false);
@@ -226,6 +230,8 @@ export function FlipFinder() {
                       fields: [{ id: "minProfit", label: "Minimum net profit", type: "number", value: filters.minProfit }],
                       onApply: (values) => updateFilter("minProfit", String(values.minProfit))
                     }} />
+                    <SortableTableHeader label="7d median net" active={tableSort.key === "historicalNetMarginMedian"} direction={tableSort.direction} onSort={() => toggleTableSort("historicalNetMarginMedian")} />
+                    <SortableTableHeader label="Est. GP/hr" active={tableSort.key === "conservativeExpectedGpPerHour"} direction={tableSort.direction} onSort={() => toggleTableSort("conservativeExpectedGpPerHour")} />
                     <SortableTableHeader label="ROI" active={tableSort.key === "roi"} direction={tableSort.direction} onSort={() => toggleTableSort("roi")} filter={{
                       active: Boolean(filters.minRoi),
                       fields: [{ id: "minRoi", label: "Minimum ROI %", type: "number", value: filters.minRoi }],
@@ -257,11 +263,12 @@ export function FlipFinder() {
                       fields: [{ clearValue: true, id: "includeStale", label: "Include quotes older than 1 hour", type: "checkbox", value: filters.includeStale }],
                       onApply: (values) => updateFilter("includeStale", values.includeStale === true)
                     }} />
-                    <SortableTableHeader label="Limit" active={tableSort.key === "buyLimit"} direction={tableSort.direction} onSort={() => toggleTableSort("buyLimit")} filter={{
+                    <SortableTableHeader label="Buy-limit profit (est.)" active={tableSort.key === "totalBuyLimitProfit"} direction={tableSort.direction} onSort={() => toggleTableSort("totalBuyLimitProfit")} filter={{
                       active: Boolean(filters.minTotalBuyLimitProfit),
                       fields: [{ id: "minTotalBuyLimitProfit", label: "Minimum buy-limit profit", type: "number", value: filters.minTotalBuyLimitProfit }],
                       onApply: (values) => updateFilter("minTotalBuyLimitProfit", String(values.minTotalBuyLimitProfit))
                     }} />
+                    <SortableTableHeader label="Limit" active={tableSort.key === "buyLimit"} direction={tableSort.direction} onSort={() => toggleTableSort("buyLimit")} />
                   </tr>
                 </thead>
                 <tbody>
@@ -287,7 +294,10 @@ export function FlipFinder() {
                           <ItemIcon icon={flip.icon} className="item-icon" />
                           <div>
                             <div className="item-name">{flip.name}</div>
-                            <div className="item-meta">{flip.members ? "Members" : "F2P"}</div>
+                            <div className="item-meta">
+                              {flip.members ? "Members" : "F2P"}
+                              {flip.warnings.length > 0 ? ` · ${flip.warnings.length} warning${flip.warnings.length === 1 ? "" : "s"}` : ""}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -296,11 +306,14 @@ export function FlipFinder() {
                       <td>{formatGp(flip.margin)}</td>
                       <td>{formatGp(flip.tax)}</td>
                       <td className="profit">{formatGp(flip.netProfit)}</td>
+                      <td>{flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatGp(flip.marketAnalysis.historicalNetMarginMedian) : "Unavailable"}</td>
+                      <td>{flip.conservativeExpectedGpPerHour === null ? "Unavailable" : formatGp(flip.conservativeExpectedGpPerHour)}</td>
                       <td>{formatPercent(flip.roi)}</td>
                       <td className="score">{flip.score}</td>
-                      <td>{formatPercent(flip.confidence)}</td>
+                      <td>{flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatPercent(flip.confidence) : "Unavailable"}</td>
                       <td>{formatNumber(flip.volume)}</td>
                       <td>{formatAge(flip.freshnessSeconds)}</td>
+                      <td className="profit">{flip.buyLimit ? formatGp(flip.totalBuyLimitProfit) : "Unavailable"}</td>
                       <td>{flip.buyLimit ? formatNumber(flip.buyLimit) : "?"}</td>
                     </tr>
                   ))}
@@ -317,11 +330,16 @@ export function FlipFinder() {
                 <div className="detail-head">
                   <ItemIcon icon={selected.icon} className="detail-icon" />
                   <div>
-                    <h2>
-                      <Link className="detail-title-link" href={`/lookup/${selected.id}`}>
-                        {selected.name}
+                    <div className="detail-title-actions">
+                      <h2>
+                        <button className="detail-title-link" onClick={() => setLookupItemId(selected.id)} type="button">
+                          {selected.name}
+                        </button>
+                      </h2>
+                      <Link aria-label={`Open ${selected.name} in a new tab`} className="detail-title-new-tab" href={`/lookup/${selected.id}`} rel="noreferrer" target="_blank" title="Open in a new tab">
+                        <ExternalLink aria-hidden="true" size={14} />
                       </Link>
-                    </h2>
+                    </div>
                     <p className="subtitle">{selected.members ? "Members item" : "Free-to-play item"}</p>
                   </div>
                 </div>
@@ -336,23 +354,38 @@ export function FlipFinder() {
                 </button>
               </div>
               <div className="score-summary">
-                <span>Score</span>
-                <strong>{selected.score}</strong>
+                <span>Repeatability score</span>
+                <strong>{selected.score}/100</strong>
               </div>
+              {selected.warnings.length > 0 ? (
+                <div className="warning-list" aria-label="Market warnings">
+                  {selected.warnings.map((warning) => (
+                    <div className="warning-banner" key={warning}>
+                      <AlertTriangle aria-hidden="true" size={16} />
+                      <span>{warning}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               <div className="metric-grid compact">
                 <Metric label="Current net profit" value={formatGp(selected.netProfit)} tone="profit" />
                 <Metric label="Current ROI" value={formatPercent(selected.roi)} />
+                <Metric label="7d median net margin" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatGp(selected.marketAnalysis.historicalNetMarginMedian) : "Unavailable"} />
+                <Metric label="Repeatable net profit" value={selected.repeatableNetProfit === null ? "Unavailable" : formatGp(selected.repeatableNetProfit)} tone="profit" />
+                <Metric label="Conservative GP/hr (estimate)" value={selected.conservativeExpectedGpPerHour === null ? "Unavailable" : formatGp(selected.conservativeExpectedGpPerHour)} tone="profit" />
+                <Metric label="Positive after-tax hours" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatPercent(selected.marketAnalysis.positiveSpreadRatio) : "Unavailable"} />
                 <Metric label="Buy limit" value={selected.buyLimit ? formatNumber(selected.buyLimit) : "Unknown"} />
                 <Metric label="Buy-limit profit (estimate)" value={formatGp(selected.totalBuyLimitProfit)} tone="profit" />
-                <Metric label="Historical confidence" value={formatPercent(selected.confidence)} />
-                <Metric label="Historical matched vol/hr" value={formatNumber(selected.marketAnalysis?.medianMatchedHourlyVolume ?? 0)} />
-                <Metric label="Estimated units/hr" value={formatNumber(selected.marketAnalysis?.estimatedExecutableUnitsPerHour ?? 0)} />
+                <Metric label="Historical confidence" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatPercent(selected.confidence) : "Unavailable"} />
+                <Metric label="Historical matched vol/hr" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatNumber(selected.marketAnalysis.medianMatchedHourlyVolume) : "Unavailable"} />
+                <Metric label="Estimated units/hr" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatNumber(selected.marketAnalysis.estimatedExecutableUnitsPerHour) : "Unavailable"} />
                 <Metric label="Current quote age" value={formatAge(selected.freshnessSeconds)} />
-                <Metric label="Historical stability" value={formatPercent(selected.stability)} />
+                <Metric label="Historical stability" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatPercent(selected.stability) : "Unavailable"} />
               </div>
               <p className="research-note">
-                Trailing traded volume combines recent high- and low-side trades. Matched volume is the lower side per hour;
-                estimated units assume 1% of that median and are capped by a known four-hour buy limit.
+                The seven-day median resists isolated margin spikes. Repeatable profit uses the lower of the current net
+                margin and that median. Estimated GP/hour then assumes 1% of median matched hourly volume and is capped
+                by a known four-hour buy limit. These are conservative estimates, not guaranteed fills or profit.
               </p>
               <div>
                 <h3>Recent prices</h3>
@@ -380,7 +413,7 @@ export function FlipFinder() {
                 <div className="score-breakdown-head">
                   <h3>How this score is calculated</h3>
                 </div>
-                <p className="muted">Current observations, historical measures, and execution estimates are scored separately.</p>
+                <p className="muted">The 0–100 score rewards seven-day repeatability and liquidity, then subtracts freshness, spike, and missing-limit penalties.</p>
                 <ul>
                   {selected.scoreBreakdown.components.map((component) => (
                     <li className={component.kind} key={component.label}>
@@ -396,6 +429,14 @@ export function FlipFinder() {
           )}
           </aside> : null}
           </div>
+          {lookupItemId ? (
+            <ItemLookupDialog
+              itemId={lookupItemId}
+              itemName={flips.find((flip) => flip.id === lookupItemId)?.name ?? "item"}
+              onClose={() => setLookupItemId(null)}
+              theme={theme}
+            />
+          ) : null}
         </>
       )}
     </AppShell>
@@ -430,6 +471,10 @@ function flipFilterSort(key: FlipSortKey): Filters["sort"] | undefined {
     case "roi":
     case "volume":
       return key;
+    case "historicalNetMarginMedian":
+      return "typicalProfit";
+    case "conservativeExpectedGpPerHour":
+      return "expectedGpPerHour";
     case "netProfit":
       return "profit";
     case "freshnessSeconds":
@@ -439,7 +484,7 @@ function flipFilterSort(key: FlipSortKey): Filters["sort"] | undefined {
   }
 }
 
-function flipSortValue(flip: FlipCandidate, key: FlipSortKey): number | string | undefined {
+function flipSortValue(flip: FlipCandidate, key: FlipSortKey): number | string | null | undefined {
   switch (key) {
     case "name": return flip.name;
     case "buyPrice": return flip.buyPrice;
@@ -447,11 +492,13 @@ function flipSortValue(flip: FlipCandidate, key: FlipSortKey): number | string |
     case "margin": return flip.margin;
     case "tax": return flip.tax;
     case "netProfit": return flip.netProfit;
+    case "historicalNetMarginMedian": return flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? flip.marketAnalysis.historicalNetMarginMedian : null;
+    case "conservativeExpectedGpPerHour": return flip.conservativeExpectedGpPerHour;
     case "roi": return flip.roi;
     case "score": return flip.score;
     case "confidence": return flip.confidence;
     case "stability": return flip.stability;
-    case "totalBuyLimitProfit": return flip.totalBuyLimitProfit;
+    case "totalBuyLimitProfit": return flip.buyLimit ? flip.totalBuyLimitProfit : null;
     case "volume": return flip.volume;
     case "freshnessSeconds": return flip.freshnessSeconds;
     case "buyLimit": return flip.buyLimit;
