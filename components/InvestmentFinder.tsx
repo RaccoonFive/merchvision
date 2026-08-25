@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
+import { RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -8,7 +8,6 @@ import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
-import { NumberField } from "@/components/NumberField";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
 import { formatClock, formatCompact, formatGp, formatNumber, formatPercent } from "@/lib/format";
@@ -157,11 +156,8 @@ export function InvestmentFinder() {
       key,
       direction: current.key === key && current.direction === "asc" ? "desc" : "asc"
     }));
-  }
-
-  function updateRanking(sort: InvestmentSortKey) {
-    updateFilter("sort", sort === "matchedVolume" ? "volume" : sort);
-    setTableSort({ key: sort, direction: sort === "volatility" ? "asc" : "desc" });
+    const sort = investmentFilterSort(key);
+    if (sort) updateFilter("sort", sort);
   }
 
   return (
@@ -181,44 +177,6 @@ export function InvestmentFinder() {
     >
       {(theme) => (
         <>
-          <section className="toolbar" aria-label="Investment filters">
-            <div className="field">
-              <label htmlFor="investment-search"><Search size={13} /> Search</label>
-              <input
-                id="investment-search"
-                value={filters.search}
-                onChange={(event) => updateFilter("search", event.target.value)}
-                placeholder="Rune, potion, ore..."
-              />
-            </div>
-            <NumberField id="minShortTrend" label="Min 24h trend %" value={filters.minShortTrend} onChange={(value) => updateFilter("minShortTrend", value)} />
-            <NumberField id="minMediumTrend" label="Min 7d trend %" value={filters.minMediumTrend} onChange={(value) => updateFilter("minMediumTrend", value)} />
-            <NumberField id="minVolume" label="Min 24h volume" value={filters.minVolume} onChange={(value) => updateFilter("minVolume", value)} />
-            <NumberField id="maxPrice" label="Max midpoint" value={filters.maxPrice} onChange={(value) => updateFilter("maxPrice", value)} />
-            <div className="field">
-              <label htmlFor="investment-members">Market</label>
-              <select id="investment-members" value={filters.members} onChange={(event) => updateFilter("members", event.target.value)}>
-                <option value="all">All items</option>
-                <option value="f2p">F2P only</option>
-                <option value="members">Members</option>
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="investment-sort"><SlidersHorizontal size={13} /> Sort</label>
-              <select
-                id="investment-sort"
-                value={filters.sort}
-                onChange={(event) => updateRanking(event.target.value === "volume" ? "matchedVolume" : event.target.value as InvestmentSortKey)}
-              >
-                <option value="score">Risk-adjusted score</option>
-                <option value="shortTrend">24h trend</option>
-                <option value="mediumTrend">7d trend</option>
-                <option value="volume">Matched volume</option>
-                <option value="volatility">Lowest volatility</option>
-              </select>
-            </div>
-          </section>
-
           <div className={`main-grid${detailPanelOpen ? "" : " detail-panel-closed"}`}>
             <section className="table-wrap" aria-label="Ranked investments">
               {error ? <div className="error">{error}</div> : null}
@@ -229,11 +187,37 @@ export function InvestmentFinder() {
                   <table>
                     <thead>
                       <tr>
-                        <SortableTableHeader label="Item" active={tableSort.key === "name"} direction={tableSort.direction} onSort={() => toggleTableSort("name")} />
-                        <SortableTableHeader label="Midpoint" active={tableSort.key === "currentMidpoint"} direction={tableSort.direction} onSort={() => toggleTableSort("currentMidpoint")} />
-                        <SortableTableHeader label="24h trend" active={tableSort.key === "shortTrend"} direction={tableSort.direction} onSort={() => toggleTableSort("shortTrend")} />
-                        <SortableTableHeader label="7d trend" active={tableSort.key === "mediumTrend"} direction={tableSort.direction} onSort={() => toggleTableSort("mediumTrend")} />
-                        <SortableTableHeader label="24h volume" active={tableSort.key === "matchedVolume"} direction={tableSort.direction} onSort={() => toggleTableSort("matchedVolume")} />
+                        <SortableTableHeader label="Item" active={tableSort.key === "name"} direction={tableSort.direction} onSort={() => toggleTableSort("name")} filter={{
+                          active: Boolean(filters.search) || filters.members !== "all",
+                          fields: [
+                            { id: "search", label: "Search items", placeholder: "Rune, potion, ore...", value: filters.search },
+                            { clearValue: "all", id: "members", label: "Market", options: [{ label: "All items", value: "all" }, { label: "F2P only", value: "f2p" }, { label: "Members", value: "members" }], type: "select", value: filters.members }
+                          ],
+                          onApply: (values) => {
+                            updateFilter("search", String(values.search));
+                            updateFilter("members", String(values.members));
+                          }
+                        }} />
+                        <SortableTableHeader label="Midpoint" active={tableSort.key === "currentMidpoint"} direction={tableSort.direction} onSort={() => toggleTableSort("currentMidpoint")} filter={{
+                          active: Boolean(filters.maxPrice),
+                          fields: [{ id: "maxPrice", label: "Maximum midpoint price", type: "number", value: filters.maxPrice }],
+                          onApply: (values) => updateFilter("maxPrice", String(values.maxPrice))
+                        }} />
+                        <SortableTableHeader label="24h trend" active={tableSort.key === "shortTrend"} direction={tableSort.direction} onSort={() => toggleTableSort("shortTrend")} filter={{
+                          active: Boolean(filters.minShortTrend),
+                          fields: [{ id: "minShortTrend", label: "Minimum 24h trend %", type: "number", value: filters.minShortTrend }],
+                          onApply: (values) => updateFilter("minShortTrend", String(values.minShortTrend))
+                        }} />
+                        <SortableTableHeader label="7d trend" active={tableSort.key === "mediumTrend"} direction={tableSort.direction} onSort={() => toggleTableSort("mediumTrend")} filter={{
+                          active: Boolean(filters.minMediumTrend),
+                          fields: [{ id: "minMediumTrend", label: "Minimum 7d trend %", type: "number", value: filters.minMediumTrend }],
+                          onApply: (values) => updateFilter("minMediumTrend", String(values.minMediumTrend))
+                        }} />
+                        <SortableTableHeader label="24h volume" active={tableSort.key === "matchedVolume"} direction={tableSort.direction} onSort={() => toggleTableSort("matchedVolume")} filter={{
+                          active: Boolean(filters.minVolume),
+                          fields: [{ id: "minVolume", label: "Minimum 24h volume", type: "number", value: filters.minVolume }],
+                          onApply: (values) => updateFilter("minVolume", String(values.minVolume))
+                        }} />
                         <SortableTableHeader label="Volatility" active={tableSort.key === "volatility"} direction={tableSort.direction} onSort={() => toggleTableSort("volatility")} />
                         <SortableTableHeader label="Confidence" active={tableSort.key === "confidence"} direction={tableSort.direction} onSort={() => toggleTableSort("confidence")} />
                         <SortableTableHeader label="Score" active={tableSort.key === "score"} direction={tableSort.direction} onSort={() => toggleTableSort("score")} />
@@ -378,6 +362,20 @@ function chartColors(theme: Theme) {
   return theme === "dark"
     ? { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", trend: "#72b99b" }
     : { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", trend: "#287255" };
+}
+
+function investmentFilterSort(key: InvestmentSortKey): Filters["sort"] | undefined {
+  switch (key) {
+    case "score":
+    case "shortTrend":
+    case "mediumTrend":
+    case "volatility":
+      return key;
+    case "matchedVolume":
+      return "volume";
+    default:
+      return undefined;
+  }
 }
 
 function investmentSortValue(candidate: InvestmentCandidate, key: InvestmentSortKey): number | string {

@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
+import { RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -17,7 +17,6 @@ import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
-import { NumberField } from "@/components/NumberField";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
 import { formatAge, formatClock, formatCompact, formatGp, formatNumber, formatPercent } from "@/lib/format";
@@ -172,11 +171,8 @@ export function FlipFinder() {
       key,
       direction: current.key === key && current.direction === "asc" ? "desc" : "asc"
     }));
-  }
-
-  function updateRanking(sort: FlipSortKey) {
-    updateFilter("sort", sort === "netProfit" ? "profit" : sort === "freshnessSeconds" ? "freshness" : sort);
-    setTableSort({ key: sort, direction: sort === "freshnessSeconds" ? "asc" : "desc" });
+    const sort = flipFilterSort(key);
+    if (sort) updateFilter("sort", sort);
   }
 
   return (
@@ -196,69 +192,6 @@ export function FlipFinder() {
     >
       {(theme) => (
         <>
-          <section className="toolbar" aria-label="Flip filters">
-          <div className="field">
-            <label htmlFor="search">
-              <Search size={13} /> Search
-            </label>
-            <input
-              id="search"
-              value={filters.search}
-              onChange={(event) => updateFilter("search", event.target.value)}
-              placeholder="Nature rune, bowstring..."
-            />
-          </div>
-          <NumberField id="minProfit" label="Min profit" value={filters.minProfit} onChange={(value) => updateFilter("minProfit", value)} />
-          <NumberField id="minRoi" label="Min ROI %" value={filters.minRoi} onChange={(value) => updateFilter("minRoi", value)} />
-          <NumberField id="minVolume" label="Min volume" value={filters.minVolume} onChange={(value) => updateFilter("minVolume", value)} />
-          <NumberField id="minConfidence" label="Min conf. %" value={filters.minConfidence} onChange={(value) => updateFilter("minConfidence", value)} />
-          <NumberField id="minStability" label="Min stable %" value={filters.minStability} onChange={(value) => updateFilter("minStability", value)} />
-          <NumberField id="minTotalBuyLimitProfit" label="Min limit profit" value={filters.minTotalBuyLimitProfit} onChange={(value) => updateFilter("minTotalBuyLimitProfit", value)} />
-          <NumberField id="maxPrice" label="Max buy price" value={filters.maxPrice} onChange={(value) => updateFilter("maxPrice", value)} />
-          <div className="field">
-            <label htmlFor="members">Market</label>
-            <select id="members" value={filters.members} onChange={(event) => updateFilter("members", event.target.value)}>
-              <option value="all">All items</option>
-              <option value="f2p">F2P only</option>
-              <option value="members">Members</option>
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="sort">
-              <SlidersHorizontal size={13} /> Sort
-            </label>
-            <select
-              id="sort"
-              value={filters.sort}
-              onChange={(event) => updateRanking(event.target.value === "profit" ? "netProfit" : event.target.value === "freshness" ? "freshnessSeconds" : event.target.value as FlipSortKey)}
-            >
-              <option value="score">Score</option>
-              <option value="confidence">Confidence</option>
-              <option value="stability">Stability</option>
-              <option value="totalBuyLimitProfit">Buy-limit profit</option>
-              <option value="profit">Profit</option>
-              <option value="roi">ROI</option>
-              <option value="volume">Volume</option>
-              <option value="freshness">Freshness</option>
-            </select>
-          </div>
-          <div className="field field-toggle">
-            <label htmlFor="includeWeakData">
-              <input
-                checked={filters.includeStale && filters.includeLowConfidence}
-                id="includeWeakData"
-                onChange={(event) => {
-                  updateFilter("includeStale", event.target.checked);
-                  updateFilter("includeLowConfidence", event.target.checked);
-                }}
-                type="checkbox"
-              />
-              Include weak data
-            </label>
-            <p>Turn this off to exclude quotes over 1 hour old and confidence below 45%.</p>
-          </div>
-          </section>
-
           <div className={`main-grid${detailPanelOpen ? "" : " detail-panel-closed"}`}>
           <section className="table-wrap" aria-label="Ranked flips">
           {error ? <div className="error">{error}</div> : null}
@@ -269,18 +202,66 @@ export function FlipFinder() {
               <table>
                 <thead>
                   <tr>
-                    <SortableTableHeader label="Item" active={tableSort.key === "name"} direction={tableSort.direction} onSort={() => toggleTableSort("name")} />
-                    <SortableTableHeader label="Buy" active={tableSort.key === "buyPrice"} direction={tableSort.direction} onSort={() => toggleTableSort("buyPrice")} />
+                    <SortableTableHeader label="Item" active={tableSort.key === "name"} direction={tableSort.direction} onSort={() => toggleTableSort("name")} filter={{
+                      active: Boolean(filters.search) || filters.members !== "all",
+                      fields: [
+                        { id: "search", label: "Search items", placeholder: "Nature rune, bowstring...", value: filters.search },
+                        { clearValue: "all", id: "members", label: "Market", options: [{ label: "All items", value: "all" }, { label: "F2P only", value: "f2p" }, { label: "Members", value: "members" }], type: "select", value: filters.members }
+                      ],
+                      onApply: (values) => {
+                        updateFilter("search", String(values.search));
+                        updateFilter("members", String(values.members));
+                      }
+                    }} />
+                    <SortableTableHeader label="Buy" active={tableSort.key === "buyPrice"} direction={tableSort.direction} onSort={() => toggleTableSort("buyPrice")} filter={{
+                      active: Boolean(filters.maxPrice),
+                      fields: [{ id: "maxPrice", label: "Maximum buy price", type: "number", value: filters.maxPrice }],
+                      onApply: (values) => updateFilter("maxPrice", String(values.maxPrice))
+                    }} />
                     <SortableTableHeader label="Sell" active={tableSort.key === "sellPrice"} direction={tableSort.direction} onSort={() => toggleTableSort("sellPrice")} />
                     <SortableTableHeader label="Margin" active={tableSort.key === "margin"} direction={tableSort.direction} onSort={() => toggleTableSort("margin")} />
                     <SortableTableHeader label="Tax" active={tableSort.key === "tax"} direction={tableSort.direction} onSort={() => toggleTableSort("tax")} />
-                    <SortableTableHeader label="Net" active={tableSort.key === "netProfit"} direction={tableSort.direction} onSort={() => toggleTableSort("netProfit")} />
-                    <SortableTableHeader label="ROI" active={tableSort.key === "roi"} direction={tableSort.direction} onSort={() => toggleTableSort("roi")} />
-                    <SortableTableHeader label="Score" active={tableSort.key === "score"} direction={tableSort.direction} onSort={() => toggleTableSort("score")} />
-                    <SortableTableHeader label="Conf." active={tableSort.key === "confidence"} direction={tableSort.direction} onSort={() => toggleTableSort("confidence")} />
-                    <SortableTableHeader label="Volume" active={tableSort.key === "volume"} direction={tableSort.direction} onSort={() => toggleTableSort("volume")} />
-                    <SortableTableHeader label="Fresh" active={tableSort.key === "freshnessSeconds"} direction={tableSort.direction} onSort={() => toggleTableSort("freshnessSeconds")} />
-                    <SortableTableHeader label="Limit" active={tableSort.key === "buyLimit"} direction={tableSort.direction} onSort={() => toggleTableSort("buyLimit")} />
+                    <SortableTableHeader label="Net" active={tableSort.key === "netProfit"} direction={tableSort.direction} onSort={() => toggleTableSort("netProfit")} filter={{
+                      active: Boolean(filters.minProfit),
+                      fields: [{ id: "minProfit", label: "Minimum net profit", type: "number", value: filters.minProfit }],
+                      onApply: (values) => updateFilter("minProfit", String(values.minProfit))
+                    }} />
+                    <SortableTableHeader label="ROI" active={tableSort.key === "roi"} direction={tableSort.direction} onSort={() => toggleTableSort("roi")} filter={{
+                      active: Boolean(filters.minRoi),
+                      fields: [{ id: "minRoi", label: "Minimum ROI %", type: "number", value: filters.minRoi }],
+                      onApply: (values) => updateFilter("minRoi", String(values.minRoi))
+                    }} />
+                    <SortableTableHeader label="Score" active={tableSort.key === "score"} direction={tableSort.direction} onSort={() => toggleTableSort("score")} filter={{
+                      active: Boolean(filters.minStability),
+                      fields: [{ id: "minStability", label: "Minimum historical stability %", type: "number", value: filters.minStability }],
+                      onApply: (values) => updateFilter("minStability", String(values.minStability))
+                    }} />
+                    <SortableTableHeader label="Conf." active={tableSort.key === "confidence"} direction={tableSort.direction} onSort={() => toggleTableSort("confidence")} filter={{
+                      active: Boolean(filters.minConfidence) || !filters.includeLowConfidence,
+                      fields: [
+                        { id: "minConfidence", label: "Minimum confidence %", type: "number", value: filters.minConfidence },
+                        { clearValue: true, id: "includeLowConfidence", label: "Include results below 45% confidence", type: "checkbox", value: filters.includeLowConfidence }
+                      ],
+                      onApply: (values) => {
+                        updateFilter("minConfidence", String(values.minConfidence));
+                        updateFilter("includeLowConfidence", values.includeLowConfidence === true);
+                      }
+                    }} />
+                    <SortableTableHeader label="Volume" active={tableSort.key === "volume"} direction={tableSort.direction} onSort={() => toggleTableSort("volume")} filter={{
+                      active: Boolean(filters.minVolume),
+                      fields: [{ id: "minVolume", label: "Minimum trailing volume", type: "number", value: filters.minVolume }],
+                      onApply: (values) => updateFilter("minVolume", String(values.minVolume))
+                    }} />
+                    <SortableTableHeader label="Fresh" active={tableSort.key === "freshnessSeconds"} direction={tableSort.direction} onSort={() => toggleTableSort("freshnessSeconds")} filter={{
+                      active: !filters.includeStale,
+                      fields: [{ clearValue: true, id: "includeStale", label: "Include quotes older than 1 hour", type: "checkbox", value: filters.includeStale }],
+                      onApply: (values) => updateFilter("includeStale", values.includeStale === true)
+                    }} />
+                    <SortableTableHeader label="Limit" active={tableSort.key === "buyLimit"} direction={tableSort.direction} onSort={() => toggleTableSort("buyLimit")} filter={{
+                      active: Boolean(filters.minTotalBuyLimitProfit),
+                      fields: [{ id: "minTotalBuyLimitProfit", label: "Minimum buy-limit profit", type: "number", value: filters.minTotalBuyLimitProfit }],
+                      onApply: (values) => updateFilter("minTotalBuyLimitProfit", String(values.minTotalBuyLimitProfit))
+                    }} />
                   </tr>
                 </thead>
                 <tbody>
@@ -457,6 +438,24 @@ function toChartPoint(point: PricePoint) {
 function formatScorePoints(value: number, signed = false): string {
   const prefix = signed && value > 0 ? "+" : "";
   return `${prefix}${value.toFixed(2)} pts`;
+}
+
+function flipFilterSort(key: FlipSortKey): Filters["sort"] | undefined {
+  switch (key) {
+    case "score":
+    case "confidence":
+    case "stability":
+    case "totalBuyLimitProfit":
+    case "roi":
+    case "volume":
+      return key;
+    case "netProfit":
+      return "profit";
+    case "freshnessSeconds":
+      return "freshness";
+    default:
+      return undefined;
+  }
 }
 
 function flipSortValue(flip: FlipCandidate, key: FlipSortKey): number | string | undefined {
