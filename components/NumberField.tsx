@@ -1,3 +1,5 @@
+import { GroupedNumberInput } from "@/components/GroupedNumberInput";
+
 type NumberFieldProps = {
   id: string;
   label: string;
@@ -9,7 +11,7 @@ export function NumberField({ id, label, value, onChange }: NumberFieldProps) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
-      <input id={id} min="0" onChange={(event) => onChange(event.target.value)} type="number" value={value} />
+      <GroupedNumberInput id={id} min="0" onChange={onChange} value={value} />
     </div>
   );
 }

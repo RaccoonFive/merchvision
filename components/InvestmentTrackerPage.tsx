@@ -4,6 +4,7 @@ import { AlertTriangle, Check, Pencil, Plus, RefreshCw, Search, Trash2, X } from
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { AppShell } from "@/components/AppShell";
+import { GroupedNumberInput } from "@/components/GroupedNumberInput";
 import { ItemIcon } from "@/components/ItemIcon";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
@@ -270,11 +271,11 @@ export function InvestmentTrackerPage() {
               </div>
               <div className="field">
                 <label htmlFor="investment-quantity">Quantity</label>
-                <input id="investment-quantity" inputMode="numeric" min="1" onChange={(event) => setQuantity(event.target.value)} step="1" type="number" value={quantity} />
+                <GroupedNumberInput id="investment-quantity" min="1" onChange={setQuantity} step="1" value={quantity} />
               </div>
               <div className="field">
                 <label htmlFor="investment-price">Price paid per item (GP)</label>
-                <input id="investment-price" inputMode="numeric" min="1" onChange={(event) => setUnitPricePaid(event.target.value)} step="1" type="number" value={unitPricePaid} />
+                <GroupedNumberInput id="investment-price" min="1" onChange={setUnitPricePaid} step="1" value={unitPricePaid} />
               </div>
               <button className="primary-btn investment-add-btn" disabled={saving} type="submit">
                 {saving ? <LoadingSpinner label="Adding lot..." size="small" variant="button" /> : <><Plus size={16} /> Add lot</>}
@@ -356,8 +357,8 @@ export function InvestmentTrackerPage() {
                                   </span>
                                 )}
                               </td>
-                              <td>{editing ? <input aria-label="Edit quantity" min="1" onChange={(event) => setEditQuantity(event.target.value)} step="1" type="number" value={editQuantity} /> : formatNumber(lot.quantity)}</td>
-                              <td>{editing ? <input aria-label="Edit price paid per item" min="1" onChange={(event) => setEditUnitPricePaid(event.target.value)} step="1" type="number" value={editUnitPricePaid} /> : formatGp(lot.unitPricePaid)}</td>
+                              <td>{editing ? <GroupedNumberInput aria-label="Edit quantity" min="1" onChange={setEditQuantity} step="1" value={editQuantity} /> : formatNumber(lot.quantity)}</td>
+                              <td>{editing ? <GroupedNumberInput aria-label="Edit price paid per item" min="1" onChange={setEditUnitPricePaid} step="1" value={editUnitPricePaid} /> : formatGp(lot.unitPricePaid)}</td>
                               <td>{formatGp(lot.totalCost)}</td>
                               <td>{nullableGp(lot.instantSellPrice)}</td>
                               <td>{nullableGp(lot.taxPerUnit)}</td>

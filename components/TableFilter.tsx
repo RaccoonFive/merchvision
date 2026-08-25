@@ -3,6 +3,7 @@
 import { Filter, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { GroupedNumberInput } from "@/components/GroupedNumberInput";
 
 type Position = {
   left: number;
@@ -144,16 +145,26 @@ export function TableFilter({
                 );
               }
 
+              const numeric = field.type === "number";
+
               return (
                 <label key={field.id}>
                   {field.label}
-                  <input
-                    min={field.type === "number" ? "0" : undefined}
-                    onChange={(event) => setDraft((current) => ({ ...current, [field.id]: event.target.value }))}
-                    placeholder={field.placeholder}
-                    type={field.type ?? "text"}
-                    value={String(draft[field.id] ?? "")}
-                  />
+                  {numeric ? (
+                    <GroupedNumberInput
+                      min="0"
+                      onChange={(value) => setDraft((current) => ({ ...current, [field.id]: value }))}
+                      placeholder={field.placeholder}
+                      value={String(draft[field.id] ?? "")}
+                    />
+                  ) : (
+                    <input
+                      onChange={(event) => setDraft((current) => ({ ...current, [field.id]: event.target.value }))}
+                      placeholder={field.placeholder}
+                      type={field.type ?? "text"}
+                      value={String(draft[field.id] ?? "")}
+                    />
+                  )}
                 </label>
               );
             })}
