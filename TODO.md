@@ -24,7 +24,7 @@ Last updated: 2026-08-24
 - Item Lookup exposes current quote math, warnings, Favorites, and 1-day, 7-day, 3-month, and 1-year price history.
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Accounts, user-owned Favorites, responsive navigation, light/dark themes, request caching, and request coalescing are implemented.
-- The current validation baseline passes 48 tests, type checking, and a production build.
+- The current validation baseline passes 53 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 
@@ -45,7 +45,7 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 
 - [x] Return named quality and risk signals with every flip alongside the aggregate score.
 - [x] Derive the aggregate score, available score audit detail, and ranking order from the same deterministic scoring path.
-- [ ] Keep the results table focused on decision-relevant quality and risk signals; make detailed score arithmetic secondary and available only when a merchant wants to inspect it.
+- [x] Keep the results table focused on decision-relevant quality and risk signals; place detailed score arithmetic after the primary market details in the selected-item panel.
 - [x] Label current observations, historical measures, and estimates distinctly.
 - [x] Clarify trailing traded volume, matched hourly volume, per-item net profit, buy-limit profit, and estimated units per hour.
 - [x] Surface every material warning without silently hiding warnings after the first four.

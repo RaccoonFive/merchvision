@@ -303,7 +303,16 @@ export function FlipFinder() {
                           <div>
                             <div className="item-name">{flip.name}</div>
                             <div className="item-meta">
-                              {flip.members ? "Members" : "F2P"} · {topScoreDrivers(flip).join(" · ")}
+                              {flip.members ? "Members" : "F2P"}
+                              {flip.warnings.length > 0 ? (
+                                <span
+                                  aria-label={`Market notes: ${flip.warnings.join(", ")}`}
+                                  className="item-warning"
+                                  title={flip.warnings.join("; ")}
+                                >
+                                  {flip.warnings[0]}{flip.warnings.length > 1 ? ` +${flip.warnings.length - 1}` : ""}
+                                </span>
+                              ) : null}
                             </div>
                           </div>
                         </div>
@@ -378,21 +387,6 @@ export function FlipFinder() {
                 Trailing traded volume combines recent high- and low-side trades. Matched volume is the lower side per hour;
                 estimated units assume 1% of that median and are capped by a known four-hour buy limit.
               </p>
-              <section className="score-breakdown" aria-label="Score breakdown">
-                <div className="score-breakdown-head">
-                  <h3>Score breakdown</h3>
-                  <span>Rounded from {formatScorePoints(selected.scoreBreakdown.rawScore)}</span>
-                </div>
-                <p className="muted">Current observations, historical measures, and execution estimates are scored separately.</p>
-                <ul>
-                  {selected.scoreBreakdown.components.map((component) => (
-                    <li className={component.kind} key={component.label}>
-                      <span>{component.label}</span>
-                      <strong>{formatScorePoints(component.points, true)}</strong>
-                    </li>
-                  ))}
-                </ul>
-              </section>
               <div>
                 <h3>Recent prices</h3>
                 <div className="chart">
@@ -415,6 +409,21 @@ export function FlipFinder() {
                   )}
                 </div>
               </div>
+              <section className="score-breakdown" aria-label="How this score is calculated">
+                <div className="score-breakdown-head">
+                  <h3>How this score is calculated</h3>
+                  <span>Rounded from {formatScorePoints(selected.scoreBreakdown.rawScore)}</span>
+                </div>
+                <p className="muted">Current observations, historical measures, and execution estimates are scored separately.</p>
+                <ul>
+                  {selected.scoreBreakdown.components.map((component) => (
+                    <li className={component.kind} key={component.label}>
+                      <span>{component.label}</span>
+                      <strong>{formatScorePoints(component.points, true)}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             </>
           ) : (
             <div className="empty">Select a flip to inspect the math.</div>
@@ -506,14 +515,6 @@ function formatClock(iso: string): string {
 function formatScorePoints(value: number, signed = false): string {
   const prefix = signed && value > 0 ? "+" : "";
   return `${prefix}${value.toFixed(2)} pts`;
-}
-
-function topScoreDrivers(flip: FlipCandidate): string[] {
-  return flip.scoreBreakdown.components
-    .filter((component) => component.kind === "driver" && component.points > 0)
-    .sort((a, b) => b.points - a.points)
-    .slice(0, 2)
-    .map((component) => component.label);
 }
 
 function flipSortValue(flip: FlipCandidate, key: FlipSortKey): number | string | undefined {

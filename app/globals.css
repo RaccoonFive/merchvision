@@ -627,6 +627,18 @@ tbody tr.selected {
   font-size: 12px;
 }
 
+.item-warning {
+  color: var(--warn);
+  font-weight: 700;
+  margin-left: 6px;
+}
+
+.item-warning::before {
+  color: var(--muted);
+  content: "·";
+  margin-right: 6px;
+}
+
 .profit {
   color: var(--good);
   font-weight: 800;
