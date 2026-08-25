@@ -34,6 +34,10 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
       const nextTheme = current === "dark" ? "light" : "dark";
       document.documentElement.dataset.theme = nextTheme;
       window.localStorage.setItem("merchvision-theme", nextTheme);
+      document.querySelector("link[data-theme-favicon]")?.setAttribute(
+        "href",
+        nextTheme === "light" ? "/favicon-light.svg" : "/favicon-dark.svg"
+      );
       return nextTheme;
     });
   }

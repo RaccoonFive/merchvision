@@ -33,6 +33,10 @@
   --soft-subtle: #0d141b;
   --focus-ring: rgb(143 167 187 / 20%);
   --brand-shadow: rgb(52 72 93 / 18%);
+  --logo-mark-start: #b7c6d4;
+  --logo-mark-end: #587b9b;
+  --logo-mark-bg: #18232e;
+  --logo-mark-trend: #c6a15b;
 }
 
 :root[data-theme="light"] {
@@ -71,6 +75,10 @@
   --soft-subtle: #f5f3ec;
   --focus-ring: rgb(62 116 90 / 20%);
   --brand-shadow: rgb(54 48 36 / 14%);
+  --logo-mark-start: #abc69a;
+  --logo-mark-end: #3e745a;
+  --logo-mark-bg: #24332a;
+  --logo-mark-trend: #d2a85c;
 }
 
 * {

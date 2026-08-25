@@ -14,8 +14,12 @@ const spaceGrotesk = Space_Grotesk({
 
 const themeScript = `
   try {
-    document.documentElement.dataset.theme =
-      localStorage.getItem("merchvision-theme") === "light" ? "light" : "dark";
+    const theme = localStorage.getItem("merchvision-theme") === "light" ? "light" : "dark";
+    document.documentElement.dataset.theme = theme;
+    document.querySelector("link[data-theme-favicon]")?.setAttribute(
+      "href",
+      theme === "light" ? "/favicon-light.svg" : "/favicon-dark.svg"
+    );
     document.documentElement.dataset.sidebarCollapsed =
       localStorage.getItem("merchvision-sidebar-collapsed") === "true" ? "true" : "false";
   } catch {
@@ -33,6 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html data-sidebar-collapsed="false" data-theme="dark" lang="en" suppressHydrationWarning>
       <head>
+        <link data-theme-favicon href="/favicon-dark.svg" rel="icon" type="image/svg+xml" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${openSans.variable} ${spaceGrotesk.variable}`}>{children}</body>
