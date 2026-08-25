@@ -439,7 +439,7 @@ export function FlipFinder() {
 function chartColors(theme: Theme) {
   return theme === "dark"
     ? { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", high: "#72b99b", low: "#8fa7bb" }
-    : { grid: "#e9edf1", axis: "#7d9ab3", tooltip: "#ffffff", high: "#398066", low: "#587b9b" };
+    : { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", high: "#287255", low: "#3e745a" };
 }
 
 function NumberField({

@@ -390,7 +390,7 @@ function toSevenDayChart(points: PricePoint[]) {
 function chartColors(theme: Theme) {
   return theme === "dark"
     ? { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", trend: "#72b99b" }
-    : { grid: "#e9edf1", axis: "#7d9ab3", tooltip: "#ffffff", trend: "#398066" };
+    : { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", trend: "#287255" };
 }
 
 function formatGp(value: number): string {

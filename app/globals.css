@@ -31,31 +31,46 @@
   --soft-panel: #101820;
   --soft-panel-raised: #131d26;
   --soft-subtle: #0d141b;
+  --focus-ring: rgb(143 167 187 / 20%);
+  --brand-shadow: rgb(52 72 93 / 18%);
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: var(--ice-50);
-  --panel: #ffffff;
-  --panel-2: var(--ice-100);
+  /* Warm ledger surfaces make the research workspace less clinical than the former blue-grey theme. */
+  --ice-50: #f7f5ef;
+  --ice-100: #efede4;
+  --ice-200: #e1ddd0;
+  --ice-300: #d3cdbc;
+  --ice-400: #c1b9a4;
+  --ice-500: #9a927e;
+  --ice-600: #756f5f;
+  --ice-700: #5e594d;
+  --text-strong: #26342b;
+  --text-soft: #637065;
+  --bg: #f6f4ee;
+  --panel: #fffdf8;
+  --panel-2: #eeece3;
   --text: var(--text-strong);
   --muted: var(--text-soft);
-  --line: var(--ice-200);
-  --accent: #587b9b;
-  --accent-strong: #456984;
-  --good: #398066;
-  --warn: #a96d32;
-  --bad: #b95757;
-  --shadow: 0 14px 36px rgb(52 72 93 / 7%);
-  --body-glow: #ffffff;
-  --sidebar-bg: var(--ice-100);
-  --subtle-bg: var(--ice-50);
-  --glass-bg: rgb(255 255 255 / 55%);
-  --nav-hover: rgb(255 255 255 / 65%);
-  --nav-active: var(--panel);
-  --soft-panel: #e9edf1;
-  --soft-panel-raised: #ffffff;
-  --soft-subtle: #f3f5f8;
+  --line: #dcd7c9;
+  --accent: #3e745a;
+  --accent-strong: #285b44;
+  --good: #287255;
+  --warn: #9a681f;
+  --bad: #b24e4e;
+  --shadow: 0 14px 36px rgb(54 48 36 / 8%);
+  --body-glow: #fbfaf5;
+  --sidebar-bg: #e8e5da;
+  --subtle-bg: #f3f1e9;
+  --glass-bg: rgb(255 253 248 / 72%);
+  --nav-hover: rgb(62 116 90 / 8%);
+  --nav-active: #fffdf8;
+  --soft-panel: #ece9df;
+  --soft-panel-raised: #fffdf8;
+  --soft-subtle: #f5f3ec;
+  --focus-ring: rgb(62 116 90 / 20%);
+  --brand-shadow: rgb(54 48 36 / 14%);
 }
 
 * {
@@ -291,7 +306,7 @@ button {
 
 .brand-mark {
   border-radius: 8px;
-  box-shadow: 0 5px 14px rgb(52 72 93 / 18%);
+  box-shadow: 0 5px 14px var(--brand-shadow);
   display: block;
   flex: 0 0 38px;
   height: 38px;
@@ -369,7 +384,7 @@ h3 {
 }
 
 .theme-toggle:focus-visible {
-  box-shadow: 0 0 0 3px rgb(88 123 155 / 20%);
+  box-shadow: 0 0 0 3px var(--focus-ring);
   outline: none;
 }
 
@@ -429,7 +444,7 @@ h3 {
 .field input:focus,
 .field select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgb(88 123 155 / 14%);
+  box-shadow: 0 0 0 3px var(--focus-ring);
   outline: none;
 }
 
@@ -702,7 +717,7 @@ tbody tr.selected {
 }
 
 .detail-panel-close:focus-visible {
-  box-shadow: 0 0 0 3px rgb(88 123 155 / 20%);
+  box-shadow: 0 0 0 3px var(--focus-ring);
   outline: none;
 }
 
@@ -1071,7 +1086,7 @@ tbody tr.selected {
 .primary-link:focus-visible,
 .account-action:focus-visible,
 .account-summary:focus-visible {
-  box-shadow: 0 0 0 3px rgb(88 123 155 / 20%);
+  box-shadow: 0 0 0 3px var(--focus-ring);
   outline: none;
 }
 
@@ -1308,7 +1323,7 @@ tbody tr.selected {
 }
 
 .chart-range-selector button:focus-visible {
-  box-shadow: 0 0 0 3px rgb(88 123 155 / 20%);
+  box-shadow: 0 0 0 3px var(--focus-ring);
   outline: none;
 }
 
