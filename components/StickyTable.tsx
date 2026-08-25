@@ -32,6 +32,8 @@ export function StickyTable({ children }: { children: TableElement }) {
     const stickyTableElement = stickyTable;
 
     function syncHeader() {
+      // The visible header is mirrored outside the horizontal scroll container so it can stay pinned.
+      // Its width and column widths must follow the source table as content or viewport size changes.
       stickyTableElement.style.width = `${tableElement.scrollWidth}px`;
       stickyTableElement.style.transform = `translateX(${-scrollElement.scrollLeft}px)`;
       const sourceHeaders = tableElement.querySelectorAll("thead th");

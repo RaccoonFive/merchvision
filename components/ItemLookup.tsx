@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
+import { ItemIcon } from "@/components/ItemIcon";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { Metric } from "@/components/Metric";
+import { formatAge, formatCompact, formatGp, formatNullableGp, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
 import { searchItems } from "@/lib/itemSearch";
 import { buildItemQuoteWarnings } from "@/lib/quote";
 import type { ItemMeta, ItemQuoteResponse, PricePoint } from "@/lib/types";
@@ -193,7 +196,7 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
               <div className="lookup-suggestions" role="listbox" aria-label="Matching items">
                 {suggestions.map((item) => (
                   <button key={item.id} onClick={() => selectItem(item)} role="option" type="button">
-                    <ItemIcon item={item} className="item-icon" />
+                    <ItemIcon icon={item.icon} className="item-icon" />
                     <span>
                       <strong>{item.name}</strong>
                       <small>{item.members ? "Members" : "Free-to-play"}</small>
@@ -259,7 +262,7 @@ function QuoteDetails({
     <>
       <div className="lookup-detail-head">
         <div className="detail-head">
-          <ItemIcon item={item} className="detail-icon" />
+          <ItemIcon icon={item.icon} className="detail-icon" />
           <div>
             <h2>{item.name}</h2>
             <p className="subtitle">{item.members ? "Members item" : "Free-to-play item"}</p>
@@ -300,14 +303,14 @@ function QuoteDetails({
       ) : null}
 
       <div className="lookup-metric-grid">
-        <Metric label="Buy price (latest low)" value={formatNullableGp(quote.low)} detail={formatTimestamp(quote.lowTime)} />
-        <Metric label="Sell price (latest high)" value={formatNullableGp(quote.high)} detail={formatTimestamp(quote.highTime)} />
-        <Metric label="Gross margin" value={formatNullableGp(quote.margin)} tone={valueTone(quote.margin)} />
-        <Metric label="GE tax" value={formatNullableGp(quote.tax)} />
-        <Metric label="Net margin" value={formatNullableGp(quote.netProfit)} tone={valueTone(quote.netProfit)} />
-        <Metric label="ROI" value={quote.roi === null ? "Unavailable" : formatPercent(quote.roi)} tone={valueTone(quote.roi)} />
-        <Metric label="Buy limit" value={item.limit ? formatNumber(item.limit) : "Unknown"} />
-        <Metric label="Freshness" value={quote.freshnessSeconds === null ? "Unavailable" : formatAge(quote.freshnessSeconds)} />
+        <Metric label="Buy price (latest low)" value={formatNullableGp(quote.low)} detail={formatTimestamp(quote.lowTime)} className="lookup-metric" />
+        <Metric label="Sell price (latest high)" value={formatNullableGp(quote.high)} detail={formatTimestamp(quote.highTime)} className="lookup-metric" />
+        <Metric label="Gross margin" value={formatNullableGp(quote.margin)} tone={valueTone(quote.margin)} className="lookup-metric" />
+        <Metric label="GE tax" value={formatNullableGp(quote.tax)} className="lookup-metric" />
+        <Metric label="Net margin" value={formatNullableGp(quote.netProfit)} tone={valueTone(quote.netProfit)} className="lookup-metric" />
+        <Metric label="ROI" value={quote.roi === null ? "Unavailable" : formatPercent(quote.roi)} tone={valueTone(quote.roi)} className="lookup-metric" />
+        <Metric label="Buy limit" value={item.limit ? formatNumber(item.limit) : "Unknown"} className="lookup-metric" />
+        <Metric label="Freshness" value={quote.freshnessSeconds === null ? "Unavailable" : formatAge(quote.freshnessSeconds)} className="lookup-metric" />
       </div>
 
       <div className="lookup-chart-panel">
@@ -362,20 +365,6 @@ function QuoteDetails({
   );
 }
 
-function Metric({ label, value, detail, tone }: { label: string; value: string; detail?: string; tone?: "positive" | "negative" | "muted" }) {
-  return (
-    <div className="metric lookup-metric">
-      <span>{label}</span>
-      <strong className={tone}>{value}</strong>
-      {detail ? <small>{detail}</small> : null}
-    </div>
-  );
-}
-
-function ItemIcon({ item, className }: { item: ItemMeta; className: string }) {
-  return item.icon ? <img alt="" className={className} src={item.icon} /> : <div className={className} aria-hidden="true" />;
-}
-
 function valueTone(value: number | null): "positive" | "negative" | "muted" {
   if (value === null || value === 0) return "muted";
   return value > 0 ? "positive" : "negative";
@@ -407,6 +396,7 @@ function chartYDomain(points: ReturnType<typeof toChartPoint>[]): [number, numbe
   );
   if (prices.length === 0) return [0, 1];
 
+  // A padded observed range keeps small price movements legible without implying a zero-price baseline.
   const minimum = Math.min(...prices);
   const maximum = Math.max(...prices);
   const padding = Math.max((maximum - minimum) * 0.05, maximum * 0.002, 1);
@@ -425,34 +415,4 @@ function chartIntervalLabel(range: ChartRange): string {
     default:
       return "hourly";
   }
-}
-
-function formatNullableGp(value: number | null): string {
-  return value === null ? "Unavailable" : formatGp(value);
-}
-
-function formatGp(value: number): string {
-  return `${formatNumber(value)} gp`;
-}
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
-}
-
-function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(2)}%`;
-}
-
-function formatCompact(value: number): string {
-  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value);
-}
-
-function formatAge(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
-  return `${Math.round(seconds / 3600)}h`;
-}
-
-function formatTimestamp(timestamp: number | null): string {
-  return timestamp === null ? "No trade timestamp" : new Date(timestamp * 1000).toLocaleString();
 }

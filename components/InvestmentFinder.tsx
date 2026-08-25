@@ -5,9 +5,13 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
+import { ItemIcon } from "@/components/ItemIcon";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { Metric } from "@/components/Metric";
+import { NumberField } from "@/components/NumberField";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
+import { formatClock, formatCompact, formatGp, formatNumber, formatPercent } from "@/lib/format";
 import type { InvestmentCandidate, PricePoint } from "@/lib/types";
 import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 
@@ -255,7 +259,7 @@ export function InvestmentFinder() {
                         >
                           <td>
                             <div className="item-cell">
-                              <ItemIcon candidate={candidate} className="item-icon" />
+                              <ItemIcon icon={candidate.icon} className="item-icon" />
                               <div>
                                 <div className="item-name">{candidate.name}</div>
                                 <div className="item-meta">{candidate.members ? "Members" : "F2P"} {candidate.warnings[0] ? `- ${candidate.warnings[0]}` : ""}</div>
@@ -283,7 +287,7 @@ export function InvestmentFinder() {
                   <>
                     <div className="detail-panel-head">
                       <div className="detail-head">
-                        <ItemIcon candidate={selected} className="detail-icon" />
+                        <ItemIcon icon={selected.icon} className="detail-icon" />
                         <div>
                           <h2><Link className="detail-title-link" href={`/lookup/${selected.id}`}>{selected.name}</Link></h2>
                           <p className="subtitle">{selected.members ? "Members item" : "Free-to-play item"}</p>
@@ -353,23 +357,6 @@ export function InvestmentFinder() {
   );
 }
 
-function NumberField({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (value: string) => void }) {
-  return (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
-      <input id={id} min="0" type="number" value={value} onChange={(event) => onChange(event.target.value)} />
-    </div>
-  );
-}
-
-function Metric({ label, value, tone }: { label: string; value: string; tone?: "profit" }) {
-  return <div className="metric"><span>{label}</span><strong className={tone}>{value}</strong></div>;
-}
-
-function ItemIcon({ candidate, className }: { candidate: InvestmentCandidate; className: string }) {
-  return candidate.icon ? <img alt="" className={className} src={candidate.icon} /> : <div className={className} aria-hidden="true" />;
-}
-
 function toChartPoint(point: PricePoint) {
   const hasPrices = (point.avgHighPrice ?? 0) > 0 && (point.avgLowPrice ?? 0) > 0;
   return {
@@ -391,26 +378,6 @@ function chartColors(theme: Theme) {
   return theme === "dark"
     ? { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", trend: "#72b99b" }
     : { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", trend: "#287255" };
-}
-
-function formatGp(value: number): string {
-  return `${formatNumber(value)} gp`;
-}
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
-}
-
-function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(2)}%`;
-}
-
-function formatCompact(value: number): string {
-  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value);
-}
-
-function formatClock(iso: string): string {
-  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 function investmentSortValue(candidate: InvestmentCandidate, key: InvestmentSortKey): number | string {

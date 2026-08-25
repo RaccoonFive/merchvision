@@ -7,6 +7,7 @@ import { AppShell } from "@/components/AppShell";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
+import { formatAge, formatNullableGp, formatPercent } from "@/lib/format";
 import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 import type { FavoriteItem } from "@/lib/types";
 
@@ -133,20 +134,6 @@ export function FavoritesPage() {
       )}
     </AppShell>
   );
-}
-
-function formatNullableGp(value: number | null): string {
-  return value === null ? "Unavailable" : `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)} gp`;
-}
-
-function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(2)}%`;
-}
-
-function formatAge(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
-  return `${Math.round(seconds / 3600)}h`;
 }
 
 function valueTone(value: number | null): "positive" | "negative" | "muted" {

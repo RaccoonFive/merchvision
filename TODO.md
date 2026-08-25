@@ -36,7 +36,7 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 
 ### Ranking Policy
 
-- [x] Hide stale and low-confidence candidates by default, with an explicit opt-in that explains why they were excluded.
+- [x] Include stale and low-confidence candidates by default, with an explicit toggle to exclude weak data.
 - [ ] Tune the default ranking through hands-on reviews to favor liquidity, stable after-tax spreads, freshness, and sample quality over impressive-looking paper margins.
 - [ ] Preserve the existing search, membership, price, profit, ROI, volume, confidence, stability, buy-limit-profit, freshness, and sorting controls.
 - [ ] Keep one fixed scoring model; do not add risk presets or user-configurable score weights.
@@ -55,8 +55,8 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 
 - [ ] Document the reason and expected ranking effect whenever hands-on review leads to a scoring threshold or weight change.
 - [ ] Add focused tests for warning thresholds and ranking effects.
-- [x] Cover score-component arithmetic, explanation consistency, filters, and weak-data opt-in behavior; confirm stale or low-confidence results never enter the default list accidentally.
-- [ ] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
+- [x] Cover score-component arithmetic, explanation consistency, filters, and weak-data toggle behavior; confirm stale or low-confidence results are excluded only when requested.
+- [x] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
 
 ### Completion Gate
 

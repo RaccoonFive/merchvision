@@ -97,7 +97,7 @@ describe("filterAndSortFlips", () => {
     expect(result[0].id).toBe(1);
   });
 
-  it("hides stale and low-confidence candidates unless explicitly included", () => {
+  it("includes stale and low-confidence candidates unless explicitly excluded", () => {
     const analysis = analyzeMarket(stablePoints());
     const candidates = buildFlipCandidates({
       items,
@@ -114,15 +114,15 @@ describe("filterAndSortFlips", () => {
       freshnessSeconds: 0
     };
 
-    expect(filterAndSortFlips([...candidates, lowConfidenceFreshCandidate], {})).toEqual([
-      expect.objectContaining({ id: 1 })
-    ]);
+    expect(filterAndSortFlips([...candidates, lowConfidenceFreshCandidate], {}).map((candidate) => candidate.id)).toEqual(
+      expect.arrayContaining([1, 3, 99])
+    );
     expect(
       filterAndSortFlips([...candidates, lowConfidenceFreshCandidate], {
-        includeStale: true,
-        includeLowConfidence: true
+        includeStale: false,
+        includeLowConfidence: false
       }).map((candidate) => candidate.id)
-    ).toEqual(expect.arrayContaining([1, 3, 99]));
+    ).toEqual([1]);
   });
 });
 

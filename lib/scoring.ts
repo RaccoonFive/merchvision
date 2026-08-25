@@ -91,8 +91,8 @@ export function buildFlipCandidates({
 
 export function filterAndSortFlips(candidates: FlipCandidate[], filters: FlipFilters): FlipCandidate[] {
   const search = filters.search?.trim().toLowerCase();
-  const includeStale = filters.includeStale ?? false;
-  const includeLowConfidence = filters.includeLowConfidence ?? false;
+  const includeStale = filters.includeStale ?? true;
+  const includeLowConfidence = filters.includeLowConfidence ?? true;
   const sort = filters.sort ?? "score";
 
   return candidates

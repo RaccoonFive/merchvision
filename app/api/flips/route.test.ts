@@ -52,19 +52,19 @@ describe("GET /api/flips", () => {
     expect(payload.data).toHaveLength(0);
   });
 
-  it("excludes low-confidence candidates by default and returns them with the weak-data opt-in", async () => {
+  it("includes low-confidence candidates by default and excludes them when weak data is disabled", async () => {
     mockedGetTimeseries.mockResolvedValue([]);
 
     const defaultResponse = await GET(new Request("http://localhost/api/flips"));
     const defaultPayload = await defaultResponse.json();
-    const optInResponse = await GET(
-      new Request("http://localhost/api/flips?includeStale=true&includeLowConfidence=true")
+    const weakDataDisabledResponse = await GET(
+      new Request("http://localhost/api/flips?includeStale=false&includeLowConfidence=false")
     );
-    const optInPayload = await optInResponse.json();
+    const weakDataDisabledPayload = await weakDataDisabledResponse.json();
 
-    expect(defaultPayload.data).toHaveLength(0);
-    expect(optInPayload.data).toHaveLength(1);
-    expect(optInPayload.data[0].confidence).toBe(0);
+    expect(defaultPayload.data).toHaveLength(1);
+    expect(defaultPayload.data[0].confidence).toBe(0);
+    expect(weakDataDisabledPayload.data).toHaveLength(0);
   });
 
   it("ranks by score by default", async () => {

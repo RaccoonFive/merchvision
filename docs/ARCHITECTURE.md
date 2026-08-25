@@ -129,7 +129,7 @@ Key invariants:
 - `tax = min(floor(sellPrice * 0.02), 5,000,000)`
 - `netProfit = margin - tax`
 - Candidates require complete price/timestamp data and positive current net profit.
-- Quotes older than one hour are excluded by default unless stale results are requested.
+- Quotes older than one hour and candidates with low confidence are included by default, with filters available to exclude them.
 
 Market analysis uses the latest 24 hourly points. It derives the median after-tax historical margin, median absolute margin variability, positive-spread ratio, normalized midpoint volatility, median matched hourly volume, sample coverage, confidence, and a volatility penalty. Estimated executable units per hour are 1% of median matched hourly volume, capped by one quarter of a known four-hour buy limit. These are explicit estimates, not observed fills.
 

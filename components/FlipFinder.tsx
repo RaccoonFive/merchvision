@@ -14,9 +14,13 @@ import {
 } from "recharts";
 import type { FlipCandidate, PricePoint } from "@/lib/types";
 import { AppShell, type Theme } from "@/components/AppShell";
+import { ItemIcon } from "@/components/ItemIcon";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { Metric } from "@/components/Metric";
+import { NumberField } from "@/components/NumberField";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
+import { formatAge, formatClock, formatCompact, formatGp, formatNumber, formatPercent } from "@/lib/format";
 import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 
 type FlipsResponse = {
@@ -58,8 +62,8 @@ const DEFAULT_FILTERS: Filters = {
   maxPrice: "",
   members: "all",
   sort: "score",
-  includeStale: false,
-  includeLowConfidence: false
+  includeStale: true,
+  includeLowConfidence: true
 };
 
 type FlipSortKey =
@@ -102,7 +106,7 @@ export function FlipFinder() {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (typeof value === "boolean") {
-        if (value) params.set(key, "true");
+        if (!value) params.set(key, "false");
       } else if (value) {
         params.set(key, value);
       }
@@ -251,7 +255,7 @@ export function FlipFinder() {
               />
               Include weak data
             </label>
-            <p>Default results exclude quotes over 1 hour old and confidence below 45%.</p>
+            <p>Turn this off to exclude quotes over 1 hour old and confidence below 45%.</p>
           </div>
           </section>
 
@@ -299,7 +303,7 @@ export function FlipFinder() {
                     >
                       <td>
                         <div className="item-cell">
-                          <ItemIcon flip={flip} className="item-icon" />
+                          <ItemIcon icon={flip.icon} className="item-icon" />
                           <div>
                             <div className="item-name">{flip.name}</div>
                             <div className="item-meta">
@@ -341,7 +345,7 @@ export function FlipFinder() {
             <>
               <div className="detail-panel-head">
                 <div className="detail-head">
-                  <ItemIcon flip={selected} className="detail-icon" />
+                  <ItemIcon icon={selected.icon} className="detail-icon" />
                   <div>
                     <h2>
                       <Link className="detail-title-link" href={`/lookup/${selected.id}`}>
@@ -442,74 +446,12 @@ function chartColors(theme: Theme) {
     : { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", high: "#287255", low: "#3e745a" };
 }
 
-function NumberField({
-  id,
-  label,
-  value,
-  onChange
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
-      <input id={id} min="0" type="number" value={value} onChange={(event) => onChange(event.target.value)} />
-    </div>
-  );
-}
-
-function Metric({ label, value, tone }: { label: string; value: string; tone?: "profit" }) {
-  return (
-    <div className="metric">
-      <span>{label}</span>
-      <strong className={tone}>{value}</strong>
-    </div>
-  );
-}
-
-function ItemIcon({ flip, className }: { flip: FlipCandidate; className: string }) {
-  if (!flip.icon) {
-    return <div className={className} aria-hidden="true" />;
-  }
-
-  return <img alt="" className={className} src={flip.icon} />;
-}
-
 function toChartPoint(point: PricePoint) {
   return {
     time: new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     high: point.avgHighPrice,
     low: point.avgLowPrice
   };
-}
-
-function formatGp(value: number): string {
-  return `${formatNumber(value)} gp`;
-}
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
-}
-
-function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(2)}%`;
-}
-
-function formatCompact(value: number): string {
-  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value);
-}
-
-function formatAge(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
-  return `${Math.round(seconds / 3600)}h`;
-}
-
-function formatClock(iso: string): string {
-  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 function formatScorePoints(value: number, signed = false): string {

@@ -14,8 +14,8 @@ export function parseFlipFilters(searchParams: URLSearchParams): FlipFilters {
     minTotalBuyLimitProfit: numericParam(searchParams, "minTotalBuyLimitProfit"),
     maxPrice: numericParam(searchParams, "maxPrice"),
     members: members === "members" || members === "f2p" ? members : "all",
-    includeStale: searchParams.get("includeStale") === "true",
-    includeLowConfidence: searchParams.get("includeLowConfidence") === "true",
+    includeStale: searchParams.get("includeStale") !== "false",
+    includeLowConfidence: searchParams.get("includeLowConfidence") !== "false",
     sort:
       sort === "confidence" ||
       sort === "stability" ||
