@@ -65,7 +65,6 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
             <LogoMark className="brand-mark" />
             <div className="sidebar-brand-copy">
               <strong>Merchvision</strong>
-              <span>Market tools</span>
             </div>
           </Link>
           <button
