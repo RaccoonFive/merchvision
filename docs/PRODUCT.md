@@ -55,7 +55,7 @@ Surface liquid items with sustained positive short- and medium-horizon midpoint 
 
 ### Item Lookup
 
-Let a user inspect an individual item's latest quote, after-tax margin, freshness, recent history, and relevant warnings without needing to search the full rankings.
+Let a user inspect an individual item's latest quote, after-tax margin, freshness, recent history, observed hourly market rhythm, and relevant warnings without needing to search the full rankings. Market Rhythm must distinguish its latest-seven-days observations from recurring behavior or a fill forecast.
 
 ### Favorites And Accounts
 

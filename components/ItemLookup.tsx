@@ -2,7 +2,7 @@
 
 import { AlertTriangle, RefreshCw, Search, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
@@ -11,7 +11,7 @@ import { Metric } from "@/components/Metric";
 import { formatAge, formatCompact, formatGp, formatNullableGp, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
 import { searchItems } from "@/lib/itemSearch";
 import { buildItemQuoteWarnings } from "@/lib/quote";
-import type { ItemMeta, ItemQuoteResponse, PricePoint } from "@/lib/types";
+import type { ItemMeta, ItemQuoteResponse, MarketRhythm, MarketRhythmSample, PricePoint } from "@/lib/types";
 
 type ApiResponse<T> = {
   data?: T;
@@ -37,8 +37,11 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
   const [query, setQuery] = useState("");
   const [quoteData, setQuoteData] = useState<ItemQuoteResponse | null>(null);
   const [chartData, setChartData] = useState<PricePoint[]>([]);
+  const [marketRhythm, setMarketRhythm] = useState<MarketRhythm | null>(null);
   const [chartRange, setChartRange] = useState<ChartRange>("7D");
   const [chartLoading, setChartLoading] = useState(Boolean(initialItemId));
+  const [rhythmLoading, setRhythmLoading] = useState(Boolean(initialItemId));
+  const [rhythmError, setRhythmError] = useState<string | null>(null);
   const [itemsLoading, setItemsLoading] = useState(true);
   const [quoteLoading, setQuoteLoading] = useState(Boolean(initialItemId));
   const [favorited, setFavorited] = useState(false);
@@ -119,6 +122,44 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
       alive = false;
     };
   }, [chartRange, initialItemId]);
+
+  useEffect(() => {
+    if (!initialItemId) {
+      setMarketRhythm(null);
+      setRhythmError(null);
+      setRhythmLoading(false);
+      return;
+    }
+
+    let alive = true;
+    setRhythmLoading(true);
+    setRhythmError(null);
+
+    fetch(`/api/items/${initialItemId}/timeseries?timestep=1h&includeRhythm=true`)
+      .then(async (response) => {
+        const payload = (await response.json()) as ApiResponse<PricePoint[]> & { rhythm?: MarketRhythm };
+        if (!response.ok || payload.error || !payload.rhythm) {
+          throw new Error(payload.error ?? "Unable to load the last seven days of hourly market data.");
+        }
+        return payload.rhythm;
+      })
+      .then((rhythm) => {
+        if (alive) setMarketRhythm(rhythm);
+      })
+      .catch((err) => {
+        if (alive) {
+          setMarketRhythm(null);
+          setRhythmError(err instanceof Error ? err.message : "Unable to load the last seven days of hourly market data.");
+        }
+      })
+      .finally(() => {
+        if (alive) setRhythmLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [initialItemId]);
 
   useEffect(() => {
     if (!initialItemId) {
@@ -219,8 +260,11 @@ export function ItemLookup({ initialItemId }: ItemLookupProps) {
                 data={quoteData}
                 favoriteLoading={favoriteLoading}
                 favorited={favorited}
+                marketRhythm={marketRhythm}
                 onToggleFavorite={toggleFavorite}
                 onChartRangeChange={setChartRange}
+                rhythmError={rhythmError}
+                rhythmLoading={rhythmLoading}
                 theme={theme}
               />
             ) : null}
@@ -239,8 +283,11 @@ function QuoteDetails({
   theme,
   favorited,
   favoriteLoading,
+  marketRhythm,
   onToggleFavorite,
-  onChartRangeChange
+  onChartRangeChange,
+  rhythmError,
+  rhythmLoading
 }: {
   data: ItemQuoteResponse;
   chartData: PricePoint[];
@@ -249,8 +296,11 @@ function QuoteDetails({
   theme: Theme;
   favorited: boolean;
   favoriteLoading: boolean;
+  marketRhythm: MarketRhythm | null;
   onToggleFavorite: () => void;
   onChartRangeChange: (range: ChartRange) => void;
+  rhythmError: string | null;
+  rhythmLoading: boolean;
 }) {
   const { item, quote } = data;
   const warnings = buildItemQuoteWarnings(quote);
@@ -361,8 +411,110 @@ function QuoteDetails({
           )}
         </div>
       </div>
+
+      <MarketRhythmPanel error={rhythmError} loading={rhythmLoading} rhythm={marketRhythm} />
     </>
   );
+}
+
+function MarketRhythmPanel({
+  rhythm,
+  loading,
+  error
+}: {
+  rhythm: MarketRhythm | null;
+  loading: boolean;
+  error: string | null;
+}) {
+  const grid = useMemo(() => (rhythm ? buildRhythmGrid(rhythm.samples) : null), [rhythm]);
+  const highestVolume = rhythm ? Math.max(0, ...rhythm.samples.map((sample) => sample.matchedVolume ?? 0)) : 0;
+
+  return (
+    <section className="market-rhythm-panel" aria-labelledby="market-rhythm-title">
+      <div className="market-rhythm-head">
+        <div>
+          <h3 id="market-rhythm-title">Market rhythm</h3>
+          <p className="muted">Observed hourly activity from the latest seven days, in your local time.</p>
+        </div>
+        <div className="rhythm-legend" aria-label="Market rhythm legend">
+          <span><i className="positive" /> Positive after-tax spread</span>
+          <span><i className="negative" /> Negative after-tax spread</span>
+        </div>
+      </div>
+
+      {loading ? <LoadingSpinner label="Loading last seven days of hourly market data..." /> : null}
+      {!loading && error ? <div className="error">{error}</div> : null}
+      {!loading && !error && rhythm && rhythm.sampleCount === 0 ? (
+        <div className="empty">No usable hourly price observations are available for this item.</div>
+      ) : null}
+      {!loading && !error && rhythm && rhythm.sampleCount > 0 && grid ? (
+        <>
+          <div className="market-rhythm-metrics">
+            <Metric label="Usable observed hours" value={`${rhythm.sampleCount} of ${rhythm.sourcePointCount}`} />
+            <Metric label="Positive after-tax hours" value={formatPercent(rhythm.positiveSpreadRatio)} />
+            <Metric label="Median matched vol/hr" value={rhythm.medianMatchedHourlyVolume === null ? "Unavailable" : formatNumber(rhythm.medianMatchedHourlyVolume)} />
+            <Metric label="Hourly price variation" value={formatPercent(rhythm.midpointPriceVolatility)} />
+          </div>
+          <div className="market-rhythm-scroll">
+            <div className="market-rhythm-grid" role="grid" aria-label="Observed hourly matched volume and after-tax spread">
+              <div className="rhythm-corner" role="columnheader">Hour</div>
+              {grid.days.map((day) => <div className="rhythm-day" key={day.key} role="columnheader">{day.label}</div>)}
+              {grid.hours.map((hour) => (
+                <div className="rhythm-row" key={hour} role="row">
+                  <div className="rhythm-hour" role="rowheader">{formatHour(hour)}</div>
+                  {grid.days.map((day) => (
+                    <RhythmCell dayLabel={day.longLabel} highestVolume={highestVolume} hour={hour} key={day.key} sample={grid.samples.get(`${day.key}:${hour}`)} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="market-rhythm-note">Cell text is matched units for that observed hour. Empty cells had no complete price sample; this is history, not a fill or profit forecast.</p>
+        </>
+      ) : null}
+    </section>
+  );
+}
+
+function RhythmCell({ dayLabel, hour, sample, highestVolume }: { dayLabel: string; hour: number; sample?: MarketRhythmSample; highestVolume: number }) {
+  if (!sample) {
+    return <span aria-label={`${dayLabel} at ${formatHour(hour)}: no complete price observation`} className="rhythm-cell missing" role="gridcell">—</span>;
+  }
+
+  const volume = sample.matchedVolume;
+  const strength = volume === null || highestVolume === 0 ? 0.35 : 0.25 + Math.sqrt(volume / highestVolume) * 0.75;
+  const spreadLabel = sample.netMargin > 0 ? "positive" : sample.netMargin < 0 ? "negative" : "zero";
+  const volumeLabel = volume === null ? "matched volume unavailable" : `${formatNumber(volume)} matched units`;
+
+  return (
+    <span aria-label={`${dayLabel} at ${formatHour(hour)}: ${spreadLabel} after-tax spread of ${formatGp(sample.netMargin)}, ${volumeLabel}`} className={`rhythm-cell ${spreadLabel}`} role="gridcell" style={{ "--rhythm-strength": strength } as CSSProperties} title={`${formatGp(sample.netMargin)} after tax · ${volumeLabel}`}>
+      {volume === null ? "?" : formatCompact(volume)}
+    </span>
+  );
+}
+
+function buildRhythmGrid(samples: MarketRhythmSample[]) {
+  const latestDay = new Date(Math.max(...samples.map((sample) => sample.timestamp)) * 1000);
+  latestDay.setHours(0, 0, 0, 0);
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(latestDay);
+    date.setDate(date.getDate() - (6 - index));
+    return { key: localDateKey(date), label: date.toLocaleDateString([], { weekday: "short" }), longLabel: date.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" }) };
+  });
+  const samplesByLocalHour = new Map<string, MarketRhythmSample>();
+  for (const sample of samples) {
+    const date = new Date(sample.timestamp * 1000);
+    samplesByLocalHour.set(`${localDateKey(date)}:${date.getHours()}`, sample);
+  }
+  return { days, hours: Array.from({ length: 24 }, (_, hour) => hour), samples: samplesByLocalHour };
+}
+
+function localDateKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+function formatHour(hour: number): string {
+  return new Intl.DateTimeFormat([], { hour: "numeric" }).format(new Date(2000, 0, 1, hour));
 }
 
 function valueTone(value: number | null): "positive" | "negative" | "muted" {

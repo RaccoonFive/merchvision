@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { analyzeMarketRhythm } from "@/lib/marketRhythm";
 import { getTimeseries } from "@/lib/osrsWiki";
 
 type Context = {
@@ -11,13 +12,14 @@ export async function GET(request: Request, context: Context) {
     const itemId = Number(id);
     const { searchParams } = new URL(request.url);
     const timestep = searchParams.get("timestep") ?? "1h";
+    const includeRhythm = searchParams.get("includeRhythm") === "true";
 
     if (!Number.isInteger(itemId) || itemId <= 0) {
       return NextResponse.json({ error: "Invalid item id." }, { status: 400 });
     }
 
     const data = await getTimeseries(itemId, timestep);
-    return NextResponse.json({ data });
+    return NextResponse.json(includeRhythm ? { data, rhythm: analyzeMarketRhythm(data) } : { data });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unable to load item timeseries." },

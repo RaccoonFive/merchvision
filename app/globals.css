@@ -1461,6 +1461,119 @@ tbody tr.selected {
   width: 100%;
 }
 
+.market-rhythm-panel {
+  border-top: 1px solid color-mix(in srgb, var(--line) 42%, transparent);
+  margin-top: 20px;
+  padding-top: 18px;
+}
+
+.market-rhythm-head {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.rhythm-legend {
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 11px;
+  gap: 10px;
+}
+
+.rhythm-legend span {
+  align-items: center;
+  display: inline-flex;
+  gap: 5px;
+}
+
+.rhythm-legend i {
+  border-radius: 3px;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+
+.rhythm-legend .positive,
+.rhythm-cell.positive {
+  background: rgb(40 114 85 / var(--rhythm-strength, 0.78));
+}
+
+.rhythm-legend .negative,
+.rhythm-cell.negative {
+  background: rgb(176 81 61 / var(--rhythm-strength, 0.78));
+}
+
+.market-rhythm-metrics {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.market-rhythm-scroll {
+  margin-top: 14px;
+  overflow-x: auto;
+}
+
+.market-rhythm-grid {
+  display: grid;
+  grid-template-columns: 46px repeat(7, minmax(58px, 1fr));
+  min-width: 530px;
+}
+
+.rhythm-corner,
+.rhythm-day,
+.rhythm-hour {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px;
+}
+
+.rhythm-day {
+  text-align: center;
+}
+
+.rhythm-hour {
+  align-self: center;
+}
+
+.rhythm-row {
+  display: contents;
+}
+
+.rhythm-cell {
+  align-items: center;
+  border: 2px solid var(--panel);
+  border-radius: 5px;
+  color: white;
+  display: flex;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 26px;
+  overflow: hidden;
+  padding: 2px;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 25%);
+}
+
+.rhythm-cell.zero,
+.rhythm-cell.missing {
+  background: var(--soft-subtle);
+  color: var(--muted);
+  text-shadow: none;
+}
+
+.market-rhythm-note {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+  margin: 10px 0 0;
+}
+
 /* Quiet tonal layers replace visible container borders. */
 .sidebar {
   border-right: 0;
@@ -1575,6 +1688,10 @@ tbody tr.selected {
   .lookup-metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .market-rhythm-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 760px) {
@@ -1633,11 +1750,20 @@ tbody tr.selected {
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .market-rhythm-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 520px) {
   .metric-grid,
   .lookup-metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-rhythm-metrics {
     grid-template-columns: 1fr;
   }
 

@@ -22,9 +22,10 @@ Last updated: 2026-08-24
 - Flip Finder ranks positive after-tax opportunities using current quotes, ROI, volume, freshness, buy limits, and 24-hour market-quality analysis.
 - Flip enrichment is bounded to balanced shortlists and produces deterministic confidence, stability, spread-quality, and executability estimates.
 - Item Lookup exposes current quote math, warnings, Favorites, and 1-day, 7-day, 3-month, and 1-year price history.
+- Item Lookup includes Market Rhythm: a local-time heatmap of observed hourly after-tax spread quality and matched volume from the latest seven days, with explicit missing-data and non-forecast caveats.
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Accounts, user-owned Favorites, responsive navigation, light/dark themes, request caching, and request coalescing are implemented.
-- The current validation baseline passes 53 tests, type checking, and a production build.
+- The current validation baseline passes 62 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 
@@ -152,6 +153,7 @@ Promote a bet into a milestone only after the first three milestones are complet
 
 ## Completed
 
+- **2026-08-24:** Added Item Lookup Market Rhythm from bounded, cached seven-day hourly history; it exposes observed matched volume, after-tax spread quality, volatility, and data coverage without predicting fills or returns.
 - **2026-08-12:** Added the durable product contract, implemented architecture reference, contributor guidance, and operational MySQL setup documentation.
 - **2026-06-09:** Shipped the market-quality scoring foundation, balanced enrichment shortlists, confidence and stability signals, warnings, filters, sorting, and focused tests.
 - **2026-06-04:** Added the public Investment Finder with liquidity shortlisting, 24-hour and 7-day midpoint trends, risk-adjusted ranking, filters, and detail charts.

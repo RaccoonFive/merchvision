@@ -46,6 +46,21 @@ export type PricePoint = {
   lowPriceVolume?: number;
 };
 
+export type MarketRhythmSample = {
+  timestamp: number;
+  netMargin: number;
+  matchedVolume: number | null;
+};
+
+export type MarketRhythm = {
+  samples: MarketRhythmSample[];
+  sampleCount: number;
+  sourcePointCount: number;
+  positiveSpreadRatio: number;
+  medianMatchedHourlyVolume: number | null;
+  midpointPriceVolatility: number;
+};
+
 export type MarketSummary = {
   id: number;
   avgHighPrice?: number;

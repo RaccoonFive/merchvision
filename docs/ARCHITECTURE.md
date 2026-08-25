@@ -44,6 +44,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - `lib/scoring.ts` owns flip construction, 24-hour market analysis, warnings, filtering, and sorting.
 - `lib/investments.ts` owns midpoint trend, volatility, consistency, confidence, filtering, and ranking for investments.
 - `lib/tax.ts` owns the GE tax rule.
+- `lib/marketRhythm.ts` derives Item Lookup's latest-seven-days hourly observations, after-tax spread quality, matched volume, and volatility summary.
 - `lib/quote.ts` owns current item quote calculations and quote-level warnings.
 - `lib/types.ts` owns shared market and API-facing domain types.
 
@@ -73,7 +74,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 | `GET /api/investments` | Rank and filter investment candidates | `{ data, meta }` | Public |
 | `GET /api/items` | Return normalized item metadata | `{ data }` | Public |
 | `GET /api/items/[id]/quote` | Return item metadata and current quote | `{ item, quote }` | Public |
-| `GET /api/items/[id]/timeseries` | Return normalized timeseries points | `{ data }` | Public |
+| `GET /api/items/[id]/timeseries` | Return normalized timeseries points and, when requested, Market Rhythm analysis | `{ data, rhythm? }` | Public |
 | `GET /api/prices/latest` | Return normalized latest prices | `{ data }` | Public |
 | `GET /api/favorites` | Return the current user's enriched favorites | `{ data }` | Authenticated |
 | `GET /api/favorites/[itemId]` | Check favorite state | `{ favorited }` | Authenticated |
@@ -91,6 +92,8 @@ The application is a single Next.js codebase. Market data comes from the public 
 - 24-hour market summaries
 
 Every upstream request includes `Merchvision/0.1` and `USER_AGENT_CONTACT` in the User-Agent. Requests fail early when the contact value is missing.
+
+Item Lookup requests the existing one-hour timeseries with `includeRhythm=true` to receive a deterministic Market Rhythm summary alongside the normalized points. This is a single-item, cache-coalesced request. Since the upstream hourly series covers only the latest seven days, the UI presents cells as local-time observations, never as a recurring seasonal model, fill estimate, or profit forecast.
 
 The Wiki client uses a process-local in-memory cache and a `pending` map that coalesces concurrent requests for the same key. Default TTLs are:
 
