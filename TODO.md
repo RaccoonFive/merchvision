@@ -8,7 +8,7 @@ Last updated: 2026-08-24
 
 - Lead with ranked opportunities and use item-level analysis as the drill-down experience.
 - Optimize the default ranking for repeatable market quality, not maximum paper profit.
-- Use one fixed, explainable scoring model with filters and sorting rather than user-defined weights.
+- Use one fixed, quality-focused scoring model with filters and sorting rather than user-defined weights. Surface the evidence and risks a merchant needs, without making score arithmetic the primary workflow.
 - Use only the OSRS Wiki Prices API for market data.
 - Keep accounts limited to authentication and Favorites.
 - Recommend candidates and expose evidence; do not prescribe offer prices or predict price targets.
@@ -32,20 +32,20 @@ Status: **Active**
 
 ### Outcome
 
-An active merchant can scan the shortlist, understand why one candidate outranks another, and distinguish current observations from historical measures and uncertain execution estimates.
+An active merchant can scan a shortlist of credible opportunities, recognize the key evidence and risks quickly, and distinguish current observations from historical measures and uncertain execution estimates.
 
 ### Ranking Policy
 
 - [x] Hide stale and low-confidence candidates by default, with an explicit opt-in that explains why they were excluded.
-- [ ] Keep the default ranking focused on liquidity, stable after-tax spreads, freshness, sample quality, and estimated executability.
+- [ ] Tune the default ranking through hands-on reviews to favor liquidity, stable after-tax spreads, freshness, and sample quality over impressive-looking paper margins.
 - [ ] Preserve the existing search, membership, price, profit, ROI, volume, confidence, stability, buy-limit-profit, freshness, and sorting controls.
 - [ ] Keep one fixed scoring model; do not add risk presets or user-configurable score weights.
 
 ### Explanation And UI
 
-- [x] Return named positive score drivers and penalties with every flip instead of only an aggregate score.
-- [x] Derive the component breakdown, aggregate score, displayed explanation, and ranking order from the same deterministic scoring path.
-- [x] Show the most important score drivers in the results table and the full breakdown in the selected-item panel.
+- [x] Return named quality and risk signals with every flip alongside the aggregate score.
+- [x] Derive the aggregate score, available score audit detail, and ranking order from the same deterministic scoring path.
+- [ ] Keep the results table focused on decision-relevant quality and risk signals; make detailed score arithmetic secondary and available only when a merchant wants to inspect it.
 - [x] Label current observations, historical measures, and estimates distinctly.
 - [x] Clarify trailing traded volume, matched hourly volume, per-item net profit, buy-limit profit, and estimated units per hour.
 - [x] Surface every material warning without silently hiding warnings after the first four.
@@ -53,14 +53,14 @@ An active merchant can scan the shortlist, understand why one candidate outranks
 
 ### Tuning And Verification
 
-- [ ] Document the reason and expected ranking effect whenever hands-on testing leads to a scoring threshold or weight change.
+- [ ] Document the reason and expected ranking effect whenever hands-on review leads to a scoring threshold or weight change.
 - [ ] Add focused tests for warning thresholds and ranking effects.
 - [x] Cover score-component arithmetic, explanation consistency, filters, and weak-data opt-in behavior; confirm stale or low-confidence results never enter the default list accidentally.
 - [ ] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
 
 ### Completion Gate
 
-- [ ] A user can explain from the table and detail panel why a higher-ranked candidate outranks a lower-ranked candidate.
+- [ ] A user can recognize why a candidate is credible or risky from the table and detail panel without needing to understand point-by-point score arithmetic.
 - [ ] Returned score components reproduce the displayed aggregate score for every candidate.
 - [ ] No label implies that volume, fill speed, executable units, or profit is guaranteed.
 
