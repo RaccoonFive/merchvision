@@ -263,7 +263,7 @@ export function FlipFinder() {
                       fields: [{ clearValue: true, id: "includeStale", label: "Include quotes older than 1 hour", type: "checkbox", value: filters.includeStale }],
                       onApply: (values) => updateFilter("includeStale", values.includeStale === true)
                     }} />
-                    <SortableTableHeader label="Buy-limit profit (est.)" active={tableSort.key === "totalBuyLimitProfit"} direction={tableSort.direction} onSort={() => toggleTableSort("totalBuyLimitProfit")} filter={{
+                    <SortableTableHeader label="Current limit profit (est.)" active={tableSort.key === "totalBuyLimitProfit"} direction={tableSort.direction} onSort={() => toggleTableSort("totalBuyLimitProfit")} filter={{
                       active: Boolean(filters.minTotalBuyLimitProfit),
                       fields: [{ id: "minTotalBuyLimitProfit", label: "Minimum buy-limit profit", type: "number", value: filters.minTotalBuyLimitProfit }],
                       onApply: (values) => updateFilter("minTotalBuyLimitProfit", String(values.minTotalBuyLimitProfit))
@@ -375,7 +375,7 @@ export function FlipFinder() {
                 <Metric label="Conservative GP/hr (estimate)" value={selected.conservativeExpectedGpPerHour === null ? "Unavailable" : formatGp(selected.conservativeExpectedGpPerHour)} tone="profit" />
                 <Metric label="Positive after-tax hours" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatPercent(selected.marketAnalysis.positiveSpreadRatio) : "Unavailable"} />
                 <Metric label="Buy limit" value={selected.buyLimit ? formatNumber(selected.buyLimit) : "Unknown"} />
-                <Metric label="Buy-limit profit (estimate)" value={formatGp(selected.totalBuyLimitProfit)} tone="profit" />
+                <Metric label="Current buy-limit profit (estimate)" value={formatGp(selected.totalBuyLimitProfit)} tone="profit" />
                 <Metric label="Historical confidence" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatPercent(selected.confidence) : "Unavailable"} />
                 <Metric label="Historical matched vol/hr" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatNumber(selected.marketAnalysis.medianMatchedHourlyVolume) : "Unavailable"} />
                 <Metric label="Estimated units/hr" value={selected.marketAnalysis && selected.marketAnalysis.sampleCount > 0 ? formatNumber(selected.marketAnalysis.estimatedExecutableUnitsPerHour) : "Unavailable"} />
@@ -385,7 +385,8 @@ export function FlipFinder() {
               <p className="research-note">
                 The seven-day median resists isolated margin spikes. Repeatable profit uses the lower of the current net
                 margin and that median. Estimated GP/hour then assumes 1% of median matched hourly volume and is capped
-                by a known four-hour buy limit. These are conservative estimates, not guaranteed fills or profit.
+                by a known four-hour buy limit. The displayed buy-limit total uses the current margin; scoring uses the
+                repeatable margin instead. These are conservative estimates, not guaranteed fills or profit.
               </p>
               <div>
                 <h3>Recent prices</h3>
@@ -413,7 +414,7 @@ export function FlipFinder() {
                 <div className="score-breakdown-head">
                   <h3>How this score is calculated</h3>
                 </div>
-                <p className="muted">The 0–100 score rewards seven-day repeatability and liquidity, then subtracts freshness, spike, and missing-limit penalties.</p>
+                <p className="muted">The 0–100 score balances conservative profit potential with seven-day liquidity and market quality, then subtracts freshness, spike, and missing-limit penalties.</p>
                 <ul>
                   {selected.scoreBreakdown.components.map((component) => (
                     <li className={component.kind} key={component.label}>

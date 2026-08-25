@@ -14,7 +14,7 @@
 - Optimize for trustworthy market quality, not impressive-looking paper margins.
 - Treat fill speed, executable volume, and projected profit as estimates, never guarantees.
 - Keep Flip Finder rankings independent of a user's bankroll.
-- Do not add trade journaling, actual-position tracking, RuneLite trade synchronization, or saved bankroll unless the product contract is explicitly changed.
+- Keep position tracking limited to private, manually entered Investment Tracker purchase lots. Do not add sales, realized-profit history, open offers, trade journaling, RuneLite synchronization, or saved bankroll unless the product contract is explicitly changed.
 - Keep the first screen focused on the tool; do not replace it with a marketing landing page.
 
 ## Repository Map
@@ -24,6 +24,7 @@
 - `lib/osrsWiki.ts`: the only direct integration with the OSRS Wiki Prices API.
 - `lib/scoring.ts`: flip candidate construction, market analysis, warnings, filters, and ranking.
 - `lib/investments.ts`: investment trend analysis and ranking.
+- `lib/investmentTracker.ts`: private purchase-lot validation, current valuation, and aggregate tracker summaries.
 - `lib/query.ts`: URL filter parsing.
 - `lib/tax.ts` and `lib/quote.ts`: GE tax and current-quote calculations.
 - `lib/auth.ts`, `lib/session.ts`, and `lib/prisma.ts`: authentication, sessions, and database access.
@@ -93,7 +94,7 @@ Common commands:
 ## Authentication And Persistence
 
 - Better Auth owns email/password authentication and sessions; Prisma owns MySQL access.
-- Enforce ownership by the authenticated user for all favorites and future user-owned records.
+- Enforce ownership by the authenticated user for all favorites, investment lots, and future user-owned records.
 - Validate unauthenticated, invalid-input, not-found, and cross-user cases in route tests where applicable.
 - Never use the MySQL root account as the application connection.
 - Do not rewrite an applied migration. Create a new migration for schema changes and update `prisma/schema.prisma` in the same change.
@@ -113,4 +114,4 @@ Common commands:
 - Check off work only after implementation and required verification are complete.
 - Update the roadmap date when priorities, assumptions, or statuses change.
 - Record newly discovered work in the appropriate milestone, operational section, backlog, or deferred list.
-- Do not silently change the no-trade-tracking or no-saved-bankroll constraints.
+- Do not silently expand manual investment lots into sales, realized-profit history, synchronized trades, offers, execution, or saved bankroll.

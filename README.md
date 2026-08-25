@@ -2,12 +2,13 @@
 
 Merchvision is an Old School RuneScape Grand Exchange research tool. It ranks short-term flips and longer-horizon investment candidates using public OSRS Wiki market data, with an emphasis on conservative estimates, explainable scoring, liquidity, freshness, and risk.
 
-The application is decision support, not a profit guarantee. It does not track trades, positions, realized profit, RuneLite activity, or saved bankroll.
+The application is decision support, not a profit guarantee. It can track manually entered investment purchase lots, but it does not observe trades, track sales or realized profit, synchronize RuneLite activity, or save bankroll.
 
 ## Features
 
-- **Flip Finder:** ranks currently profitable candidates with a conservative 0–100 score based on seven-day median after-tax margin, matched liquidity, estimated executability, consistency, confidence, and freshness.
+- **Flip Finder:** ranks currently profitable candidates with a conservative 0–100 score based on seven-day median after-tax margin, estimated GP per hour and buy-limit profit, matched liquidity, consistency, confidence, and freshness.
 - **Investment Finder:** identifies liquid items with positive 24-hour and 7-day midpoint trends and ranks them with a risk-adjusted momentum score.
+- **Investment Tracker:** lets signed-in users record private purchase lots and compare their cost with the latest net instant-sell value after prospective GE tax.
 - **Item Lookup:** shows current quotes, net margin, warnings, recent price history, and a local-time heatmap of the latest seven days of observed hourly market activity.
 - **Favorites:** lets signed-in users save items and view their current quotes.
 - **Accounts:** provides username/password authentication backed by Better Auth, Prisma, and MySQL. Email remains required for the account record, with a fallback sign-in path for pre-username accounts.

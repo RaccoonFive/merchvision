@@ -66,6 +66,7 @@ describe("buildFlipCandidates", () => {
     expect(candidate.scoreBreakdown.components.map((component) => component.label)).toEqual(
       expect.arrayContaining([
         "Conservative estimated GP/hour",
+        "Conservative buy-limit profit",
         "Repeatable net margin",
         "Historical confidence",
         "Seven-day spread stability"
@@ -356,6 +357,33 @@ describe("scoreFlip", () => {
     ]));
     expect(score.score).toBeGreaterThanOrEqual(0);
     expect(score.score).toBeLessThanOrEqual(100);
+  });
+
+  it("modestly favors higher conservative buy-limit profit when market quality is equal", () => {
+    const lowLimit = scoreFlip({
+      netProfit: analysis.historicalNetMarginMedian,
+      buyPrice: 1_000,
+      freshnessSeconds: 0,
+      buyLimit: 100,
+      marketAnalysis: analysis
+    });
+    const highLimit = scoreFlip({
+      netProfit: analysis.historicalNetMarginMedian,
+      buyPrice: 1_000,
+      freshnessSeconds: 0,
+      buyLimit: 10_000,
+      marketAnalysis: analysis
+    });
+    const lowLimitPoints = lowLimit.components.find(
+      (component) => component.label === "Conservative buy-limit profit"
+    )?.points;
+    const highLimitPoints = highLimit.components.find(
+      (component) => component.label === "Conservative buy-limit profit"
+    )?.points;
+
+    expect(highLimitPoints).toBeGreaterThan(lowLimitPoints ?? 0);
+    expect(highLimit.score).toBeGreaterThan(lowLimit.score);
+    expect(highLimitPoints).toBeLessThanOrEqual(10);
   });
 });
 

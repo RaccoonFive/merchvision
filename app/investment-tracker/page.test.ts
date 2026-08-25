@@ -1,0 +1,31 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import InvestmentTrackerRoute from "./page";
+
+vi.mock("@/lib/session", () => ({ getServerSession: vi.fn() }));
+vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
+
+import { redirect } from "next/navigation";
+import { getServerSession } from "@/lib/session";
+
+const mockedGetServerSession = vi.mocked(getServerSession);
+const mockedRedirect = vi.mocked(redirect);
+
+describe("/investment-tracker", () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it("redirects signed-out visitors to account login", async () => {
+    mockedGetServerSession.mockResolvedValue(null);
+    await InvestmentTrackerRoute();
+    expect(mockedRedirect).toHaveBeenCalledWith("/account?callbackUrl=/investment-tracker");
+  });
+
+  it("renders the tracker for signed-in users", async () => {
+    mockedGetServerSession.mockResolvedValue({
+      session: { id: "session-1", userId: "user-1" },
+      user: { id: "user-1", name: "Trader", email: "trader@example.com" }
+    } as never);
+
+    const page = await InvestmentTrackerRoute();
+    expect(page.type.name).toBe("InvestmentTrackerPage");
+  });
+});

@@ -19,6 +19,14 @@ const SCORE_STALE_SECONDS = 60 * 60;
 const CURRENT_MARGIN_SPIKE_START = 1.5;
 const CURRENT_MARGIN_SPIKE_WARNING_RATIO = 2;
 const CURRENT_MARGIN_SPIKE_WARNING_MINIMUM_GP = 100;
+const CONSERVATIVE_GP_PER_HOUR_WEIGHT = 30;
+const CONSERVATIVE_BUY_LIMIT_PROFIT_WEIGHT = 10;
+const REPEATABLE_NET_MARGIN_WEIGHT = 15;
+const REPEATABLE_ROI_WEIGHT = 5;
+const MATCHED_VOLUME_WEIGHT = 10;
+const POSITIVE_SPREAD_WEIGHT = 12;
+const SPREAD_STABILITY_WEIGHT = 8;
+const HISTORICAL_CONFIDENCE_WEIGHT = 10;
 export const MIN_DEFAULT_CONFIDENCE = 0.45;
 
 type BuildCandidatesInput = {
@@ -250,18 +258,32 @@ export function scoreFlip({
   const repeatable = repeatableProfitMetrics(netProfit, marketAnalysis);
   const repeatableNetProfit = repeatable?.netProfit ?? 0;
   const conservativeExpectedGpPerHour = repeatable?.expectedGpPerHour ?? 0;
+  const conservativeBuyLimitProfit = buyLimit ? repeatableNetProfit * buyLimit : 0;
   const repeatableRoi = buyPrice > 0 ? repeatableNetProfit / buyPrice : 0;
   const medianMatchedHourlyVolume = analysis?.medianMatchedHourlyVolume ?? 0;
   const positiveSpreadRatio = analysis?.positiveSpreadRatio ?? 0;
   const stability = analysis ? Math.max(0, 1 - analysis.volatilityPenalty) : 0;
   const components = [
-    scoreComponent("Conservative estimated GP/hour", logScale(conservativeExpectedGpPerHour, 1_000_000) * 30 * confidence),
-    scoreComponent("Repeatable net margin", logScale(repeatableNetProfit, 100_000) * 15 * confidence),
-    scoreComponent("Repeatable ROI", clamp(repeatableRoi / 0.1, 0, 1) * 5 * confidence),
-    scoreComponent("Historical matched volume", logScale(medianMatchedHourlyVolume, 100_000) * 15 * confidence),
-    scoreComponent("Positive-spread consistency", positiveSpreadRatio * 15 * coverage),
-    scoreComponent("Seven-day spread stability", stability * 10 * coverage),
-    scoreComponent("Historical confidence", confidence * 10)
+    scoreComponent(
+      "Conservative estimated GP/hour",
+      logScale(conservativeExpectedGpPerHour, 1_000_000) * CONSERVATIVE_GP_PER_HOUR_WEIGHT * confidence
+    ),
+    scoreComponent(
+      "Conservative buy-limit profit",
+      logScale(conservativeBuyLimitProfit, 10_000_000) * CONSERVATIVE_BUY_LIMIT_PROFIT_WEIGHT * confidence
+    ),
+    scoreComponent(
+      "Repeatable net margin",
+      logScale(repeatableNetProfit, 100_000) * REPEATABLE_NET_MARGIN_WEIGHT * confidence
+    ),
+    scoreComponent("Repeatable ROI", clamp(repeatableRoi / 0.1, 0, 1) * REPEATABLE_ROI_WEIGHT * confidence),
+    scoreComponent(
+      "Historical matched volume",
+      logScale(medianMatchedHourlyVolume, 100_000) * MATCHED_VOLUME_WEIGHT * confidence
+    ),
+    scoreComponent("Positive-spread consistency", positiveSpreadRatio * POSITIVE_SPREAD_WEIGHT * coverage),
+    scoreComponent("Seven-day spread stability", stability * SPREAD_STABILITY_WEIGHT * coverage),
+    scoreComponent("Historical confidence", confidence * HISTORICAL_CONFIDENCE_WEIGHT)
   ];
 
   const freshnessPenalty = clamp(

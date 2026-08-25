@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartNoAxesCombined, ChevronsLeft, ChevronsRight, LogIn, LogOut, Moon, Search, Star, Sun, TrendingUp, User } from "lucide-react";
+import { BriefcaseBusiness, ChartNoAxesCombined, ChevronsLeft, ChevronsRight, LogIn, LogOut, Moon, Search, Star, Sun, TrendingUp, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,7 @@ import { LogoMark } from "@/components/LogoMark";
 export type Theme = "light" | "dark";
 
 type AppShellProps = {
-  activePath: "/" | "/investments" | "/lookup" | "/favorites" | "/account";
+  activePath: "/" | "/investments" | "/investment-tracker" | "/lookup" | "/favorites" | "/account";
   title: string;
   subtitle: string;
   headerActions?: ReactNode;
@@ -87,6 +87,10 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
           <Link className={`nav-item${activePath === "/investments" ? " active" : ""}`} href="/investments" title="Investment Finder">
             <ChartNoAxesCombined size={19} />
             <span>Investment Finder</span>
+          </Link>
+          <Link className={`nav-item${activePath === "/investment-tracker" ? " active" : ""}`} href="/investment-tracker" title="Investment Tracker">
+            <BriefcaseBusiness size={19} />
+            <span>Investment Tracker</span>
           </Link>
           <Link className={`nav-item${activePath === "/lookup" ? " active" : ""}`} href="/lookup" title="Item Lookup">
             <Search size={19} />

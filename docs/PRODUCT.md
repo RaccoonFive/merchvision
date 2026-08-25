@@ -30,7 +30,7 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 - **Explainable:** expose the metrics, warnings, assumptions, and uncertainty behind rankings.
 - **Market-quality focused:** reward stable spreads, sufficient samples, liquidity, confidence, and likely executability.
 - **Fast to scan:** put the tool and ranked results first; avoid a marketing-first workflow.
-- **Private by design:** provide useful recommendations without collecting a user's trades, positions, or bankroll.
+- **Private by design:** keep manually entered investment lots private to the account and avoid collecting sales, realized outcomes, synchronized trades, or bankroll.
 
 ## Product Principles
 
@@ -47,11 +47,17 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 
 ### Flip Finder
 
-Provide a ranked, filterable view of short-term buy-low/sell-high opportunities. The default ranking serves lower-risk, repeatable flips: it caps scored per-item upside at the seven-day median after-tax margin, then combines conservative estimated profit per hour with freshness, liquidity, buy limits, historical spread quality, volatility, and confidence. Isolated current-margin spikes remain discoverable but must be visibly warned and strongly down-ranked.
+Provide a ranked, filterable view of short-term buy-low/sell-high opportunities. The default ranking serves a middle ground between lower-risk execution and meaningful profit potential: it caps scored per-item upside at the seven-day median after-tax margin, then combines conservative estimated profit per hour and buy-limit profit with freshness, liquidity, historical spread quality, volatility, and confidence. Isolated current-margin spikes remain discoverable but must be visibly warned and strongly down-ranked.
 
 ### Investment Finder
 
 Surface liquid items with sustained positive short- and medium-horizon midpoint trends. Clearly distinguish momentum analysis from guaranteed future appreciation and penalize volatility, inconsistency, and incomplete history.
+
+### Investment Tracker
+
+Let a signed-in user manually record separate item purchase lots with a quantity and per-unit GP cost. Compare each lot with the latest observed instant-sell price after prospective GE tax, and aggregate the available values into a clearly labeled unrealized-profit summary. Preserve unavailable and stale valuation states rather than implying that a quote is current or executable.
+
+Investment Tracker is deliberately not a trade journal. Users can correct or remove lots, but Merchvision does not record sales, realized profit, offer state, transaction history, or proof that a purchase occurred.
 
 ### Item Lookup
 
@@ -59,18 +65,18 @@ Let a user inspect an individual item's latest quote, after-tax margin, freshnes
 
 ### Favorites And Accounts
 
-Let a signed-in user save a watchlist and revisit current public-market information. Favorites are not positions and must not imply that the user bought, sold, or owns an item.
+Let a signed-in user save a watchlist and revisit current public-market information. Favorites remain distinct from manually recorded Investment Tracker lots and must not imply that the user bought, sold, or owns an item.
 
 ### Planned Portfolio Suggestions
 
-Use a one-time budget to propose a diversified set of opportunities. The budget and recommendation must remain ephemeral: do not persist bankroll, allocations, execution, or positions.
+Use a one-time budget to propose a diversified set of opportunities. The budget and recommendation must remain ephemeral: do not persist bankroll or allocations, record execution, or automatically create Investment Tracker lots.
 
 ## Non-Goals
 
 Unless this contract is explicitly revised, Merchvision will not provide:
 
-- Trade journaling or manual transaction entry
-- Actual-position, open-offer, or realized-profit tracking
+- Sale entry, trade journaling, or transaction-history reconstruction
+- Open-offer or realized-profit tracking
 - RuneLite trade synchronization
 - Saved bankroll or persistent capital tracking
 - Automatic trade execution
@@ -91,7 +97,7 @@ A feature is product-ready when:
 
 ## Success Signals
 
-Because Merchvision intentionally does not track actual trades, success should be measured with privacy-preserving product and system signals rather than realized user profit:
+Because Merchvision does not observe execution or record sales, success should be measured with privacy-preserving product and system signals rather than realized user profit:
 
 - Users can reach a credible shortlist quickly.
 - A high proportion of displayed candidates have sufficient data coverage and clearly reported confidence.

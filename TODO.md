@@ -10,22 +10,23 @@ Last updated: 2026-08-25
 - Optimize the default ranking for repeatable market quality, not maximum paper profit.
 - Use one fixed, quality-focused scoring model with filters and sorting rather than user-defined weights. Surface the evidence and risks a merchant needs, without making score arithmetic the primary workflow.
 - Use only the OSRS Wiki Prices API for market data.
-- Keep accounts limited to authentication and Favorites.
+- Keep accounts limited to authentication, Favorites, and private manually entered investment lots.
 - Recommend candidates and expose evidence; do not prescribe offer prices or predict price targets.
-- Keep all trade, position, bankroll, and execution data outside Merchvision.
+- Keep sales, realized-profit history, offer state, synchronized trades, bankroll, and execution data outside Merchvision.
 - Optimize dense workflows for desktop while keeping every core action usable on narrow screens.
 
 `docs/PRODUCT.md` remains the durable product contract. This file owns delivery order, active work, and completion status.
 
 ## Current Baseline
 
-- Flip Finder ranks positive after-tax opportunities with a conservative 0–100 score using current quotes, seven-day median after-tax margins, matched liquidity, freshness, buy limits, confidence, consistency, and stability.
+- Flip Finder ranks positive after-tax opportunities with a conservative 0–100 score using current quotes, seven-day median after-tax margins, estimated GP per hour and buy-limit profit, matched liquidity, freshness, confidence, consistency, and stability.
 - Flip enrichment is bounded to balanced shortlists and produces deterministic confidence, stability, spread-quality, and executability estimates.
 - Item Lookup exposes current quote math, warnings, Favorites, and 1-day, 7-day, 3-month, and 1-year price history.
 - Item Lookup includes Market Rhythm: a local-time heatmap of observed hourly after-tax spread quality and matched volume from the latest seven days, with explicit missing-data and non-forecast caveats.
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
+- Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, light/dark themes, request caching, and request coalescing are implemented.
-- The current validation baseline passes 73 tests, type checking, and a production build.
+- The current validation baseline passes 94 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 
@@ -38,7 +39,7 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 ### Ranking Policy
 
 - [x] Include stale and low-confidence candidates by default, with an explicit toggle to exclude weak data.
-- [x] Tune the default ranking to favor seven-day repeatable after-tax profit, matched liquidity, freshness, and sample quality over isolated paper-margin spikes.
+- [x] Tune the default ranking to balance seven-day repeatable after-tax GP-per-hour and buy-limit profit with matched liquidity, freshness, and sample quality over isolated paper-margin spikes.
 - [x] Preserve the existing search, membership, price, profit, ROI, volume, confidence, stability, buy-limit-profit, freshness, and sorting controls.
 - [x] Keep one fixed scoring model; do not add risk presets or user-configurable score weights.
 
@@ -54,7 +55,7 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 
 ### Tuning And Verification
 
-- [x] Document the repeatability tuning: cap scored per-item profit at the seven-day median, make conservative GP/hour the largest driver, and penalize current-margin spikes so liquid steady markets outrank thin windfalls.
+- [x] Document the repeatability tuning: cap scored per-item profit at the seven-day median, make conservative GP/hour the largest driver, give buy-limit profit a modest direct weight, and penalize current-margin spikes so liquid steady markets outrank thin windfalls.
 - [x] Add focused tests for warning thresholds and ranking effects.
 - [x] Cover score-component arithmetic, explanation consistency, filters, and weak-data toggle behavior; confirm stale or low-confidence results are excluded only when requested.
 - [x] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
@@ -135,14 +136,14 @@ Promote a bet into a milestone only after the first three milestones are complet
 
 1. **Market overview:** market-wide movers, liquidity changes, and broad Grand Exchange conditions.
 2. **Item comparison:** side-by-side profitability, spread quality, liquidity, volatility, confidence, and freshness for selected candidates.
-3. **One-time portfolio suggestions:** deterministic allocations from an ephemeral budget without saving bankroll, recommendations, positions, or execution.
+3. **One-time portfolio suggestions:** deterministic allocations from an ephemeral budget without saving bankroll or recommendations, recording execution, or automatically creating tracker lots.
 
 ## Explicitly Not Planned
 
-- Saved filter presets or other account personalization beyond Favorites.
+- Saved filter presets or other account personalization beyond Favorites and Investment Tracker lots.
 - In-app, email, Discord, browser-push, or other opportunity alerts.
-- Trade journaling or manual transaction entry.
-- Actual-position, open-offer, or realized-profit tracking.
+- Sale entry, trade journaling, or transaction-history reconstruction.
+- Open-offer or realized-profit tracking.
 - Saved bankroll or persistent capital tracking.
 - RuneLite trade synchronization.
 - Automatic trade execution.
@@ -153,6 +154,8 @@ Promote a bet into a milestone only after the first three milestones are complet
 
 ## Completed
 
+- **2026-08-25:** Added the private Investment Tracker with separate editable purchase lots, net instant-sell valuation after prospective GE tax, partial-data reporting, and account ownership enforcement.
+- **2026-08-25:** Rebalanced Flip Finder scoring to modestly favor conservative buy-limit profit while retaining GP/hour as the largest driver and preserving market-quality penalties.
 - **2026-08-25:** Made usernames the primary account credential for registration and sign-in while retaining email on each account.
 - **2026-08-24:** Added Item Lookup Market Rhythm from bounded, cached seven-day hourly history; it exposes observed matched volume, after-tax spread quality, volatility, and data coverage without predicting fills or returns.
 - **2026-08-12:** Added the durable product contract, implemented architecture reference, contributor guidance, and operational MySQL setup documentation.
@@ -170,4 +173,4 @@ Promote a bet into a milestone only after the first three milestones are complet
 - Check off work only after implementation and required verification are complete.
 - Move completed milestone detail into a concise dated entry instead of retaining large checked checklists.
 - Record newly discovered work in the active milestone, next milestone, basic reliability, later bets, or explicitly-not-planned list.
-- Do not silently expand accounts beyond Favorites or add trade, position, bankroll, execution, or external-data tracking.
+- Do not silently expand accounts beyond Favorites and manual investment lots or add sales, realized-profit history, open offers, synchronized trades, bankroll, execution, or external-data tracking.

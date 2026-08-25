@@ -19,7 +19,7 @@ Next.js application
   `-- centralized Wiki client -----------------> OSRS Wiki Prices API
 ```
 
-The application is a single Next.js codebase. Market data comes from the public OSRS Wiki Real-Time Prices API. MySQL stores authentication records and favorites only; market snapshots, rankings, filters, budgets, and positions are not persisted.
+The application is a single Next.js codebase. Market data comes from the public OSRS Wiki Real-Time Prices API. MySQL stores authentication records, favorites, and private manually entered investment lots; market snapshots, rankings, filters, budgets, sales, and realized-profit history are not persisted.
 
 ## Runtime Boundaries
 
@@ -43,6 +43,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - `lib/osrsWiki.ts` is the only direct Wiki Prices API client.
 - `lib/scoring.ts` owns flip construction, seven-day market analysis, warnings, filtering, and sorting.
 - `lib/investments.ts` owns midpoint trend, volatility, consistency, confidence, filtering, and ranking for investments.
+- `lib/investmentTracker.ts` owns purchase-lot validation, live net-liquidation valuation, partial portfolio summaries, and tracker enrichment.
 - `lib/tax.ts` owns the GE tax rule.
 - `lib/marketRhythm.ts` derives Item Lookup's latest-seven-days hourly observations, after-tax spread quality, matched volume, and volatility summary.
 - `lib/quote.ts` owns current item quote calculations and quote-level warnings.
@@ -53,8 +54,9 @@ The application is a single Next.js codebase. Market data comes from the public 
 - Better Auth is configured in `lib/auth.ts` with the Prisma adapter, email/password account creation, and username/password login. Email is retained on the account record; normalized usernames are unique case-insensitively, the separate display username preserves a user's capitalization, and usernames are the primary sign-in credential. Existing accounts without a username retain an email sign-in fallback.
 - Server page sessions and route-request sessions are resolved in `lib/session.ts`.
 - `lib/prisma.ts` provides a development-safe Prisma client singleton.
-- `prisma/schema.prisma` defines Better Auth records and the user-owned `Favorite` model.
+- `prisma/schema.prisma` defines Better Auth records and the user-owned `Favorite` and `InvestmentLot` models.
 - Favorite uniqueness is enforced by the composite `(userId, itemId)` constraint. Deleting a user cascades to their sessions, accounts, and favorites.
+- Investment lots intentionally allow repeated item IDs so separate purchases retain their own quantity and per-unit cost. Deleting a user cascades to their lots.
 
 ## Application Routes
 
@@ -62,6 +64,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 | --- | --- | --- |
 | `/` | Flip Finder | Public |
 | `/investments` | Investment Finder | Public |
+| `/investment-tracker` | Manually entered purchase lots and current unrealized net liquidation value | Authenticated; unauthenticated users are redirected |
 | `/lookup` and `/lookup/[id]` | Item search and quote/history inspection | Public; favorite controls require a session |
 | `/favorites` | Current quotes for saved items | Authenticated; unauthenticated users are redirected |
 | `/account` | Sign-up, sign-in, session display, and sign-out | Public |
@@ -72,6 +75,10 @@ The application is a single Next.js codebase. Market data comes from the public 
 | --- | --- | --- | --- |
 | `GET /api/flips` | Rank and filter flip candidates | `{ data, meta }` | Public |
 | `GET /api/investments` | Rank and filter investment candidates | `{ data, meta }` | Public |
+| `GET /api/investment-tracker` | Enrich the current user's purchase lots with current valuation | `{ data, meta }` | Authenticated |
+| `POST /api/investment-tracker` | Create a separate purchase lot | `{ data }` | Authenticated |
+| `PUT /api/investment-tracker/[lotId]` | Replace a lot's quantity and per-unit cost | `{ data }` | Authenticated owner |
+| `DELETE /api/investment-tracker/[lotId]` | Permanently remove a lot | `{ deleted: true }` | Authenticated owner |
 | `GET /api/items` | Return normalized item metadata | `{ data }` | Public |
 | `GET /api/items/[id]/quote` | Return item metadata and current quote | `{ item, quote }` | Public |
 | `GET /api/items/[id]/timeseries` | Return normalized timeseries points and, when requested, Market Rhythm analysis | `{ data, rhythm? }` | Public |
@@ -134,7 +141,7 @@ Key invariants:
 
 Market analysis uses the latest 168 hourly points. It derives the seven-day median after-tax margin, median absolute margin variability, positive-spread ratio, normalized midpoint volatility, median matched hourly volume, sample coverage, confidence, and a volatility penalty. Estimated executable units per hour are 1% of median matched hourly volume, capped by one quarter of a known four-hour buy limit.
 
-The 0–100 score uses `min(current net profit, seven-day median net margin)` as repeatable per-item profit. Conservative estimated GP/hour multiplies that amount by estimated executable units. Positive points reward this estimate, repeatable margin and ROI, matched liquidity, positive-spread consistency, stability, and confidence. Stale quotes, a current margin far above its historical norm, and an unknown buy limit subtract points. These are explicit estimates, not observed fills or guaranteed profit.
+The 0–100 score uses `min(current net profit, seven-day median net margin)` as repeatable per-item profit. Conservative estimated GP/hour multiplies that amount by estimated executable units, while conservative buy-limit profit multiplies it by the known four-hour buy limit. GP/hour remains the largest driver, and buy-limit profit receives a modest additional weight so higher-upside markets can compete with easier low-profit flips. Positive points also reward repeatable margin and ROI, matched liquidity, positive-spread consistency, stability, and confidence. Stale quotes, a current margin far above its historical norm, and an unknown buy limit subtract points. These are explicit estimates, not observed fills or guaranteed profit.
 
 ## Investment Finder Data Flow
 
@@ -149,13 +156,23 @@ The 0–100 score uses `min(current net profit, seven-day median net margin)` as
 
 Investment scores describe historical momentum and market quality. They are not price forecasts.
 
+## Investment Tracker Data Flow
+
+1. Load the authenticated user's investment lots, item mapping, and latest prices concurrently.
+2. Enrich every lot in memory from those shared snapshots; do not issue per-lot Wiki requests.
+3. Use the latest low as the observed instant-sell price, subtract per-item GE tax, and multiply the net value by the recorded quantity.
+4. Compare net liquidation value with `quantity × unitPricePaid` to calculate unrealized profit and ROI.
+5. Preserve lots whose metadata or quote is unavailable and exclude them from valued totals while marking the aggregate summary partial.
+
+Investment Tracker values are estimates based on public quotes, not confirmed fills or realized outcomes. Quotes over one hour old remain visible with a warning. Creating, editing, and deleting lots never creates sales or transaction history.
+
 ## Security And Privacy Boundaries
 
 - `.env` is ignored and is the only intended local location for secrets.
 - The application database connection must use a dedicated least-privilege MySQL user, not root. See `docs/mysql-setup.md`.
 - Favorite reads and writes are scoped to the authenticated user's ID.
 - Callback URLs are normalized by `lib/redirect.ts` to prevent unsafe external redirects.
-- The application does not persist trades, positions, bankroll, market filters, portfolio suggestions, or market histories.
+- The application persists only manually entered purchase lots, not observed trades, sales, offers, realized profit, bankroll, portfolio suggestions, market filters, or market histories.
 - API errors should remain useful without exposing credentials, session tokens, database internals, or unnecessary upstream payloads.
 
 ## Testing Strategy

@@ -38,6 +38,46 @@ export type FavoriteItem = ItemQuoteResponse & {
   favoritedAt: string;
 };
 
+export type InvestmentLotInput = {
+  itemId: number;
+  quantity: number;
+  unitPricePaid: number;
+};
+
+export type InvestmentLotUpdateInput = Omit<InvestmentLotInput, "itemId">;
+
+export type PersistedInvestmentLot = InvestmentLotInput & {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TrackedInvestmentLot = PersistedInvestmentLot & {
+  item: ItemMeta | null;
+  instantSellPrice: number | null;
+  instantSellTime: number | null;
+  freshnessSeconds: number | null;
+  taxPerUnit: number | null;
+  netLiquidationPrice: number | null;
+  totalCost: number;
+  currentNetValue: number | null;
+  currentProfit: number | null;
+  roi: number | null;
+  warnings: string[];
+};
+
+export type InvestmentTrackerSummary = {
+  lotCount: number;
+  totalCost: number;
+  valuedCost: number;
+  currentNetValue: number;
+  currentProfit: number;
+  roi: number | null;
+  unavailableLotCount: number;
+  isPartial: boolean;
+  generatedAt: string;
+};
+
 export type PricePoint = {
   timestamp: number;
   avgHighPrice?: number;
