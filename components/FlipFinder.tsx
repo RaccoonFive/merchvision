@@ -287,18 +287,7 @@ export function FlipFinder() {
                           <ItemIcon icon={flip.icon} className="item-icon" />
                           <div>
                             <div className="item-name">{flip.name}</div>
-                            <div className="item-meta">
-                              {flip.members ? "Members" : "F2P"}
-                              {flip.warnings.length > 0 ? (
-                                <span
-                                  aria-label={`Market notes: ${flip.warnings.join(", ")}`}
-                                  className="item-warning"
-                                  title={flip.warnings.join("; ")}
-                                >
-                                  {flip.warnings[0]}{flip.warnings.length > 1 ? ` +${flip.warnings.length - 1}` : ""}
-                                </span>
-                              ) : null}
-                            </div>
+                            <div className="item-meta">{flip.members ? "Members" : "F2P"}</div>
                           </div>
                         </div>
                       </td>
@@ -350,13 +339,6 @@ export function FlipFinder() {
                 <span>Score</span>
                 <strong>{selected.score}</strong>
               </div>
-              {selected.warnings.length > 0 ? (
-                <div className="warning-chips" aria-label="Market notes">
-                  {selected.warnings.map((warning) => (
-                    <span key={warning}>{warning}</span>
-                  ))}
-                </div>
-              ) : null}
               <div className="metric-grid compact">
                 <Metric label="Current net profit" value={formatGp(selected.netProfit)} tone="profit" />
                 <Metric label="Current ROI" value={formatPercent(selected.roi)} />
@@ -397,7 +379,6 @@ export function FlipFinder() {
               <section className="score-breakdown" aria-label="How this score is calculated">
                 <div className="score-breakdown-head">
                   <h3>How this score is calculated</h3>
-                  <span>Rounded from {formatScorePoints(selected.scoreBreakdown.rawScore)}</span>
                 </div>
                 <p className="muted">Current observations, historical measures, and execution estimates are scored separately.</p>
                 <ul>
