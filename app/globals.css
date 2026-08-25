@@ -37,6 +37,9 @@
   --logo-mark-end: #587b9b;
   --logo-mark-bg: #18232e;
   --logo-mark-trend: #c6a15b;
+  --scrollbar-track: rgb(125 154 179 / 12%);
+  --scrollbar-thumb: rgb(143 167 187 / 52%);
+  --scrollbar-thumb-hover: #b7c6d4;
 }
 
 :root[data-theme="light"] {
@@ -79,10 +82,45 @@
   --logo-mark-end: #3e745a;
   --logo-mark-bg: #24332a;
   --logo-mark-trend: #d2a85c;
+  --scrollbar-track: rgb(117 111 95 / 12%);
+  --scrollbar-thumb: rgb(94 89 77 / 42%);
+  --scrollbar-thumb-hover: #3e745a;
 }
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+
+/* Keep native scrolling, but give every scrollable surface a compact theme-aware rail. */
+*::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+  min-height: 48px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 html,
