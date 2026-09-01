@@ -157,6 +157,15 @@ export type MarketAnalysis = {
   volatilityPenalty: number;
 };
 
+export type FlipView = "reliable" | "upside";
+
+export type QuoteHealth = {
+  highAgeSeconds: number;
+  lowAgeSeconds: number;
+  pairAgeSeconds: number;
+  skewSeconds: number;
+};
+
 export type FlipScoreComponent = {
   label: string;
   points: number;
@@ -169,7 +178,7 @@ export type FlipScoreBreakdown = {
   score: number;
 };
 
-export type FlipCandidate = {
+export type FlipCandidateBase = {
   id: number;
   name: string;
   members: boolean;
@@ -184,7 +193,14 @@ export type FlipCandidate = {
   highTime: number;
   lowTime: number;
   freshnessSeconds: number;
+  quoteHealth: QuoteHealth;
   volume: number;
+  modelVersion: string;
+  warnings: string[];
+};
+
+export type FlipCandidate = FlipCandidateBase & {
+  view: "reliable";
   repeatableNetProfit: number | null;
   conservativeExpectedGpPerHour: number | null;
   score: number;
@@ -193,8 +209,34 @@ export type FlipCandidate = {
   confidence: number;
   stability: number;
   totalBuyLimitProfit: number;
-  warnings: string[];
 };
+
+export type UpsideAnalysis = {
+  capturableNetMargin: number;
+  netMarginP90: number;
+  estimatedUnitsPerHour: number;
+  baseEstimatedGpPerHour: number;
+  riskAdjustedGpPerHour: number;
+  opportunityConfidence: number;
+  recentPositiveSpreadRatio: number;
+  dailyPositiveSpreadRatio: number;
+  recentSampleCoverage: number;
+  dailySampleCoverage: number;
+  recentMatchedVolume: number;
+  matchedVolumeP25PerHour: number;
+  midpointPriceVolatility: number;
+  freshnessFactor: number;
+  stabilityFactor: number;
+  sampleCount: number;
+};
+
+export type UpsideFlipCandidate = FlipCandidateBase & {
+  view: "upside";
+  buyLimit: number;
+  upsideAnalysis: UpsideAnalysis;
+};
+
+export type RankedFlipCandidate = FlipCandidate | UpsideFlipCandidate;
 
 export type FlipFilters = {
   search?: string;
@@ -209,6 +251,18 @@ export type FlipFilters = {
   includeStale?: boolean;
   includeLowConfidence?: boolean;
   sort?: "score" | "confidence" | "stability" | "totalBuyLimitProfit" | "profit" | "typicalProfit" | "expectedGpPerHour" | "roi" | "volume" | "freshness";
+};
+
+export type UpsideFlipFilters = {
+  search?: string;
+  minProfit?: number;
+  minRoi?: number;
+  minVolume?: number;
+  minExpectedGpPerHour?: number;
+  minOpportunityConfidence?: number;
+  maxPrice?: number;
+  members?: "all" | "members" | "f2p";
+  sort?: "riskAdjustedGpPerHour" | "confidence" | "capturableProfit" | "profit" | "roi" | "volume" | "freshness";
 };
 
 export type TaxConfig = {

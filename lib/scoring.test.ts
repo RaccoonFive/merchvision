@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeMarket, buildFlipCandidates, filterAndSortFlips, scoreFlip } from "./scoring";
+import { analyzeMarket, buildFlipCandidates, buildQuoteHealth, filterAndSortFlips, scoreFlip } from "./scoring";
 import type { ItemMeta, LatestPrice, PricePoint } from "./types";
 
 const nowSeconds = 1_700_000_000;
@@ -44,6 +44,25 @@ describe("buildFlipCandidates", () => {
     expect(stale?.warnings).toContain("Unknown buy limit");
     expect(stale?.warnings).toContain("Seven-day history not analyzed");
     expect(stale?.warnings).toContain("Stale quotes");
+  });
+
+  it("uses the older quote side for pair freshness and reports timestamp skew", () => {
+    const health = buildQuoteHealth(nowSeconds - 30, nowSeconds - 1_000, nowSeconds);
+    const [candidate] = buildFlipCandidates({
+      items: [{ id: 1, name: "Split quote", members: false, limit: 1_000 }],
+      prices: [{ id: 1, low: 100, high: 140, lowTime: nowSeconds - 1_000, highTime: nowSeconds - 30 }],
+      nowSeconds
+    });
+
+    expect(health).toEqual({
+      highAgeSeconds: 30,
+      lowAgeSeconds: 1_000,
+      pairAgeSeconds: 1_000,
+      skewSeconds: 970
+    });
+    expect(candidate.freshnessSeconds).toBe(1_000);
+    expect(candidate.warnings).toContain("Stale quotes");
+    expect(candidate.warnings).toContain("Quote sides are out of sync");
   });
 
   it("returns score components that reproduce the aggregate score", () => {

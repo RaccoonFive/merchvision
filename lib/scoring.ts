@@ -6,7 +6,8 @@ import type {
   ItemMeta,
   LatestPrice,
   MarketAnalysis,
-  PricePoint
+  PricePoint,
+  QuoteHealth
 } from "./types";
 
 const STALE_AFTER_SECONDS = 15 * 60;
@@ -27,6 +28,8 @@ const MATCHED_VOLUME_WEIGHT = 10;
 const POSITIVE_SPREAD_WEIGHT = 12;
 const SPREAD_STABILITY_WEIGHT = 8;
 const HISTORICAL_CONFIDENCE_WEIGHT = 10;
+const RELIABLE_MODEL_VERSION = "reliable-v1";
+const QUOTE_SKEW_WARNING_SECONDS = 15 * 60;
 export const MIN_DEFAULT_CONFIDENCE = 0.45;
 
 type BuildCandidatesInput = {
@@ -59,8 +62,8 @@ export function buildFlipCandidates({
     const tax = calculateGeTax(sellPrice);
     const netProfit = margin - tax;
     const roi = buyPrice > 0 ? netProfit / buyPrice : 0;
-    const freshestTrade = Math.max(price.highTime, price.lowTime);
-    const freshnessSeconds = Math.max(0, nowSeconds - freshestTrade);
+    const quoteHealth = buildQuoteHealth(price.highTime, price.lowTime, nowSeconds);
+    const freshnessSeconds = quoteHealth.pairAgeSeconds;
     const volume = volumesByItem.get(price.id) ?? 0;
     const marketAnalysis = analysesByItem.get(price.id);
     const confidence = marketAnalysis?.confidence ?? 0;
@@ -68,7 +71,7 @@ export function buildFlipCandidates({
       ? Math.max(0, 1 - marketAnalysis.volatilityPenalty)
       : 0;
     const totalBuyLimitProfit = item.limit ? netProfit * item.limit : 0;
-    const warnings = buildWarnings({ item, netProfit, freshnessSeconds, marketAnalysis });
+    const warnings = buildWarnings({ item, netProfit, quoteHealth, marketAnalysis });
     const repeatable = repeatableProfitMetrics(netProfit, marketAnalysis);
     const scoreBreakdown = scoreFlip({
       netProfit,
@@ -83,6 +86,8 @@ export function buildFlipCandidates({
     }
 
     candidates.push({
+      view: "reliable",
+      modelVersion: RELIABLE_MODEL_VERSION,
       id: item.id,
       name: item.name,
       members: item.members,
@@ -97,6 +102,7 @@ export function buildFlipCandidates({
       highTime: price.highTime,
       lowTime: price.lowTime,
       freshnessSeconds,
+      quoteHealth,
       volume,
       repeatableNetProfit: repeatable?.netProfit ?? null,
       conservativeExpectedGpPerHour: repeatable?.expectedGpPerHour ?? null,
@@ -206,12 +212,12 @@ export function analyzeMarket(points: PricePoint[], buyLimit?: number): MarketAn
 function buildWarnings({
   item,
   netProfit,
-  freshnessSeconds,
+  quoteHealth,
   marketAnalysis
 }: {
   item: ItemMeta;
   netProfit: number;
-  freshnessSeconds: number;
+  quoteHealth: QuoteHealth;
   marketAnalysis?: MarketAnalysis;
 }): string[] {
   const warnings: string[] = [];
@@ -234,9 +240,22 @@ function buildWarnings({
       warnings.push("Current margin is far above its seven-day norm");
     }
   }
-  if (freshnessSeconds > STALE_AFTER_SECONDS) warnings.push("Stale quotes");
+  if (quoteHealth.pairAgeSeconds > STALE_AFTER_SECONDS) warnings.push("Stale quotes");
+  if (quoteHealth.skewSeconds > QUOTE_SKEW_WARNING_SECONDS) warnings.push("Quote sides are out of sync");
   if (netProfit < 100) warnings.push("Small margin");
   return warnings;
+}
+
+export function buildQuoteHealth(highTime: number, lowTime: number, nowSeconds: number): QuoteHealth {
+  const highAgeSeconds = Math.max(0, nowSeconds - highTime);
+  const lowAgeSeconds = Math.max(0, nowSeconds - lowTime);
+
+  return {
+    highAgeSeconds,
+    lowAgeSeconds,
+    pairAgeSeconds: Math.max(highAgeSeconds, lowAgeSeconds),
+    skewSeconds: Math.abs(highTime - lowTime)
+  };
 }
 
 export function scoreFlip({

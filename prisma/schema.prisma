@@ -98,3 +98,35 @@ model InvestmentLot {
   @@index([userId, itemId])
   @@map("investment_lot")
 }
+
+model FlipObservation {
+  id                       String    @id @default(cuid())
+  itemId                   Int
+  rankingView              String
+  modelVersion             String
+  observedAt               DateTime
+  bucketAt                 DateTime
+  horizonEndsAt            DateTime
+  rank                     Int
+  buyPrice                 Int
+  sellPrice                Int
+  netProfit                Int
+  estimatedUnitsPerHour    Float
+  estimatedGpPerHour       Float
+  confidence               Float
+  features                 Json
+  status                   String    @default("pending")
+  outcome                  String?
+  entryTouchedAt           DateTime?
+  exitTouchedAt            DateTime?
+  timeToCompletionMinutes  Int?
+  proxyGpPerHour           Float?
+  resolvedAt               DateTime?
+  createdAt                DateTime  @default(now())
+
+  @@unique([modelVersion, bucketAt, itemId])
+  @@index([status, horizonEndsAt])
+  @@index([modelVersion, observedAt])
+  @@index([itemId, observedAt])
+  @@map("flip_observation")
+}

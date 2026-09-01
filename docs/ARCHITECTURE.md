@@ -19,7 +19,7 @@ Next.js application
   `-- centralized Wiki client -----------------> OSRS Wiki Prices API
 ```
 
-The application is a single Next.js codebase. Market data comes from the public OSRS Wiki Real-Time Prices API. MySQL stores authentication records, favorites, and private manually entered investment lots; market snapshots, rankings, filters, budgets, sales, and realized-profit history are not persisted.
+The application is a single Next.js codebase. Market data comes from the public OSRS Wiki Real-Time Prices API. MySQL stores authentication records, favorites, private manually entered investment lots, and bounded user-independent flip observations used for model calibration. Full market snapshots, filters, budgets, sales, private trade outcomes, and realized-profit history are not persisted.
 
 ## Runtime Boundaries
 
@@ -42,6 +42,9 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 - `lib/osrsWiki.ts` is the only direct Wiki Prices API client.
 - `lib/scoring.ts` owns flip construction, seven-day market analysis, warnings, filtering, and sorting.
+- `lib/upsideScoring.ts` owns the experimental five-minute High Upside gate, analysis, capacity estimate, confidence, filtering, and ranking.
+- `lib/flipFinder.ts` coordinates the separate Reliable and High Upside enrichment paths.
+- `lib/flipCalibration.ts` records bounded ranking cohorts, resolves public-market touch proxies, prunes retention data, and reports model comparisons.
 - `lib/investments.ts` owns midpoint trend, volatility, consistency, confidence, filtering, and ranking for investments.
 - `lib/investmentTracker.ts` owns purchase-lot validation, live net-liquidation valuation, partial portfolio summaries, and tracker enrichment.
 - `lib/tax.ts` owns the GE tax rule.
@@ -55,6 +58,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - Server page sessions and route-request sessions are resolved in `lib/session.ts`.
 - `lib/prisma.ts` provides a development-safe Prisma client singleton.
 - `prisma/schema.prisma` defines Better Auth records and the user-owned `Favorite` and `InvestmentLot` models.
+- `FlipObservation` stores public, user-independent model features and four-hour proxy outcomes for 90 days. It has no user relation.
 - Favorite uniqueness is enforced by the composite `(userId, itemId)` constraint. Deleting a user cascades to their sessions, accounts, and favorites.
 - Investment lots intentionally allow repeated item IDs so separate purchases retain their own quantity and per-unit cost. Deleting a user cascades to their lots.
 
@@ -73,7 +77,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 | Endpoint | Responsibility | Success shape | Access |
 | --- | --- | --- | --- |
-| `GET /api/flips` | Rank and filter flip candidates | `{ data, meta }` | Public |
+| `GET /api/flips?view=reliable\|upside` | Rank and filter the default Reliable or experimental High Upside candidates | `{ data, meta }` | Public |
 | `GET /api/investments` | Rank and filter investment candidates | `{ data, meta }` | Public |
 | `GET /api/investment-tracker` | Enrich the current user's purchase lots with current valuation | `{ data, meta }` | Authenticated |
 | `POST /api/investment-tracker` | Create a separate purchase lot | `{ data }` | Authenticated |
@@ -88,6 +92,8 @@ The application is a single Next.js codebase. Market data comes from the public 
 | `PUT /api/favorites/[itemId]` | Save an item | `{ favorited: true }` | Authenticated |
 | `DELETE /api/favorites/[itemId]` | Remove an item | `{ favorited: false }` | Authenticated |
 | `/api/auth/[...all]` | Better Auth handler | Better Auth contract | Depends on operation |
+| `GET /api/internal/flip-calibration` | Return bounded calibration reports and monotonic weight analysis | `{ data }` | `CRON_SECRET` bearer token |
+| `POST /api/internal/flip-calibration` | Collect, resolve, and prune calibration observations | `{ data }` | `CRON_SECRET` bearer token |
 
 ## Market Data Integration And Caching
 
@@ -121,6 +127,10 @@ Any move to multiple production instances should explicitly revisit shared cachi
 
 ## Flip Finder Data Flow
 
+The browser loads only the selected view. Reliable is the initial request; High Upside enrichment begins only after the user selects its tab.
+
+### Reliable
+
 1. Parse and normalize filters from the request URL.
 2. Load item mapping and latest prices concurrently.
 3. Load the cached 24-hour market summary when available and build profitable preliminary candidates using the latest low as buy price and latest high as sell price.
@@ -138,10 +148,29 @@ Key invariants:
 - `netProfit = margin - tax`
 - Candidates require complete price/timestamp data and positive current net profit.
 - Quotes older than one hour and candidates with low confidence are included by default, with filters available to exclude them.
+- Freshness uses the older side of the high/low quote pair. Timestamp skew is returned and warned separately.
 
 Market analysis uses the latest 168 hourly points. It derives the seven-day median after-tax margin, median absolute margin variability, positive-spread ratio, normalized midpoint volatility, median matched hourly volume, sample coverage, confidence, and a volatility penalty. Estimated executable units per hour are 1% of median matched hourly volume, capped by one quarter of a known four-hour buy limit.
 
-The 0–100 score uses `min(current net profit, seven-day median net margin)` as repeatable per-item profit. Conservative estimated GP/hour multiplies that amount by estimated executable units, while conservative buy-limit profit multiplies it by the known four-hour buy limit. GP/hour remains the largest driver, and buy-limit profit receives a modest additional weight so higher-upside markets can compete with easier low-profit flips. Positive points also reward repeatable margin and ROI, matched liquidity, positive-spread consistency, stability, and confidence. Stale quotes, a current margin far above its historical norm, and an unknown buy limit subtract points. These are explicit estimates, not observed fills or guaranteed profit.
+The 0–100 score uses `min(current net profit, seven-day median net margin)` as repeatable per-item profit. Conservative estimated GP/hour multiplies that amount by estimated executable units, while conservative buy-limit profit multiplies it by the known four-hour buy limit. GP/hour remains the largest driver, and buy-limit profit receives a modest additional weight so higher-upside markets can compete with easier low-profit flips. Positive points also reward repeatable margin and ROI, matched liquidity, positive-spread consistency, stability, and confidence. Stale or unsynchronized quotes, a current margin far above its historical norm, and an unknown buy limit reduce trust. These are explicit estimates, not observed fills or guaranteed profit.
+
+### High Upside
+
+1. Build a bounded 75-item union: 25 by current net margin, 15 by ROI, 20 by a four-hour capacity proxy, and 15 by matched 24-hour volume; fill gaps by capacity.
+2. Reject preliminary items with unknown limits, quote-pair age over 15 minutes, or high/low timestamps more than 10 minutes apart.
+3. Fetch five-minute histories in sequential batches of at most 10 requests. A failed history excludes only that item.
+4. Require at least 50% valid two-sided coverage in both four-hour and 24-hour windows plus positive recent matched volume.
+5. Cap capturable net margin at the 24-hour 90th percentile. Estimate units per hour as 1% of lower-quartile rolling hourly matched volume, capped by one quarter of the buy limit.
+6. Calculate opportunity confidence as the geometric mean of four-hour and 24-hour positive-spread ratios, daily coverage, paired-quote freshness, and midpoint stability.
+7. Rank by capturable margin times estimated units times confidence, followed by deterministic quality tie-breakers.
+
+High Upside exposes GP/hour and confidence separately. Its 1% market-share assumption is a capacity heuristic, not a fill forecast.
+
+### Calibration
+
+Every 15 minutes, an external scheduler may call the protected calibration endpoint. It records at most 50 High Upside, 25 Reliable, and 25 legacy-current observations per timestamp bucket. Four hours later, a candidate is marked completed only when a qualifying low-side trade is followed in a later five-minute bucket by a qualifying high-side trade. Same-bucket touches are ambiguous and receive zero proxy GP/hour.
+
+Reports compare top-10 and top-25 completion, time-to-completion, and zero-inclusive proxy GP/hour by model. A time-ordered 70/30 analysis can recommend positive monotonic confidence weights, but it never changes the production model automatically. Resolved raw observations are removed after 90 days. See `docs/flip-calibration.md`.
 
 ## Investment Finder Data Flow
 
@@ -172,7 +201,8 @@ Investment Tracker values are estimates based on public quotes, not confirmed fi
 - The application database connection must use a dedicated least-privilege MySQL user, not root. See `docs/mysql-setup.md`.
 - Favorite reads and writes are scoped to the authenticated user's ID.
 - Callback URLs are normalized by `lib/redirect.ts` to prevent unsafe external redirects.
-- The application persists only manually entered purchase lots, not observed trades, sales, offers, realized profit, bankroll, portfolio suggestions, market filters, or market histories.
+- Beyond account data, Favorites, manual purchase lots, and bounded public calibration observations, the application does not persist user trades, sales, offers, realized profit, bankroll, portfolio suggestions, filters, or full market histories.
+- Flip observations contain only public item-market features and public-market proxy outcomes; they never contain user IDs, account actions, or evidence that a user's order filled.
 - API errors should remain useful without exposing credentials, session tokens, database internals, or unnecessary upstream payloads.
 
 ## Testing Strategy

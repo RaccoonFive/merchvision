@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-08-25
+Last updated: 2026-09-01
 
 ## Product Direction
 
@@ -8,7 +8,7 @@ Last updated: 2026-08-25
 
 - Lead with ranked opportunities and use item-level analysis as the drill-down experience.
 - Optimize the default ranking for repeatable market quality, not maximum paper profit.
-- Use one fixed, quality-focused scoring model with filters and sorting rather than user-defined weights. Surface the evidence and risks a merchant needs, without making score arithmetic the primary workflow.
+- Use two fixed, evidence-backed views: Reliable by default and an explicitly experimental High Upside view. Do not add user-defined score weights.
 - Use only the OSRS Wiki Prices API for market data.
 - Keep accounts limited to authentication, Favorites, and private manually entered investment lots.
 - Recommend candidates and expose evidence; do not prescribe offer prices or predict price targets.
@@ -19,14 +19,15 @@ Last updated: 2026-08-25
 
 ## Current Baseline
 
-- Flip Finder ranks positive after-tax opportunities with a conservative 0–100 score using current quotes, seven-day median after-tax margins, estimated GP per hour and buy-limit profit, matched liquidity, freshness, confidence, consistency, and stability.
+- Flip Finder defaults to a conservative Reliable score and lazy-loads an experimental High Upside ranking based on fresh paired quotes, five-minute margin persistence, robust capacity, and separately displayed confidence.
+- A protected 15-minute calibration job can retain 90 days of bounded public-market observations and compare High Upside, Reliable, and legacy-current ranking cohorts without recording user activity.
 - Flip enrichment is bounded to balanced shortlists and produces deterministic confidence, stability, spread-quality, and executability estimates.
 - Item Lookup exposes current quote math, warnings, Favorites, and 1-day, 7-day, 3-month, and 1-year price history.
 - Item Lookup includes Market Rhythm: a local-time heatmap of observed hourly after-tax spread quality and matched volume from the latest seven days, with explicit missing-data and non-forecast caveats.
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, light/dark themes, request caching, and request coalescing are implemented.
-- The current validation baseline passes 94 tests, type checking, and a production build.
+- The current validation baseline passes 121 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 
@@ -41,7 +42,11 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 - [x] Include stale and low-confidence candidates by default, with an explicit toggle to exclude weak data.
 - [x] Tune the default ranking to balance seven-day repeatable after-tax GP-per-hour and buy-limit profit with matched liquidity, freshness, and sample quality over isolated paper-margin spikes.
 - [x] Preserve the existing search, membership, price, profit, ROI, volume, confidence, stability, buy-limit-profit, freshness, and sorting controls.
-- [x] Keep one fixed scoring model; do not add risk presets or user-configurable score weights.
+- [x] Keep fixed Reliable and High Upside scoring policies; do not add risk presets or user-configurable score weights.
+- [x] Preserve Reliable as the default and add a separately labeled, lazy-loaded High Upside view.
+- [x] Use paired quote age and timestamp skew instead of treating the freshest side as the complete quote.
+- [x] Bound five-minute High Upside enrichment and exclude stale, unsynchronized, sparse, one-sided, or unknown-limit candidates.
+- [x] Add user-independent public-market proxy calibration with protected scheduling, model isolation, deterministic resolution, and 90-day retention.
 
 ### Explanation And UI
 
@@ -149,11 +154,12 @@ Promote a bet into a milestone only after the first three milestones are complet
 - Automatic trade execution.
 - Predicted entry prices, exit prices, holding times, or guaranteed outcomes.
 - High-alchemy, conversion, item-set, or other arbitrage tools.
-- Automated forward-performance tracking or stored historical ranking snapshots.
+- Unbounded full-market snapshots, user-linked recommendation outcomes, or calibration from private trades.
 - User-configurable scoring weights or ranking profiles.
 
 ## Completed
 
+- **2026-09-01:** Added dual-track Flip Finder rankings with Reliable as the default, an experimental five-minute High Upside model, paired-quote health, bounded public-market calibration, and protected model comparison reports.
 - **2026-08-25:** Added the private Investment Tracker with separate editable purchase lots, net instant-sell valuation after prospective GE tax, partial-data reporting, and account ownership enforcement.
 - **2026-08-25:** Rebalanced Flip Finder scoring to modestly favor conservative buy-limit profit while retaining GP/hour as the largest driver and preserving market-quality penalties.
 - **2026-08-25:** Made usernames the primary account credential for registration and sign-in while retaining email on each account.

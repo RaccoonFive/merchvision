@@ -1,4 +1,8 @@
-import type { FlipFilters, InvestmentFilters } from "./types";
+import type { FlipFilters, FlipView, InvestmentFilters, UpsideFlipFilters } from "./types";
+
+export function parseFlipView(searchParams: URLSearchParams): FlipView {
+  return searchParams.get("view") === "upside" ? "upside" : "reliable";
+}
 
 export function parseFlipFilters(searchParams: URLSearchParams): FlipFilters {
   const members = searchParams.get("members");
@@ -51,6 +55,32 @@ export function parseInvestmentFilters(searchParams: URLSearchParams): Investmen
       sort === "score"
         ? sort
         : "score"
+  };
+}
+
+export function parseUpsideFlipFilters(searchParams: URLSearchParams): UpsideFlipFilters {
+  const members = searchParams.get("members");
+  const sort = searchParams.get("sort");
+
+  return {
+    search: searchParams.get("search") ?? undefined,
+    minProfit: numericParam(searchParams, "minProfit"),
+    minRoi: numericParam(searchParams, "minRoi"),
+    minVolume: numericParam(searchParams, "minVolume"),
+    minExpectedGpPerHour: numericParam(searchParams, "minExpectedGpPerHour"),
+    minOpportunityConfidence: numericParam(searchParams, "minOpportunityConfidence"),
+    maxPrice: numericParam(searchParams, "maxPrice"),
+    members: members === "members" || members === "f2p" ? members : "all",
+    sort:
+      sort === "confidence" ||
+      sort === "capturableProfit" ||
+      sort === "profit" ||
+      sort === "roi" ||
+      sort === "volume" ||
+      sort === "freshness" ||
+      sort === "riskAdjustedGpPerHour"
+        ? sort
+        : "riskAdjustedGpPerHour"
   };
 }
 

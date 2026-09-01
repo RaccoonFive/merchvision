@@ -34,7 +34,7 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 
 ## Product Principles
 
-1. **Trust before upside.** A smaller credible opportunity is more useful than a large but unstable paper margin.
+1. **Trust before upside.** Reliable remains the default, while explicitly experimental upside research may accept more uncertainty without disguising it.
 2. **Evidence before confidence.** Missing, stale, sparse, or inconsistent data must reduce confidence or produce a clear warning.
 3. **Explain rankings.** A user should be able to understand why one candidate outranks another from the returned and displayed metrics.
 4. **Separate estimates from facts.** Current quotes and public volumes are observations; fill speed, executable units, and projected profit are estimates.
@@ -47,7 +47,12 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 
 ### Flip Finder
 
-Provide a ranked, filterable view of short-term buy-low/sell-high opportunities. The default ranking serves a middle ground between lower-risk execution and meaningful profit potential: it caps scored per-item upside at the seven-day median after-tax margin, then combines conservative estimated profit per hour and buy-limit profit with freshness, liquidity, historical spread quality, volatility, and confidence. Isolated current-margin spikes remain discoverable but must be visibly warned and strongly down-ranked.
+Provide two ranked, filterable views of short-term buy-low/sell-high opportunities:
+
+- **Reliable** is the default. It caps scored per-item upside at the seven-day median after-tax margin, then combines conservative estimated profit per hour and buy-limit profit with paired-quote freshness, liquidity, historical spread quality, volatility, and confidence.
+- **High Upside** is experimental. It considers only fresh, synchronized, sufficiently sampled, two-sided markets and ranks recent upper-range margins by risk-adjusted estimated GP per hour over a one-to-four-hour horizon. It must show confidence separately and must not imply that its capacity estimate is an observed fill rate.
+
+Both views use fixed, explainable policies rather than user-configurable weights. Isolated current-margin spikes remain visible only when supported by the selected view's evidence policy.
 
 ### Investment Finder
 
@@ -82,6 +87,7 @@ Unless this contract is explicitly revised, Merchvision will not provide:
 - Automatic trade execution
 - Discord, email, browser-push, or other external alert delivery
 - Claims that public market data can guarantee fills, price direction, or profit
+- User-linked recommendation outcomes or calibration from private trades
 
 ## Product Quality Bar
 
@@ -101,6 +107,7 @@ Because Merchvision does not observe execution or record sales, success should b
 
 - Users can reach a credible shortlist quickly.
 - A high proportion of displayed candidates have sufficient data coverage and clearly reported confidence.
+- Experimental ranking changes are evaluated against Reliable and legacy baselines using time-ordered public-market proxy outcomes before promotion.
 - Users can explain, from the UI, why a higher-ranked opportunity outranks a lower-ranked one.
 - Stale or degraded upstream data is visible rather than silently presented as current.
 - Returning users can resume research efficiently through filters, lookup, and favorites.
