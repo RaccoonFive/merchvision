@@ -227,13 +227,13 @@ export function InvestmentTrackerPage() {
     <AppShell
       activePath="/investment-tracker"
       title="Investment Tracker"
-      subtitle="Track private purchase lots against current net instant-sell value"
       headerActions={
         <div className="status-pill">
-          <RefreshCw size={15} />
-          {summary.generatedAt ? `Updated ${formatClock(summary.generatedAt)}` : "Waiting for prices"}
-          <button className="refresh-btn" disabled={loading || refreshing} onClick={refreshTracker} type="button" aria-label="Refresh investment values">
-            {refreshing ? <LoadingSpinner label="Refreshing..." size="small" variant="button" /> : <><RefreshCw size={16} /> Refresh</>}
+          <span className="status-pill-copy" title={summary.generatedAt ? `Updated ${formatClock(summary.generatedAt)}` : "Waiting for prices"}>
+            {summary.generatedAt ? `Updated ${formatClock(summary.generatedAt)}` : "Waiting for prices"}
+          </span>
+          <button className="refresh-btn" disabled={loading || refreshing} onClick={refreshTracker} type="button" aria-label={refreshing ? "Refreshing investment values" : "Refresh investment values"} title={refreshing ? "Refreshing investment values" : "Refresh investment values"}>
+            {refreshing ? <LoadingSpinner size="small" variant="button" /> : <RefreshCw aria-hidden="true" size={14} />}
           </button>
         </div>
       }

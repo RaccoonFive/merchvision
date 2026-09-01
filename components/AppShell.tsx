@@ -1,8 +1,8 @@
 "use client";
 
-import { BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, ChevronsLeft, ChevronsRight, LogIn, LogOut, Palette, Search, Star, TrendingUp, User } from "lucide-react";
+import { BriefcaseBusiness, ChartNoAxesCombined, Check, ChevronDown, ChevronsLeft, ChevronsRight, LogIn, LogOut, Palette, Search, Star, TrendingUp, User } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -10,25 +10,27 @@ import { LogoMark } from "@/components/LogoMark";
 
 export type Theme = "light" | "dark" | "midnight";
 
-const themes: Array<{ label: string; value: Theme }> = [
-  { label: "Parchment", value: "light" },
-  { label: "Gielinor Dusk", value: "dark" },
-  { label: "Midnight Slate", value: "midnight" }
+const themes: Array<{ description: string; label: string; value: Theme }> = [
+  { description: "Warm, bright ledger", label: "Parchment", value: "light" },
+  { description: "Bronze, moss, and charcoal", label: "Gielinor Dusk", value: "dark" },
+  { description: "Classic cool blue-grey", label: "Midnight Slate", value: "midnight" }
 ];
 
 type AppShellProps = {
   activePath: "/" | "/investments" | "/investment-tracker" | "/lookup" | "/favorites" | "/account";
   title: string;
-  subtitle: string;
   headerActions?: ReactNode;
   children: (theme: Theme) => ReactNode;
 };
 
-export function AppShell({ activePath, title, subtitle, headerActions, children }: AppShellProps) {
+export function AppShell({ activePath, title, headerActions, children }: AppShellProps) {
   const router = useRouter();
   const { data: session, isPending: sessionPending } = authClient.useSession();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const themePickerRef = useRef<HTMLDivElement>(null);
+  const themeTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const documentTheme = document.documentElement.dataset.theme;
@@ -36,11 +38,54 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
     setSidebarCollapsed(document.documentElement.dataset.sidebarCollapsed === "true");
   }, []);
 
+  useEffect(() => {
+    function closeThemeMenu(event: PointerEvent) {
+      if (!themePickerRef.current?.contains(event.target as Node)) setThemeMenuOpen(false);
+    }
+
+    document.addEventListener("pointerdown", closeThemeMenu);
+    return () => document.removeEventListener("pointerdown", closeThemeMenu);
+  }, []);
+
   function selectTheme(nextTheme: Theme) {
     document.documentElement.dataset.theme = nextTheme;
     window.localStorage.setItem("merchvision-theme", nextTheme);
     document.querySelector("link[data-theme-favicon]")?.setAttribute("href", themeFavicon(nextTheme));
     setTheme(nextTheme);
+    setThemeMenuOpen(false);
+    themeTriggerRef.current?.focus();
+  }
+
+  function openThemeMenu() {
+    setThemeMenuOpen(true);
+    requestAnimationFrame(() => {
+      themePickerRef.current
+        ?.querySelector<HTMLButtonElement>(`[role="option"][data-theme-option="${theme}"]`)
+        ?.focus();
+    });
+  }
+
+  function navigateThemeMenu(event: KeyboardEvent<HTMLDivElement>) {
+    const options = Array.from(themePickerRef.current?.querySelectorAll<HTMLButtonElement>("[role=option]") ?? []);
+    if (options.length === 0) return;
+
+    const currentIndex = options.indexOf(document.activeElement as HTMLButtonElement);
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowDown") nextIndex = (currentIndex + 1) % options.length;
+    if (event.key === "ArrowUp") nextIndex = (currentIndex - 1 + options.length) % options.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = options.length - 1;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setThemeMenuOpen(false);
+      themeTriggerRef.current?.focus();
+      return;
+    }
+    if (event.key === "Tab") setThemeMenuOpen(false);
+    if (nextIndex !== null) {
+      event.preventDefault();
+      options[nextIndex]?.focus();
+    }
   }
 
   function toggleSidebar() {
@@ -129,25 +174,52 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
 
       <main className="app-shell">
         <header className="topbar">
-          <div>
-            <h1>{title}</h1>
-            <p className="subtitle">{subtitle}</p>
-          </div>
+          <h1>{title}</h1>
           <div className="topbar-actions">
-            <label className="theme-selector">
-              <Palette aria-hidden="true" size={15} />
-              <select
-                aria-label="Theme"
-                onChange={(event) => selectTheme(event.target.value as Theme)}
+            <div className="theme-picker" ref={themePickerRef}>
+              <button
+                aria-controls="theme-menu"
+                aria-expanded={themeMenuOpen}
+                aria-haspopup="listbox"
+                className="theme-picker-trigger"
+                onClick={() => themeMenuOpen ? setThemeMenuOpen(false) : openThemeMenu()}
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    openThemeMenu();
+                  }
+                }}
+                ref={themeTriggerRef}
                 title="Choose theme"
-                value={theme}
+                type="button"
               >
-                {themes.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-              <ChevronDown aria-hidden="true" className="theme-selector-chevron" size={14} />
-            </label>
+                <Palette aria-hidden="true" size={15} />
+                <span>{themes.find((option) => option.value === theme)?.label}</span>
+                <ChevronDown aria-hidden="true" className={themeMenuOpen ? "open" : ""} size={14} />
+              </button>
+              {themeMenuOpen ? (
+                <div aria-label="Choose theme" className="theme-menu" id="theme-menu" onKeyDown={navigateThemeMenu} role="listbox">
+                  {themes.map((option) => (
+                    <button
+                      aria-selected={theme === option.value}
+                      className={theme === option.value ? "selected" : ""}
+                      data-theme-option={option.value}
+                      key={option.value}
+                      onClick={() => selectTheme(option.value)}
+                      role="option"
+                      type="button"
+                    >
+                      <span aria-hidden="true" className={`theme-preview theme-preview-${option.value}`} />
+                      <span className="theme-option-copy">
+                        <strong>{option.label}</strong>
+                        <small>{option.description}</small>
+                      </span>
+                      {theme === option.value ? <Check aria-hidden="true" className="theme-option-check" size={16} /> : null}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             {headerActions}
           </div>
         </header>

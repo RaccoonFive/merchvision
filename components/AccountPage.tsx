@@ -64,7 +64,7 @@ export function AccountPage({ callbackUrl, initialUser }: { callbackUrl: string;
   }
 
   return (
-    <AppShell activePath="/account" title="Account" subtitle="Manage your Merchvision account">
+    <AppShell activePath="/account" title="Account">
       {() => (
         <div className="account-layout">
           {initialUser ? (

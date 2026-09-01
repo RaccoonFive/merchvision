@@ -39,7 +39,7 @@ const CHART_RANGES: { label: ChartRange; timestep: string }[] = [
 
 export function ItemLookup({ initialItemId }: ItemLookupProps) {
   return (
-    <AppShell activePath="/lookup" title="Item Lookup" subtitle="Inspect the latest margin for any tradeable GE item">
+    <AppShell activePath="/lookup" title="Item Lookup">
       {(theme) => <ItemLookupContent initialItemId={initialItemId} theme={theme} />}
     </AppShell>
   );

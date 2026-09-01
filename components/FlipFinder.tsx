@@ -210,13 +210,13 @@ export function FlipFinder() {
     <AppShell
       activePath="/"
       title="Flip Finder"
-      subtitle="Live OSRS Grand Exchange flip finder"
       headerActions={
         <div className="status-pill">
-          <RefreshCw size={15} />
-          {generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}
-          <button className="refresh-btn" disabled={loading} onClick={loadFlips} type="button" aria-label="Refresh flips">
-            {loading ? <LoadingSpinner label="Refreshing..." size="small" variant="button" /> : <><RefreshCw size={16} /> Refresh</>}
+          <span className="status-pill-copy" title={generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}>
+            {generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}
+          </span>
+          <button className="refresh-btn" disabled={loading} onClick={loadFlips} type="button" aria-label={loading ? "Refreshing flips" : "Refresh flips"} title={loading ? "Refreshing flips" : "Refresh flips"}>
+            {loading ? <LoadingSpinner size="small" variant="button" /> : <RefreshCw aria-hidden="true" size={14} />}
           </button>
         </div>
       }

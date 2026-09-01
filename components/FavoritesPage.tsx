@@ -68,7 +68,7 @@ export function FavoritesPage() {
   }
 
   return (
-    <AppShell activePath="/favorites" title="Favorites" subtitle="Your saved Grand Exchange items">
+    <AppShell activePath="/favorites" title="Favorites">
       {() => (
         <section className="favorites-panel" aria-label="Favorite items">
           {error ? <div className="error">{error}</div> : null}

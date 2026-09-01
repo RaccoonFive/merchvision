@@ -166,13 +166,13 @@ export function InvestmentFinder() {
     <AppShell
       activePath="/investments"
       title="Investment Finder"
-      subtitle="Find liquid GE items with confirmed short- and medium-term momentum"
       headerActions={
         <div className="status-pill">
-          <RefreshCw size={15} />
-          {generatedAt ? `${analysisStatus} · Updated ${formatClock(generatedAt)}` : analysisStatus}
-          <button className="refresh-btn" disabled={loading} onClick={loadInvestments} type="button" aria-label="Refresh investments">
-            {loading ? <LoadingSpinner label="Refreshing..." size="small" variant="button" /> : <><RefreshCw size={16} /> Refresh</>}
+          <span className="status-pill-copy" title={generatedAt ? `${analysisStatus} · Updated ${formatClock(generatedAt)}` : analysisStatus}>
+            {generatedAt ? `${analysisStatus} · Updated ${formatClock(generatedAt)}` : analysisStatus}
+          </span>
+          <button className="refresh-btn" disabled={loading} onClick={loadInvestments} type="button" aria-label={loading ? "Refreshing investments" : "Refresh investments"} title={loading ? "Refreshing investments" : "Refresh investments"}>
+            {loading ? <LoadingSpinner size="small" variant="button" /> : <RefreshCw aria-hidden="true" size={14} />}
           </button>
         </div>
       }
