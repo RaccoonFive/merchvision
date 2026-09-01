@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Alegreya, Open_Sans, Space_Grotesk } from "next/font/google";
+import { DEFAULT_THEME, THEME_FAVICONS, THEME_VALUES } from "@/lib/theme";
 import "./globals.css";
 
 const openSans = Open_Sans({
@@ -20,22 +21,15 @@ const alegreya = Alegreya({
 const themeScript = `
   try {
     const savedTheme = localStorage.getItem("merchvision-theme");
-    const theme = savedTheme === "light" || savedTheme === "dark" || savedTheme === "midnight"
-      ? savedTheme
-      : "dark";
+    const validThemes = ${JSON.stringify(THEME_VALUES)};
+    const favicons = ${JSON.stringify(THEME_FAVICONS)};
+    const theme = validThemes.includes(savedTheme) ? savedTheme : "${DEFAULT_THEME}";
     document.documentElement.dataset.theme = theme;
-    document.querySelector("link[data-theme-favicon]")?.setAttribute(
-      "href",
-      theme === "light"
-        ? "/favicon-light.svg"
-        : theme === "midnight"
-          ? "/favicon-midnight.svg"
-          : "/favicon-dark.svg"
-    );
+    document.querySelector("link[data-theme-favicon]")?.setAttribute("href", favicons[theme]);
     document.documentElement.dataset.sidebarCollapsed =
       localStorage.getItem("merchvision-sidebar-collapsed") === "true" ? "true" : "false";
   } catch {
-    document.documentElement.dataset.theme = "dark";
+    document.documentElement.dataset.theme = "${DEFAULT_THEME}";
     document.documentElement.dataset.sidebarCollapsed = "false";
   }
 `;

@@ -384,6 +384,12 @@ function chartColors(theme: Theme) {
   if (theme === "midnight") {
     return { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", trend: "#72b99b" };
   }
+  if (theme === "abyssal") {
+    return { grid: "#473354", axis: "#b7a5c5", tooltip: "#18101f", trend: "#82c49a" };
+  }
+  if (theme === "blood") {
+    return { grid: "#4d2e31", axis: "#bea59d", tooltip: "#1e1112", trend: "#8dbc78" };
+  }
   return { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", trend: "#287255" };
 }
 

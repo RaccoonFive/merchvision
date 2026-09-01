@@ -26,8 +26,8 @@ Last updated: 2026-09-01
 - Item Lookup includes Market Rhythm: a local-time heatmap of observed hourly after-tax spread quality and matched volume from the latest seven days, with explicit missing-data and non-forecast caveats.
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
-- Username/password accounts (with email retained), user-owned Favorites, responsive navigation, light/dark themes, request caching, and request coalescing are implemented.
-- The current validation baseline passes 121 tests, type checking, and a production build.
+- Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
+- The current validation baseline passes 124 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 

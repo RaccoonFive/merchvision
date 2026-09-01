@@ -154,6 +154,110 @@
   --font-display: var(--font-space-grotesk), var(--font-open-sans), sans-serif;
 }
 
+:root[data-theme="abyssal"] {
+  color-scheme: dark;
+  /* Deep void surfaces and amethyst accents echo the Abyss without sacrificing legibility. */
+  --ice-50: #f6effb;
+  --ice-100: #eadcf5;
+  --ice-200: #d9c2e9;
+  --ice-300: #c5a5d9;
+  --ice-400: #ad86c7;
+  --ice-500: #9270a8;
+  --ice-600: #765b88;
+  --ice-700: #604b6d;
+  --text-strong: #f2e9f8;
+  --text-soft: #b7a5c5;
+  --bg: #0c0911;
+  --panel: #18101f;
+  --panel-2: #261831;
+  --text: var(--text-strong);
+  --muted: var(--text-soft);
+  --line: #473354;
+  --accent: #9d68cf;
+  --accent-strong: #d2a5f2;
+  --accent-solid: #7742a5;
+  --accent-solid-hover: #8c51ba;
+  --on-accent: #fffaff;
+  --good: #82c49a;
+  --warn: #e0ad61;
+  --bad: #e37d8a;
+  --shadow: 0 18px 46px rgb(0 0 0 / 38%);
+  --body-background: radial-gradient(ellipse at 78% -12%, rgb(119 66 165 / 22%) 0%, transparent 43%), radial-gradient(ellipse at 12% 112%, rgb(71 38 91 / 18%) 0%, transparent 38%), linear-gradient(145deg, #150d1d 0%, transparent 34%);
+  --sidebar-bg: #120c18;
+  --subtle-bg: #140d1b;
+  --glass-bg: rgb(31 20 40 / 78%);
+  --nav-hover: rgb(210 165 242 / 9%);
+  --nav-active: #2a1936;
+  --soft-panel: #110b17;
+  --soft-panel-raised: #1a1122;
+  --soft-subtle: #0f0a14;
+  --focus-ring: rgb(210 165 242 / 28%);
+  --brand-shadow: rgb(0 0 0 / 38%);
+  --logo-mark-start: #d8b0f4;
+  --logo-mark-end: #7540a4;
+  --logo-mark-bg: #1a1022;
+  --logo-mark-trend: #82c49a;
+  --scrollbar-track: rgb(210 165 242 / 9%);
+  --scrollbar-thumb: rgb(173 134 199 / 48%);
+  --scrollbar-thumb-hover: #d2a5f2;
+  --rhythm-positive: 86 171 122;
+  --rhythm-negative: 208 92 106;
+  --dialog-backdrop: rgb(4 2 7 / 72%);
+  --font-display: var(--font-space-grotesk), var(--font-open-sans), sans-serif;
+}
+
+:root[data-theme="blood"] {
+  color-scheme: dark;
+  /* Restrained crimson and warm metal keep the Blood Rune palette dramatic but usable. */
+  --ice-50: #f8f0e9;
+  --ice-100: #eeddd4;
+  --ice-200: #ddc1b7;
+  --ice-300: #c9a297;
+  --ice-400: #b4857c;
+  --ice-500: #966c66;
+  --ice-600: #795753;
+  --ice-700: #634744;
+  --text-strong: #f4e9df;
+  --text-soft: #bea59d;
+  --bg: #100909;
+  --panel: #1e1112;
+  --panel-2: #2e191b;
+  --text: var(--text-strong);
+  --muted: var(--text-soft);
+  --line: #4d2e31;
+  --accent: #b6464b;
+  --accent-strong: #ef8076;
+  --accent-solid: #8f3036;
+  --accent-solid-hover: #a83b41;
+  --on-accent: #fff8f3;
+  --good: #8dbc78;
+  --warn: #dfad5c;
+  --bad: #ff8c96;
+  --shadow: 0 18px 46px rgb(0 0 0 / 38%);
+  --body-background: radial-gradient(ellipse at 78% -12%, rgb(143 48 54 / 21%) 0%, transparent 43%), radial-gradient(ellipse at 10% 112%, rgb(113 70 33 / 13%) 0%, transparent 38%), linear-gradient(145deg, #1a0d0f 0%, transparent 34%);
+  --sidebar-bg: #170d0e;
+  --subtle-bg: #190e0f;
+  --glass-bg: rgb(38 20 21 / 78%);
+  --nav-hover: rgb(239 128 118 / 9%);
+  --nav-active: #351b1e;
+  --soft-panel: #150b0c;
+  --soft-panel-raised: #211213;
+  --soft-subtle: #12090a;
+  --focus-ring: rgb(239 128 118 / 28%);
+  --brand-shadow: rgb(0 0 0 / 40%);
+  --logo-mark-start: #f18a79;
+  --logo-mark-end: #8f3036;
+  --logo-mark-bg: #251214;
+  --logo-mark-trend: #e0b35f;
+  --scrollbar-track: rgb(239 128 118 / 9%);
+  --scrollbar-thumb: rgb(180 133 124 / 48%);
+  --scrollbar-thumb-hover: #ef8076;
+  --rhythm-positive: 112 164 88;
+  --rhythm-negative: 222 82 94;
+  --dialog-backdrop: rgb(6 2 2 / 72%);
+  --font-display: var(--font-alegreya), Georgia, serif;
+}
+
 * {
   box-sizing: border-box;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
@@ -590,6 +694,14 @@ h3 {
 
 .theme-preview-midnight {
   background: linear-gradient(135deg, #18232e 0 62%, #8fa7bb 62%);
+}
+
+.theme-preview-abyssal {
+  background: linear-gradient(135deg, #18101f 0 62%, #9d68cf 62%);
+}
+
+.theme-preview-blood {
+  background: linear-gradient(135deg, #1e1112 0 62%, #b6464b 62%);
 }
 
 .theme-option-copy {

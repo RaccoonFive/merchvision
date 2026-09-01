@@ -7,14 +7,9 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { LogoMark } from "@/components/LogoMark";
+import { DEFAULT_THEME, THEME_OPTIONS, resolveTheme, themeFavicon, type Theme } from "@/lib/theme";
 
-export type Theme = "light" | "dark" | "midnight";
-
-const themes: Array<{ description: string; label: string; value: Theme }> = [
-  { description: "Warm, bright ledger", label: "Parchment", value: "light" },
-  { description: "Bronze, moss, and charcoal", label: "Gielinor Dusk", value: "dark" },
-  { description: "Classic cool blue-grey", label: "Midnight Slate", value: "midnight" }
-];
+export type { Theme } from "@/lib/theme";
 
 type AppShellProps = {
   activePath: "/" | "/investments" | "/investment-tracker" | "/lookup" | "/favorites" | "/account";
@@ -27,14 +22,13 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
   const router = useRouter();
   const { data: session, isPending: sessionPending } = authClient.useSession();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>(DEFAULT_THEME);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const themePickerRef = useRef<HTMLDivElement>(null);
   const themeTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const documentTheme = document.documentElement.dataset.theme;
-    setTheme(documentTheme === "light" || documentTheme === "midnight" ? documentTheme : "dark");
+    setTheme(resolveTheme(document.documentElement.dataset.theme));
     setSidebarCollapsed(document.documentElement.dataset.sidebarCollapsed === "true");
   }, []);
 
@@ -194,12 +188,12 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
                 type="button"
               >
                 <Palette aria-hidden="true" size={15} />
-                <span>{themes.find((option) => option.value === theme)?.label}</span>
+                <span>{THEME_OPTIONS.find((option) => option.value === theme)?.label}</span>
                 <ChevronDown aria-hidden="true" className={themeMenuOpen ? "open" : ""} size={14} />
               </button>
               {themeMenuOpen ? (
                 <div aria-label="Choose theme" className="theme-menu" id="theme-menu" onKeyDown={navigateThemeMenu} role="listbox">
-                  {themes.map((option) => (
+                  {THEME_OPTIONS.map((option) => (
                     <button
                       aria-selected={theme === option.value}
                       className={theme === option.value ? "selected" : ""}
@@ -228,10 +222,4 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
       </main>
     </div>
   );
-}
-
-function themeFavicon(theme: Theme): string {
-  if (theme === "light") return "/favicon-light.svg";
-  if (theme === "midnight") return "/favicon-midnight.svg";
-  return "/favicon-dark.svg";
 }

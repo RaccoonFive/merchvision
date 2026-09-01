@@ -550,6 +550,12 @@ function chartColors(theme: Theme) {
   if (theme === "midnight") {
     return { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", high: "#72b99b", low: "#8fa7bb" };
   }
+  if (theme === "abyssal") {
+    return { grid: "#473354", axis: "#b7a5c5", tooltip: "#18101f", high: "#82c49a", low: "#b77ae6" };
+  }
+  if (theme === "blood") {
+    return { grid: "#4d2e31", axis: "#bea59d", tooltip: "#1e1112", high: "#8dbc78", low: "#d45a60" };
+  }
   return { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", high: "#287255", low: "#3e745a" };
 }
 
