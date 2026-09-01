@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, ChartNoAxesCombined, ChevronsLeft, ChevronsRight, LogIn, LogOut, Moon, Search, Star, Sun, TrendingUp, User } from "lucide-react";
+import { BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, ChevronsLeft, ChevronsRight, LogIn, LogOut, Palette, Search, Star, TrendingUp, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -8,7 +8,13 @@ import { authClient } from "@/lib/auth-client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { LogoMark } from "@/components/LogoMark";
 
-export type Theme = "light" | "dark";
+export type Theme = "light" | "dark" | "midnight";
+
+const themes: Array<{ label: string; value: Theme }> = [
+  { label: "Parchment", value: "light" },
+  { label: "Gielinor Dusk", value: "dark" },
+  { label: "Midnight Slate", value: "midnight" }
+];
 
 type AppShellProps = {
   activePath: "/" | "/investments" | "/investment-tracker" | "/lookup" | "/favorites" | "/account";
@@ -25,21 +31,16 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    setTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
+    const documentTheme = document.documentElement.dataset.theme;
+    setTheme(documentTheme === "light" || documentTheme === "midnight" ? documentTheme : "dark");
     setSidebarCollapsed(document.documentElement.dataset.sidebarCollapsed === "true");
   }, []);
 
-  function toggleTheme() {
-    setTheme((current) => {
-      const nextTheme = current === "dark" ? "light" : "dark";
-      document.documentElement.dataset.theme = nextTheme;
-      window.localStorage.setItem("merchvision-theme", nextTheme);
-      document.querySelector("link[data-theme-favicon]")?.setAttribute(
-        "href",
-        nextTheme === "light" ? "/favicon-light.svg" : "/favicon-dark.svg"
-      );
-      return nextTheme;
-    });
+  function selectTheme(nextTheme: Theme) {
+    document.documentElement.dataset.theme = nextTheme;
+    window.localStorage.setItem("merchvision-theme", nextTheme);
+    document.querySelector("link[data-theme-favicon]")?.setAttribute("href", themeFavicon(nextTheme));
+    setTheme(nextTheme);
   }
 
   function toggleSidebar() {
@@ -133,15 +134,20 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
             <p className="subtitle">{subtitle}</p>
           </div>
           <div className="topbar-actions">
-            <button
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-              className="theme-toggle"
-              onClick={toggleTheme}
-              title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-              type="button"
-            >
-              {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
+            <label className="theme-selector">
+              <Palette aria-hidden="true" size={15} />
+              <select
+                aria-label="Theme"
+                onChange={(event) => selectTheme(event.target.value as Theme)}
+                title="Choose theme"
+                value={theme}
+              >
+                {themes.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <ChevronDown aria-hidden="true" className="theme-selector-chevron" size={14} />
+            </label>
             {headerActions}
           </div>
         </header>
@@ -150,4 +156,10 @@ export function AppShell({ activePath, title, subtitle, headerActions, children 
       </main>
     </div>
   );
+}
+
+function themeFavicon(theme: Theme): string {
+  if (theme === "light") return "/favicon-light.svg";
+  if (theme === "midnight") return "/favicon-midnight.svg";
+  return "/favicon-dark.svg";
 }

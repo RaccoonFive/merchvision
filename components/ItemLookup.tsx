@@ -544,9 +544,13 @@ function valueTone(value: number | null): "positive" | "negative" | "muted" {
 }
 
 function chartColors(theme: Theme) {
-  return theme === "dark"
-    ? { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", high: "#72b99b", low: "#8fa7bb" }
-    : { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", high: "#287255", low: "#3e745a" };
+  if (theme === "dark") {
+    return { grid: "#3b3a2d", axis: "#aaa18b", tooltip: "#1c1e17", high: "#91bd78", low: "#d4af55" };
+  }
+  if (theme === "midnight") {
+    return { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", high: "#72b99b", low: "#8fa7bb" };
+  }
+  return { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", high: "#287255", low: "#3e745a" };
 }
 
 function toChartPoint(point: PricePoint, range: ChartRange) {

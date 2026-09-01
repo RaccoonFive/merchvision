@@ -1,45 +1,53 @@
 :root {
   color-scheme: dark;
-  --ice-50: #f3f5f8;
-  --ice-100: #e9edf1;
-  --ice-200: #d8e0e7;
-  --ice-300: #cad5df;
-  --ice-400: #b7c6d4;
-  --ice-500: #9aafc2;
-  --ice-600: #8fa7bb;
-  --ice-700: #7d9ab3;
-  --text-strong: #34485d;
-  --text-soft: #5d7288;
-  --bg: #111820;
-  --panel: #18232e;
-  --panel-2: #21303d;
-  --text: #e9edf1;
-  --muted: #9aafc2;
-  --line: #34485d;
-  --accent: #8fa7bb;
-  --accent-strong: #b7c6d4;
-  --good: #72b99b;
-  --warn: #d9a56c;
-  --bad: #e18a8a;
-  --shadow: 0 16px 40px rgb(0 0 0 / 20%);
-  --body-glow: #1b2a37;
-  --sidebar-bg: #151f29;
-  --subtle-bg: #131d26;
-  --glass-bg: rgb(24 35 46 / 72%);
-  --nav-hover: rgb(125 154 179 / 12%);
-  --nav-active: #263746;
-  --soft-panel: #101820;
-  --soft-panel-raised: #131d26;
-  --soft-subtle: #0d141b;
-  --focus-ring: rgb(143 167 187 / 20%);
-  --brand-shadow: rgb(52 72 93 / 18%);
-  --logo-mark-start: #b7c6d4;
-  --logo-mark-end: #587b9b;
-  --logo-mark-bg: #18232e;
-  --logo-mark-trend: #c6a15b;
-  --scrollbar-track: rgb(125 154 179 / 12%);
-  --scrollbar-thumb: rgb(143 167 187 / 52%);
-  --scrollbar-thumb-hover: #b7c6d4;
+  /* Grand Exchange after dusk: charcoal stone, parchment, bronze, and moss. */
+  --ice-50: #f1ead8;
+  --ice-100: #e5dac0;
+  --ice-200: #d2c099;
+  --ice-300: #baa470;
+  --ice-400: #9f874e;
+  --ice-500: #806b3d;
+  --ice-600: #695632;
+  --ice-700: #514226;
+  --text-strong: #eee5d1;
+  --text-soft: #aaa18b;
+  --bg: #0f110d;
+  --panel: #1c1e17;
+  --panel-2: #292a20;
+  --text: var(--text-strong);
+  --muted: var(--text-soft);
+  --line: #3b3a2d;
+  --accent: #a17b36;
+  --accent-strong: #dfc170;
+  --accent-solid: #745723;
+  --accent-solid-hover: #88682e;
+  --on-accent: #fff9e9;
+  --good: #91bd78;
+  --warn: #e0aa52;
+  --bad: #df8273;
+  --shadow: 0 18px 44px rgb(0 0 0 / 32%);
+  --body-background: radial-gradient(ellipse at 78% -12%, rgb(116 87 35 / 16%) 0%, transparent 42%), radial-gradient(ellipse at 15% 115%, rgb(69 86 47 / 11%) 0%, transparent 38%), linear-gradient(145deg, #15170f 0%, transparent 34%);
+  --sidebar-bg: #14160f;
+  --subtle-bg: #171910;
+  --glass-bg: rgb(37 39 29 / 76%);
+  --nav-hover: rgb(223 193 112 / 8%);
+  --nav-active: #2b2b1e;
+  --soft-panel: #14160f;
+  --soft-panel-raised: #1b1d16;
+  --soft-subtle: #11130e;
+  --focus-ring: rgb(223 193 112 / 25%);
+  --brand-shadow: rgb(0 0 0 / 34%);
+  --logo-mark-start: #e4c66f;
+  --logo-mark-end: #8b6428;
+  --logo-mark-bg: #202219;
+  --logo-mark-trend: #91bd78;
+  --scrollbar-track: rgb(223 193 112 / 8%);
+  --scrollbar-thumb: rgb(186 164 112 / 43%);
+  --scrollbar-thumb-hover: #d2b86d;
+  --rhythm-positive: 108 158 83;
+  --rhythm-negative: 187 91 72;
+  --dialog-backdrop: rgb(5 6 4 / 68%);
+  --font-display: var(--font-alegreya), Georgia, serif;
 }
 
 :root[data-theme="light"] {
@@ -63,11 +71,14 @@
   --line: #dcd7c9;
   --accent: #3e745a;
   --accent-strong: #285b44;
+  --accent-solid: #3e745a;
+  --accent-solid-hover: #285b44;
+  --on-accent: #ffffff;
   --good: #287255;
   --warn: #9a681f;
   --bad: #b24e4e;
   --shadow: 0 14px 36px rgb(54 48 36 / 8%);
-  --body-glow: #fbfaf5;
+  --body-background: linear-gradient(145deg, #fbfaf5 0%, transparent 34%);
   --sidebar-bg: #e8e5da;
   --subtle-bg: #f3f1e9;
   --glass-bg: rgb(255 253 248 / 72%);
@@ -85,6 +96,62 @@
   --scrollbar-track: rgb(117 111 95 / 12%);
   --scrollbar-thumb: rgb(94 89 77 / 42%);
   --scrollbar-thumb-hover: #3e745a;
+  --rhythm-positive: 40 114 85;
+  --rhythm-negative: 176 81 61;
+  --dialog-backdrop: rgb(11 18 25 / 55%);
+  --font-display: var(--font-space-grotesk), var(--font-open-sans), sans-serif;
+}
+
+:root[data-theme="midnight"] {
+  color-scheme: dark;
+  /* The original cool, technical dark theme remains available as Midnight Slate. */
+  --ice-50: #f3f5f8;
+  --ice-100: #e9edf1;
+  --ice-200: #d8e0e7;
+  --ice-300: #cad5df;
+  --ice-400: #b7c6d4;
+  --ice-500: #9aafc2;
+  --ice-600: #8fa7bb;
+  --ice-700: #7d9ab3;
+  --text-strong: #34485d;
+  --text-soft: #5d7288;
+  --bg: #111820;
+  --panel: #18232e;
+  --panel-2: #21303d;
+  --text: #e9edf1;
+  --muted: #9aafc2;
+  --line: #34485d;
+  --accent: #8fa7bb;
+  --accent-strong: #b7c6d4;
+  --accent-solid: #8fa7bb;
+  --accent-solid-hover: #b7c6d4;
+  --on-accent: #ffffff;
+  --good: #72b99b;
+  --warn: #d9a56c;
+  --bad: #e18a8a;
+  --shadow: 0 16px 40px rgb(0 0 0 / 20%);
+  --body-background: linear-gradient(145deg, #1b2a37 0%, transparent 34%);
+  --sidebar-bg: #151f29;
+  --subtle-bg: #131d26;
+  --glass-bg: rgb(24 35 46 / 72%);
+  --nav-hover: rgb(125 154 179 / 12%);
+  --nav-active: #263746;
+  --soft-panel: #101820;
+  --soft-panel-raised: #131d26;
+  --soft-subtle: #0d141b;
+  --focus-ring: rgb(143 167 187 / 20%);
+  --brand-shadow: rgb(52 72 93 / 18%);
+  --logo-mark-start: #b7c6d4;
+  --logo-mark-end: #587b9b;
+  --logo-mark-bg: #18232e;
+  --logo-mark-trend: #c6a15b;
+  --scrollbar-track: rgb(125 154 179 / 12%);
+  --scrollbar-thumb: rgb(143 167 187 / 52%);
+  --scrollbar-thumb-hover: #b7c6d4;
+  --rhythm-positive: 40 114 85;
+  --rhythm-negative: 176 81 61;
+  --dialog-backdrop: rgb(11 18 25 / 55%);
+  --font-display: var(--font-space-grotesk), var(--font-open-sans), sans-serif;
 }
 
 * {
@@ -128,7 +195,7 @@ body {
   margin: 0;
   min-height: 100%;
   background: var(--bg);
-  background-image: linear-gradient(145deg, var(--body-glow) 0%, transparent 34%);
+  background-image: var(--body-background);
   color: var(--text);
   font-family: var(--font-open-sans), Arial, Helvetica, sans-serif;
   font-variant-numeric: tabular-nums;
@@ -192,7 +259,7 @@ button {
 }
 
 .sidebar-brand-copy strong {
-  font-family: var(--font-space-grotesk), var(--font-open-sans), sans-serif;
+  font-family: var(--font-display);
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -369,7 +436,7 @@ p {
 h1,
 h2,
 h3 {
-  font-family: var(--font-space-grotesk), var(--font-open-sans), sans-serif;
+  font-family: var(--font-display);
   letter-spacing: -0.025em;
 }
 
@@ -410,28 +477,52 @@ h3 {
   gap: 10px;
 }
 
-.theme-toggle {
+.theme-selector {
   align-items: center;
   background: var(--glass-bg);
   border: 0;
-  border-radius: 999px;
+  border-radius: 9px;
   color: var(--muted);
   display: flex;
-  flex: 0 0 34px;
   height: 34px;
-  justify-content: center;
-  padding: 0;
-  width: 34px;
+  min-width: 154px;
+  padding: 0 9px;
+  position: relative;
 }
 
-.theme-toggle:hover {
+.theme-selector:hover {
   background: var(--panel-2);
   color: var(--text);
 }
 
-.theme-toggle:focus-visible {
+.theme-selector:focus-within {
   box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.theme-selector select {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  height: 100%;
+  min-width: 0;
   outline: none;
+  padding: 0 22px 0 7px;
+  width: 100%;
+}
+
+.theme-selector select option {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.theme-selector-chevron {
+  pointer-events: none;
+  position: absolute;
+  right: 8px;
 }
 
 .main-grid {
@@ -471,8 +562,8 @@ h3 {
 }
 
 .flip-view-tabs button.active {
-  background: var(--accent);
-  color: #ffffff;
+  background: var(--accent-solid);
+  color: var(--on-accent);
 }
 
 .flip-view-tabs button:focus-visible {
@@ -791,13 +882,13 @@ th:first-child .table-header-controls {
 }
 
 .table-filter-apply {
-  background: var(--accent);
+  background: var(--accent-solid);
   border: 0;
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .table-filter-apply:hover {
-  background: var(--accent-strong);
+  background: var(--accent-solid-hover);
 }
 
 .table-filter-clear {
@@ -990,7 +1081,7 @@ tbody tr.selected {
 }
 
 .item-lookup-dialog::backdrop {
-  background: rgb(11 18 25 / 55%);
+  background: var(--dialog-backdrop);
 }
 
 .item-lookup-dialog-content {
@@ -1209,10 +1300,10 @@ tbody tr.selected {
 
 .refresh-btn {
   align-items: center;
-  background: var(--accent);
+  background: var(--accent-solid);
   border: 0;
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--on-accent);
   display: flex;
   font-weight: 800;
   gap: 8px;
@@ -1220,7 +1311,7 @@ tbody tr.selected {
 }
 
 .refresh-btn:hover {
-  background: var(--accent-strong);
+  background: var(--accent-solid-hover);
 }
 
 .refresh-btn:disabled {
@@ -1488,13 +1579,13 @@ tbody tr.selected {
 
 .primary-btn,
 .primary-link {
-  background: var(--accent);
-  color: #ffffff;
+  background: var(--accent-solid);
+  color: var(--on-accent);
 }
 
 .primary-btn:hover,
 .primary-link:hover {
-  background: var(--accent-strong);
+  background: var(--accent-solid-hover);
 }
 
 .secondary-btn {
@@ -1807,12 +1898,12 @@ tbody tr.selected {
 
 .rhythm-legend .positive,
 .rhythm-cell.positive {
-  background: rgb(40 114 85 / var(--rhythm-strength, 0.78));
+  background: rgb(var(--rhythm-positive) / var(--rhythm-strength, 0.78));
 }
 
 .rhythm-legend .negative,
 .rhythm-cell.negative {
-  background: rgb(176 81 61 / var(--rhythm-strength, 0.78));
+  background: rgb(var(--rhythm-negative) / var(--rhythm-strength, 0.78));
 }
 
 .market-rhythm-metrics {
@@ -1896,7 +1987,7 @@ tbody tr.selected {
 }
 
 .sidebar-toggle,
-.theme-toggle,
+.theme-selector,
 .status-pill {
   border-color: transparent;
 }
@@ -1982,6 +2073,51 @@ tbody tr.selected {
 .warning-banner {
   border-color: transparent;
   border-radius: 9px;
+}
+
+/* Dark mode gets a little Gielinor character without compromising the data-dense workspace. */
+:root[data-theme="dark"] .sidebar {
+  box-shadow: 8px 0 32px rgb(0 0 0 / 22%), inset -1px 0 rgb(223 193 112 / 7%);
+}
+
+:root[data-theme="dark"] .sidebar-brand-copy strong {
+  color: var(--accent-strong);
+  font-size: 17px;
+  letter-spacing: 0.015em;
+}
+
+:root[data-theme="dark"] h1,
+:root[data-theme="dark"] h2,
+:root[data-theme="dark"] h3 {
+  letter-spacing: 0.005em;
+}
+
+:root[data-theme="dark"] h1 {
+  color: #f3e9d2;
+  font-size: 25px;
+}
+
+:root[data-theme="dark"] .nav-item.active {
+  box-shadow: inset 2px 0 var(--accent-strong), inset 0 1px rgb(255 255 255 / 3%);
+}
+
+:root[data-theme="dark"] .detail-panel,
+:root[data-theme="dark"] .table-wrap,
+:root[data-theme="dark"] .lookup-result,
+:root[data-theme="dark"] .account-panel,
+:root[data-theme="dark"] .favorites-panel,
+:root[data-theme="dark"] .investment-entry-panel,
+:root[data-theme="dark"] .investment-table-panel,
+:root[data-theme="dark"] .investment-empty {
+  box-shadow: var(--shadow), inset 0 1px rgb(223 193 112 / 6%);
+}
+
+:root[data-theme="dark"] th {
+  color: #b9af97;
+}
+
+:root[data-theme="dark"] tbody tr:hover {
+  background: color-mix(in srgb, var(--panel-2) 82%, var(--accent));
 }
 
 @media (max-width: 1180px) {

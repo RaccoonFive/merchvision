@@ -378,9 +378,13 @@ function toSevenDayChart(points: PricePoint[]) {
 }
 
 function chartColors(theme: Theme) {
-  return theme === "dark"
-    ? { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", trend: "#72b99b" }
-    : { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", trend: "#287255" };
+  if (theme === "dark") {
+    return { grid: "#3b3a2d", axis: "#aaa18b", tooltip: "#1c1e17", trend: "#91bd78" };
+  }
+  if (theme === "midnight") {
+    return { grid: "#263746", axis: "#9aafc2", tooltip: "#18232e", trend: "#72b99b" };
+  }
+  return { grid: "#e1ddd0", axis: "#756f5f", tooltip: "#fffdf8", trend: "#287255" };
 }
 
 function investmentFilterSort(key: InvestmentSortKey): Filters["sort"] | undefined {

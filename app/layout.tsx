@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Open_Sans, Space_Grotesk } from "next/font/google";
+import { Alegreya, Open_Sans, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 const openSans = Open_Sans({
@@ -12,13 +12,25 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk"
 });
 
+const alegreya = Alegreya({
+  subsets: ["latin"],
+  variable: "--font-alegreya"
+});
+
 const themeScript = `
   try {
-    const theme = localStorage.getItem("merchvision-theme") === "light" ? "light" : "dark";
+    const savedTheme = localStorage.getItem("merchvision-theme");
+    const theme = savedTheme === "light" || savedTheme === "dark" || savedTheme === "midnight"
+      ? savedTheme
+      : "dark";
     document.documentElement.dataset.theme = theme;
     document.querySelector("link[data-theme-favicon]")?.setAttribute(
       "href",
-      theme === "light" ? "/favicon-light.svg" : "/favicon-dark.svg"
+      theme === "light"
+        ? "/favicon-light.svg"
+        : theme === "midnight"
+          ? "/favicon-midnight.svg"
+          : "/favicon-dark.svg"
     );
     document.documentElement.dataset.sidebarCollapsed =
       localStorage.getItem("merchvision-sidebar-collapsed") === "true" ? "true" : "false";
@@ -40,7 +52,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link data-theme-favicon href="/favicon-dark.svg" rel="icon" type="image/svg+xml" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={`${openSans.variable} ${spaceGrotesk.variable}`}>{children}</body>
+      <body className={`${openSans.variable} ${spaceGrotesk.variable} ${alegreya.variable}`}>{children}</body>
     </html>
   );
 }
