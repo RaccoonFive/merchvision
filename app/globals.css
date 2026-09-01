@@ -2088,7 +2088,7 @@ tbody tr.selected {
 
 .nav-item.active {
   border: 0;
-  box-shadow: none;
+  box-shadow: inset 2px 0 var(--accent-strong);
 }
 
 .detail-panel,
@@ -2184,10 +2184,6 @@ tbody tr.selected {
 :root[data-theme="dark"] h1 {
   color: #f3e9d2;
   font-size: 25px;
-}
-
-:root[data-theme="dark"] .nav-item.active {
-  box-shadow: inset 2px 0 var(--accent-strong), inset 0 1px rgb(255 255 255 / 3%);
 }
 
 :root[data-theme="dark"] .detail-panel,
