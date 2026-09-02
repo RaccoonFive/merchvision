@@ -79,6 +79,8 @@ Restart the Next.js development server after changing `.env`:
 npm run dev -- -p 3100
 ```
 
+Agent-run servers must never use port 3000 because it is reserved for the user's WSL workflow. Use port 3100 by default, keep the server in a tracked foreground session, and stop it immediately after testing. Before completing the task, verify that the selected port no longer has a listener.
+
 ### 3. Capture a snapshot
 
 Call the protected endpoint using the same secret:
@@ -109,7 +111,7 @@ The timestamp is rounded down to a UTC 15-minute bucket. Repeating a request in 
 
 Wait until the four-hour horizon has ended, then make another authenticated `POST`. That call resolves the earlier pending observations before recording the next snapshot.
 
-The development server does not need to stay running for the entire four hours. Pending rows remain in the local database across server restarts, but a later `POST` is still required to resolve them. For the most representative test, resolve them soon after the horizon because the upstream five-minute timeseries is bounded.
+The development server must not stay running for the entire four hours. Pending rows remain in the local database across server restarts, but a later `POST` is still required to resolve them. Start a new tracked server session for that request, then stop it and verify that its port is released. For the most representative test, resolve observations soon after the horizon because the upstream five-minute timeseries is bounded.
 
 ### 5. Read the report
 
