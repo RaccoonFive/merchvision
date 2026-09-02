@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" viewBox="0 0 1200 360">
+  <title>Merchvision</title>
+  <desc>Old School RuneScape Grand Exchange market research, illustrated with gold, parchment, and market-chart motifs.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#24271d"/>
+      <stop offset="0.55" stop-color="#171a13"/>
+      <stop offset="1" stop-color="#10120e"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#f1dc8a"/>
+      <stop offset="0.5" stop-color="#c99a3d"/>
+      <stop offset="1" stop-color="#76501f"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" x2="1">
+      <stop stop-color="#b6d690"/>
+      <stop offset="1" stop-color="#5f8b55"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#e4c66f" stroke-opacity="0.045"/>
+    </pattern>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" flood-color="#000" flood-opacity="0.45" stdDeviation="8"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="360" rx="24" fill="url(#background)"/>
+  <rect x="10" y="10" width="1180" height="340" rx="18" fill="none" stroke="#d4af55" stroke-opacity="0.55" stroke-width="2"/>
+  <rect x="20" y="20" width="1160" height="320" rx="14" fill="url(#grid)" stroke="#6c5428" stroke-opacity="0.35"/>
+  <g fill="#d4af55" fill-opacity="0.55">
+    <path d="M34 58 58 34l24 24-24 24z"/>
+    <path d="m1118 58 24-24 24 24-24 24z"/>
+    <path d="m34 302 24-24 24 24-24 24z"/>
+    <path d="m1118 302 24-24 24 24-24 24z"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="76" y="82" width="196" height="196" rx="38" fill="#202219" stroke="#6f5728" stroke-width="3"/>
+    <path d="m99 180 57-91h78l57 91-57 91h-78z" fill="url(#gold)"/>
+    <path d="m129 180 40-57h55l40 57-40 57h-55z" fill="#202219"/>
+    <path d="m153 217 31-40 25 22 40-67" fill="none" stroke="url(#green)" stroke-linecap="round" stroke-linejoin="round" stroke-width="14"/>
+  </g>
+
+  <g font-family="Georgia, 'Times New Roman', serif">
+    <text x="332" y="132" fill="#b6d690" font-size="20" font-weight="700" lengthAdjust="spacingAndGlyphs" textLength="600">OLD SCHOOL MARKET RESEARCH</text>
+    <text x="326" y="212" fill="url(#gold)" font-size="68" font-weight="700" lengthAdjust="spacingAndGlyphs" textLength="600">MERCHVISION</text>
+    <text x="332" y="254" fill="#e8dfc9" font-size="22" lengthAdjust="spacingAndGlyphs" textLength="600">Conservative opportunities. Explainable rankings.</text>
+    <text x="332" y="290" fill="#a8a18e" font-family="Arial, Helvetica, sans-serif" font-size="17" lengthAdjust="spacingAndGlyphs" textLength="480">Public market data · Liquidity · Freshness · Risk</text>
+  </g>
+
+  <g transform="translate(980 70)" filter="url(#shadow)">
+    <path d="M0 186V34M0 186h186" fill="none" stroke="#8c815f" stroke-linecap="round" stroke-width="3"/>
+    <path d="m12 160 29-35 28 16 29-64 29 23 43-70" fill="none" stroke="#91bd78" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+    <path d="m12 172 29-12 28 5 29-21 29 9 43-27" fill="none" stroke="#d4af55" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.7" stroke-width="4"/>
+    <g fill="#d4af55" stroke="#73521f" stroke-width="3">
+      <ellipse cx="141" cy="210" rx="34" ry="13"/>
+      <ellipse cx="151" cy="198" rx="34" ry="13"/>
+      <ellipse cx="141" cy="186" rx="34" ry="13"/>
+    </g>
+  </g>
+</svg>
