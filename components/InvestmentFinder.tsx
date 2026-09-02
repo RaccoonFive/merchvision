@@ -3,15 +3,15 @@
 import { ExternalLink, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
 import { ItemLookupDialog } from "@/components/ItemLookupDialog";
+import { LazyPriceHistoryChart } from "@/components/LazyPriceHistoryChart";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
-import { formatClock, formatCompact, formatGp, formatNumber, formatPercent } from "@/lib/format";
+import { formatClock, formatGp, formatNumber, formatPercent } from "@/lib/format";
 import type { InvestmentCandidate, PricePoint } from "@/lib/types";
 import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 
@@ -320,18 +320,13 @@ export function InvestmentFinder() {
                         {chartLoading ? <LoadingSpinner label="Loading chart..." /> : chartData.length === 0 ? (
                           <div className="empty">No recent chart data is available.</div>
                         ) : (
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={toSevenDayChart(chartData)}>
-                              <CartesianGrid stroke={chartColors(theme).grid} vertical={false} />
-                              <XAxis dataKey="time" stroke={chartColors(theme).axis} tick={{ fontSize: 11 }} minTickGap={28} />
-                              <YAxis stroke={chartColors(theme).axis} tick={{ fontSize: 11 }} width={72} tickFormatter={formatCompact} domain={["auto", "auto"]} />
-                              <Tooltip
-                                contentStyle={{ background: chartColors(theme).tooltip, border: 0, borderRadius: 8, color: chartColors(theme).axis }}
-                                formatter={(value) => formatGp(Number(value))}
-                              />
-                              <Area dataKey="midpoint" stroke={chartColors(theme).trend} fill={`${chartColors(theme).trend}26`} name="Midpoint" />
-                            </AreaChart>
-                          </ResponsiveContainer>
+                          <LazyPriceHistoryChart
+                            colors={chartColors(theme)}
+                            data={toSevenDayChart(chartData)}
+                            domain={["auto", "auto"]}
+                            minTickGap={28}
+                            series="midpoint"
+                          />
                         )}
                       </div>
                     </div>

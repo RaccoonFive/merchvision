@@ -3,9 +3,9 @@
 import { AlertTriangle, RefreshCw, Search, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
+import { LazyPriceHistoryChart } from "@/components/LazyPriceHistoryChart";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
 import { formatAge, formatCompact, formatGp, formatNullableGp, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
@@ -427,25 +427,13 @@ function QuoteDetails({
           ) : chartData.length === 0 ? (
             <div className="empty">No recent chart data is available.</div>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartPoints}>
-                <CartesianGrid stroke={colors.grid} vertical={false} />
-                <XAxis dataKey="time" stroke={colors.axis} tick={{ fontSize: 11 }} minTickGap={24} />
-                <YAxis
-                  domain={yDomain}
-                  stroke={colors.axis}
-                  tick={{ fontSize: 11 }}
-                  width={72}
-                  tickFormatter={formatCompact}
-                />
-                <Tooltip
-                  contentStyle={{ background: colors.tooltip, border: 0, borderRadius: 8, color: colors.axis }}
-                  formatter={(value) => formatGp(Number(value))}
-                />
-                <Area dataKey="high" stroke={colors.high} fill={`${colors.high}26`} name="High" />
-                <Area dataKey="low" stroke={colors.low} fill={`${colors.low}26`} name="Low" />
-              </AreaChart>
-            </ResponsiveContainer>
+            <LazyPriceHistoryChart
+              colors={colors}
+              data={chartPoints}
+              domain={yDomain}
+              minTickGap={24}
+              series="high-low"
+            />
           )}
         </div>
       </div>

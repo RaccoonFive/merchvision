@@ -3,15 +3,6 @@
 import { AlertTriangle, ExternalLink, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
 import type {
   FlipCandidate,
   FlipView,
@@ -22,11 +13,12 @@ import type {
 import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
 import { ItemLookupDialog } from "@/components/ItemLookupDialog";
+import { LazyPriceHistoryChart } from "@/components/LazyPriceHistoryChart";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
-import { formatAge, formatClock, formatCompact, formatGp, formatNumber, formatPercent } from "@/lib/format";
+import { formatAge, formatClock, formatGp, formatNumber, formatPercent } from "@/lib/format";
 import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 
 type FlipsResponse = {
@@ -523,16 +515,11 @@ function FlipDetails({
             <h3>{selected.view === "upside" ? "Recent five-minute prices" : "Recent hourly prices"}</h3>
             <div className="chart">
               {chartLoading ? <LoadingSpinner label="Loading chart..." /> : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData.map(toChartPoint)}>
-                    <CartesianGrid stroke={chartColors(theme).grid} vertical={false} />
-                    <XAxis dataKey="time" stroke={chartColors(theme).axis} tick={{ fontSize: 11 }} />
-                    <YAxis stroke={chartColors(theme).axis} tick={{ fontSize: 11 }} width={72} tickFormatter={formatCompact} />
-                    <Tooltip contentStyle={{ background: chartColors(theme).tooltip, border: 0, borderRadius: 8, color: chartColors(theme).axis }} formatter={(value) => formatGp(Number(value))} />
-                    <Area dataKey="high" stroke={chartColors(theme).high} fill={`${chartColors(theme).high}26`} name="High" />
-                    <Area dataKey="low" stroke={chartColors(theme).low} fill={`${chartColors(theme).low}26`} name="Low" />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <LazyPriceHistoryChart
+                  colors={chartColors(theme)}
+                  data={chartData.map(toChartPoint)}
+                  series="high-low"
+                />
               )}
             </div>
           </div>

@@ -1582,6 +1582,13 @@ tbody tr.selected {
   justify-content: center;
 }
 
+.page-loading-panel {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: calc(100vh - 68px);
+}
+
 .loading-spinner {
   animation: loading-spin 700ms linear infinite;
   border: 2px solid color-mix(in srgb, currentColor 24%, transparent);

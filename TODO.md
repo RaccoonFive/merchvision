@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-09-01
+Last updated: 2026-09-02
 
 ## Product Direction
 
@@ -160,6 +160,7 @@ Promote a bet into a milestone only after the first three milestones are complet
 
 ## Completed
 
+- **2026-09-02:** Reduced cold navigation payloads for chart-capable pages by roughly 100 KB each through deferred chart rendering, and added immediate route loading states for session-gated pages.
 - **2026-09-01:** Reused enriched market analysis across filter requests for unchanged snapshots, deduplicated item-catalog and Item Lookup history transfers, cached normalized mapping data, lazy-loaded item icons, and removed repeated sticky-table layout measurement while scrolling.
 - **2026-09-01:** Added a compact global item search to the application header with ranked item previews, keyboard navigation, and direct Item Lookup routing.
 - **2026-09-01:** Added dual-track Flip Finder rankings with Reliable as the default, an experimental five-minute High Upside model, paired-quote health, bounded public-market calibration, and protected model comparison reports.
