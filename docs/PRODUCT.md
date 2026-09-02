@@ -66,7 +66,7 @@ Investment Tracker is deliberately not a trade journal. Users can correct or rem
 
 ### Item Lookup
 
-Let a user inspect an individual item's latest quote, after-tax margin, freshness, recent history, observed hourly market rhythm, and relevant warnings without needing to search the full rankings. Market Rhythm must distinguish its latest-seven-days observations from recurring behavior or a fill forecast.
+Let a user find an item from a compact, keyboard-friendly search in the application header on every page, with matching item previews as they type. The research view lets them inspect the item's latest quote, after-tax margin, freshness, recent history, observed hourly market rhythm, and relevant warnings without needing to search the full rankings. Market Rhythm must distinguish its latest-seven-days observations from recurring behavior or a fill forecast.
 
 ### Favorites And Accounts
 

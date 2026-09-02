@@ -24,6 +24,7 @@ Last updated: 2026-09-01
 - Flip enrichment is bounded to balanced shortlists and produces deterministic confidence, stability, spread-quality, and executability estimates.
 - Item Lookup exposes current quote math, warnings, Favorites, and 1-day, 7-day, 3-month, and 1-year price history.
 - Item Lookup includes Market Rhythm: a local-time heatmap of observed hourly after-tax spread quality and matched volume from the latest seven days, with explicit missing-data and non-forecast caveats.
+- A compact global header search provides keyboard-friendly item lookup with item previews from every application page.
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
@@ -159,6 +160,7 @@ Promote a bet into a milestone only after the first three milestones are complet
 
 ## Completed
 
+- **2026-09-01:** Added a compact global item search to the application header with ranked item previews, keyboard navigation, and direct Item Lookup routing.
 - **2026-09-01:** Added dual-track Flip Finder rankings with Reliable as the default, an experimental five-minute High Upside model, paired-quote health, bounded public-market calibration, and protected model comparison reports.
 - **2026-08-25:** Added the private Investment Tracker with separate editable purchase lots, net instant-sell valuation after prospective GE tax, partial-data reporting, and account ownership enforcement.
 - **2026-08-25:** Rebalanced Flip Finder scoring to modestly favor conservative buy-limit profit while retaining GP/hour as the largest driver and preserving market-quality penalties.

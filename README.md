@@ -12,7 +12,7 @@ The application is decision support, not a profit guarantee. It can track manual
 - **Item Lookup:** shows current quotes, net margin, warnings, recent price history, and a local-time heatmap of the latest seven days of observed hourly market activity.
 - **Favorites:** lets signed-in users save items and view their current quotes.
 - **Accounts:** provides username/password authentication backed by Better Auth, Prisma, and MySQL. Email remains required for the account record, with a fallback sign-in path for pre-username accounts.
-- **Responsive application shell:** supports a five-theme picker, collapsible navigation, dense tables, and detail panels.
+- **Responsive application shell:** supports global item quick search with item previews, a five-theme picker, collapsible navigation, dense tables, and detail panels.
 
 See [the product contract](docs/PRODUCT.md), [architecture](docs/ARCHITECTURE.md), and [roadmap](TODO.md) for the reasoning behind the project and its current priorities.
 

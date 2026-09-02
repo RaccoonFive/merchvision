@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { LogoMark } from "@/components/LogoMark";
+import { HeaderItemSearch } from "@/components/HeaderItemSearch";
 import { DEFAULT_THEME, THEME_OPTIONS, resolveTheme, themeFavicon, type Theme } from "@/lib/theme";
 
 export type { Theme } from "@/lib/theme";
@@ -169,6 +170,7 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
       <main className="app-shell">
         <header className="topbar">
           <h1>{title}</h1>
+          <HeaderItemSearch />
           <div className="topbar-actions">
             <div className="theme-picker" ref={themePickerRef}>
               <button

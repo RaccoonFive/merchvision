@@ -26,7 +26,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 ### Pages And Components
 
 - `app/**/page.tsx` defines App Router entry points.
-- `components/AppShell.tsx` owns navigation, session-aware account controls, theme switching, and sidebar state.
+- `components/AppShell.tsx` owns navigation, session-aware account controls, theme switching, sidebar state, and the global item quick-search placement. `components/HeaderItemSearch.tsx` loads the cached item metadata collection through `/api/items` and routes selections to Item Lookup.
 - `components/FlipFinder.tsx`, `InvestmentFinder.tsx`, `ItemLookup.tsx`, and `FavoritesPage.tsx` own the main interactive experiences.
 - Client components request internal `/api/**` endpoints. They do not call the Wiki API or database directly.
 - Theme and sidebar preferences are stored in browser `localStorage`; they are not account data.
