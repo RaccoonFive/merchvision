@@ -9,6 +9,7 @@ import type {
   FlipCandidate,
   FlipFilters,
   ItemMeta,
+  LatestPrice,
   MarketAnalysis,
   MarketSummary,
   PricePoint,
@@ -18,28 +19,55 @@ import type {
 
 const RELIABLE_HISTORY_SHORTLIST_SIZE = 100;
 const UPSIDE_HISTORY_BATCH_SIZE = 10;
+const SNAPSHOT_TIME_BUCKET_SECONDS = 60;
+
+type UniverseMemo<T> = {
+  items: ItemMeta[];
+  prices: LatestPrice[];
+  summaries: MarketSummary[] | undefined;
+  timeBucket: number;
+  value: Promise<T[]>;
+};
+
+let reliableUniverseMemo: UniverseMemo<FlipCandidate> | undefined;
+let upsideUniverseMemo: UniverseMemo<UpsideFlipCandidate> | undefined;
 
 export async function loadReliableFlips(filters: FlipFilters): Promise<FlipCandidate[]> {
   return filterAndSortFlips(await loadReliableCandidateUniverse(), filters);
 }
 
 export async function loadReliableCandidateUniverse(): Promise<FlipCandidate[]> {
+  const nowSeconds = Math.floor(Date.now() / 1000);
   const [items, prices, summaries] = await Promise.all([
     getItems(),
     getLatestPrices(),
     get24hPrices().catch(() => undefined)
   ]);
-  const preliminary = buildFlipCandidates({ items, prices });
-  const historyTargets = reliableHistoryShortlist(preliminary, summaries, RELIABLE_HISTORY_SHORTLIST_SIZE);
-  const timeseriesByItem = await getRecentTimeseries(
-    historyTargets.map((candidate) => candidate.id),
-    "1h"
-  );
-  const volumesByItem = new Map(
-    [...timeseriesByItem.entries()].map(([id, points]) => [id, volumeFromTimeseries(points.slice(-12))])
-  );
-  const analysesByItem = reliableMarketAnalyses(historyTargets, items, timeseriesByItem);
-  return buildFlipCandidates({ items, prices, volumesByItem, analysesByItem });
+  const timeBucket = Math.floor(nowSeconds / SNAPSHOT_TIME_BUCKET_SECONDS);
+
+  if (memoMatches(reliableUniverseMemo, items, prices, summaries, timeBucket)) {
+    return reliableUniverseMemo.value;
+  }
+
+  const value = (async () => {
+    const preliminary = buildFlipCandidates({ items, prices, nowSeconds });
+    const historyTargets = reliableHistoryShortlist(preliminary, summaries, RELIABLE_HISTORY_SHORTLIST_SIZE);
+    const timeseriesByItem = await getRecentTimeseries(
+      historyTargets.map((candidate) => candidate.id),
+      "1h"
+    );
+    const volumesByItem = new Map(
+      [...timeseriesByItem.entries()].map(([id, points]) => [id, volumeFromTimeseries(points.slice(-12))])
+    );
+    const analysesByItem = reliableMarketAnalyses(historyTargets, items, timeseriesByItem);
+    return buildFlipCandidates({ items, prices, volumesByItem, analysesByItem, nowSeconds });
+  })();
+
+  reliableUniverseMemo = { items, prices, summaries, timeBucket, value };
+  value.catch(() => {
+    if (reliableUniverseMemo?.value === value) reliableUniverseMemo = undefined;
+  });
+  return value;
 }
 
 export async function loadUpsideFlips(filters: UpsideFlipFilters): Promise<UpsideFlipCandidate[]> {
@@ -53,21 +81,48 @@ export async function loadUpsideCandidateUniverse(): Promise<UpsideFlipCandidate
     getLatestPrices(),
     get24hPrices().catch(() => undefined)
   ]);
-  const preliminary = buildFlipCandidates({ items, prices, nowSeconds });
-  const targets = buildUpsideShortlist(preliminary, summaries);
-  const targetIds = new Set(targets.map((candidate) => candidate.id));
-  const timeseriesByItem = await getRecentTimeseriesBatched(
-    targets.map((candidate) => candidate.id),
-    "5m",
-    UPSIDE_HISTORY_BATCH_SIZE
-  );
+  const timeBucket = Math.floor(nowSeconds / SNAPSHOT_TIME_BUCKET_SECONDS);
 
-  return buildUpsideCandidates({
-    items,
-    prices: prices.filter((price) => targetIds.has(price.id)),
-    pointsByItem: timeseriesByItem,
-    nowSeconds
+  if (memoMatches(upsideUniverseMemo, items, prices, summaries, timeBucket)) {
+    return upsideUniverseMemo.value;
+  }
+
+  const value = (async () => {
+    const preliminary = buildFlipCandidates({ items, prices, nowSeconds });
+    const targets = buildUpsideShortlist(preliminary, summaries);
+    const targetIds = new Set(targets.map((candidate) => candidate.id));
+    const timeseriesByItem = await getRecentTimeseriesBatched(
+      targets.map((candidate) => candidate.id),
+      "5m",
+      UPSIDE_HISTORY_BATCH_SIZE
+    );
+
+    return buildUpsideCandidates({
+      items,
+      prices: prices.filter((price) => targetIds.has(price.id)),
+      pointsByItem: timeseriesByItem,
+      nowSeconds
+    });
+  })();
+
+  upsideUniverseMemo = { items, prices, summaries, timeBucket, value };
+  value.catch(() => {
+    if (upsideUniverseMemo?.value === value) upsideUniverseMemo = undefined;
   });
+  return value;
+}
+
+function memoMatches<T>(
+  memo: UniverseMemo<T> | undefined,
+  items: ItemMeta[],
+  prices: LatestPrice[],
+  summaries: MarketSummary[] | undefined,
+  timeBucket: number
+): memo is UniverseMemo<T> {
+  return memo?.items === items &&
+    memo.prices === prices &&
+    memo.summaries === summaries &&
+    memo.timeBucket === timeBucket;
 }
 
 function reliableHistoryShortlist(

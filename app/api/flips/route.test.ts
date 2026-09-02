@@ -57,6 +57,13 @@ describe("GET /api/flips", () => {
     expect(payload.data).toHaveLength(0);
   });
 
+  it("reuses market analysis when only filters change within the same snapshot", async () => {
+    await GET(new Request("http://localhost/api/flips"));
+    await GET(new Request("http://localhost/api/flips?minProfit=1"));
+
+    expect(mockedGetTimeseries).toHaveBeenCalledTimes(1);
+  });
+
   it("includes low-confidence candidates by default and excludes them when weak data is disabled", async () => {
     mockedGetTimeseries.mockResolvedValue([]);
 

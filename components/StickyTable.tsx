@@ -30,17 +30,30 @@ export function StickyTable({ children }: { children: TableElement }) {
     const tableElement = table;
     const stickyHeaderElement = stickyHeader;
     const stickyTableElement = stickyTable;
+    let scrollFrame: number | null = null;
 
-    function syncHeader() {
+    function syncHorizontalPosition() {
+      stickyTableElement.style.transform = `translateX(${-scrollElement.scrollLeft}px)`;
+    }
+
+    function syncColumnWidths() {
       // The visible header is mirrored outside the horizontal scroll container so it can stay pinned.
       // Its width and column widths must follow the source table as content or viewport size changes.
       stickyTableElement.style.width = `${tableElement.scrollWidth}px`;
-      stickyTableElement.style.transform = `translateX(${-scrollElement.scrollLeft}px)`;
       const sourceHeaders = tableElement.querySelectorAll("thead th");
       const stickyHeaders = stickyTableElement.querySelectorAll("th");
       sourceHeaders.forEach((source, index) => {
         const sticky = stickyHeaders[index] as HTMLElement | undefined;
         if (sticky) sticky.style.width = `${source.getBoundingClientRect().width}px`;
+      });
+      syncHorizontalPosition();
+    }
+
+    function scheduleHorizontalSync() {
+      if (scrollFrame !== null) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = null;
+        syncHorizontalPosition();
       });
     }
 
@@ -48,18 +61,19 @@ export function StickyTable({ children }: { children: TableElement }) {
       stickyHeaderElement.classList.toggle("is-pinned", stickyHeaderElement.getBoundingClientRect().top <= 0);
     }
 
-    syncHeader();
+    syncColumnWidths();
     syncPinnedState();
-    const observer = new ResizeObserver(syncHeader);
+    const observer = new ResizeObserver(syncColumnWidths);
     observer.observe(scrollElement);
     observer.observe(tableElement);
-    scrollElement.addEventListener("scroll", syncHeader, { passive: true });
+    scrollElement.addEventListener("scroll", scheduleHorizontalSync, { passive: true });
     window.addEventListener("scroll", syncPinnedState, { passive: true });
     window.addEventListener("resize", syncPinnedState, { passive: true });
 
     return () => {
       observer.disconnect();
-      scrollElement.removeEventListener("scroll", syncHeader);
+      if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
+      scrollElement.removeEventListener("scroll", scheduleHorizontalSync);
       window.removeEventListener("scroll", syncPinnedState);
       window.removeEventListener("resize", syncPinnedState);
     };

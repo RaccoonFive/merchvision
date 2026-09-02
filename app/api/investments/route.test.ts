@@ -68,6 +68,13 @@ describe("GET /api/investments", () => {
     expect(payload.meta).toMatchObject({ analyzed: 249, skipped: 1, qualified: 249 });
   });
 
+  it("reuses candidate analysis when only filters change within the same snapshot", async () => {
+    await GET(new Request("http://localhost/api/investments"));
+    await GET(new Request("http://localhost/api/investments?minVolume=10"));
+
+    expect(mockedGetTimeseries).toHaveBeenCalledTimes(250);
+  });
+
   it("returns a server error when the market summary cannot load", async () => {
     mockedGet24hPrices.mockRejectedValue(new Error("market unavailable"));
     const response = await GET(new Request("http://localhost/api/investments"));

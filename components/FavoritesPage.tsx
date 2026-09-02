@@ -4,6 +4,7 @@ import { Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { ItemIcon } from "@/components/ItemIcon";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
@@ -100,7 +101,7 @@ export function FavoritesPage() {
                     <tr key={item.id}>
                       <td>
                         <Link className="favorite-item-link" href={`/lookup/${item.id}`}>
-                          {item.icon ? <img alt="" className="item-icon" src={item.icon} /> : <span className="item-icon" />}
+                          <ItemIcon className="item-icon" icon={item.icon} />
                           <span>
                             <strong>{item.name}</strong>
                             <small>{item.members ? "Members" : "Free-to-play"}</small>

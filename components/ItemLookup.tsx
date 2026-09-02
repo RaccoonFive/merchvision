@@ -9,6 +9,7 @@ import { ItemIcon } from "@/components/ItemIcon";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
 import { formatAge, formatCompact, formatGp, formatNullableGp, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
+import { loadItemCatalog } from "@/lib/clientItemCatalog";
 import { searchItems } from "@/lib/itemSearch";
 import { buildItemQuoteWarnings } from "@/lib/quote";
 import type { ItemMeta, ItemQuoteResponse, MarketRhythm, MarketRhythmSample, PricePoint } from "@/lib/types";
@@ -29,6 +30,11 @@ type ItemLookupContentProps = ItemLookupProps & {
 };
 
 type ChartRange = "1D" | "7D" | "3M" | "1Y";
+
+type HourlyHistory = {
+  itemId: number;
+  data: PricePoint[];
+};
 
 const CHART_RANGES: { label: ChartRange; timestep: string }[] = [
   { label: "1D", timestep: "5m" },
@@ -51,6 +57,7 @@ export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = tr
   const [query, setQuery] = useState("");
   const [quoteData, setQuoteData] = useState<ItemQuoteResponse | null>(null);
   const [chartData, setChartData] = useState<PricePoint[]>([]);
+  const [hourlyHistory, setHourlyHistory] = useState<HourlyHistory | null>(null);
   const [marketRhythm, setMarketRhythm] = useState<MarketRhythm | null>(null);
   const [chartRange, setChartRange] = useState<ChartRange>("7D");
   const [chartLoading, setChartLoading] = useState(Boolean(initialItemId));
@@ -69,12 +76,8 @@ export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = tr
       return;
     }
 
-    fetch("/api/items")
-      .then(async (response) => {
-        const payload = (await response.json()) as ApiResponse<ItemMeta[]>;
-        if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load items.");
-        setItems(payload.data ?? []);
-      })
+    loadItemCatalog()
+      .then(setItems)
       .catch((err) => setError(err instanceof Error ? err.message : "Unable to load items."))
       .finally(() => setItemsLoading(false));
   }, [showSearch]);
@@ -121,6 +124,16 @@ export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = tr
     }
 
     const timestep = CHART_RANGES.find((range) => range.label === chartRange)?.timestep ?? "1h";
+    if (timestep === "1h") {
+      if (hourlyHistory?.itemId === initialItemId) {
+        setChartData(hourlyHistory.data);
+        setChartLoading(false);
+      } else {
+        setChartLoading(true);
+      }
+      return;
+    }
+
     let alive = true;
     setChartLoading(true);
 
@@ -140,7 +153,7 @@ export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = tr
     return () => {
       alive = false;
     };
-  }, [chartRange, initialItemId]);
+  }, [chartRange, hourlyHistory, initialItemId]);
 
   useEffect(() => {
     if (!initialItemId) {
@@ -160,13 +173,17 @@ export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = tr
         if (!response.ok || payload.error || !payload.rhythm) {
           throw new Error(payload.error ?? "Unable to load the last seven days of hourly market data.");
         }
-        return payload.rhythm;
+        return { data: payload.data ?? [], rhythm: payload.rhythm };
       })
-      .then((rhythm) => {
-        if (alive) setMarketRhythm(rhythm);
+      .then(({ data, rhythm }) => {
+        if (alive) {
+          setHourlyHistory({ itemId: initialItemId, data });
+          setMarketRhythm(rhythm);
+        }
       })
       .catch((err) => {
         if (alive) {
+          setHourlyHistory({ itemId: initialItemId, data: [] });
           setMarketRhythm(null);
           setRhythmError(err instanceof Error ? err.message : "Unable to load the last seven days of hourly market data.");
         }

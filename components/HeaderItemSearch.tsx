@@ -5,32 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { ItemIcon } from "@/components/ItemIcon";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { loadItemCatalog } from "@/lib/clientItemCatalog";
 import { searchItems } from "@/lib/itemSearch";
 import type { ItemMeta } from "@/lib/types";
-
-type ItemsResponse = {
-  data?: ItemMeta[];
-  error?: string;
-};
-
-let itemCatalogPromise: Promise<ItemMeta[]> | null = null;
-
-function loadItemCatalog() {
-  if (!itemCatalogPromise) {
-    itemCatalogPromise = fetch("/api/items")
-      .then(async (response) => {
-        const payload = (await response.json()) as ItemsResponse;
-        if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load items.");
-        return payload.data ?? [];
-      })
-      .catch((error) => {
-        itemCatalogPromise = null;
-        throw error;
-      });
-  }
-
-  return itemCatalogPromise;
-}
 
 export function HeaderItemSearch() {
   const router = useRouter();

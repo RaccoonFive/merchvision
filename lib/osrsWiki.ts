@@ -12,8 +12,10 @@ const cache = new Map<string, CacheEntry<unknown>>();
 const pending = new Map<string, Promise<unknown>>();
 
 export async function getItems(): Promise<ItemMeta[]> {
-  const rows = await getMappingRows();
-  return rows.map(normalizeItem).sort((a, b) => a.name.localeCompare(b.name));
+  return cached("mapping", mappingCacheMs(), async () => {
+    const rows = await wikiFetch<WikiMappingItem[]>("/mapping");
+    return rows.map(normalizeItem).sort((a, b) => a.name.localeCompare(b.name));
+  });
 }
 
 export async function getLatestPrices(): Promise<LatestPrice[]> {
@@ -76,10 +78,6 @@ export async function getRecentVolumes(ids: number[]): Promise<Map<number, numbe
   );
 
   return new Map(pairs);
-}
-
-async function getMappingRows(): Promise<WikiMappingItem[]> {
-  return cached("mapping:raw", mappingCacheMs(), () => wikiFetch<WikiMappingItem[]>("/mapping"));
 }
 
 async function wikiFetch<T>(path: string): Promise<T> {

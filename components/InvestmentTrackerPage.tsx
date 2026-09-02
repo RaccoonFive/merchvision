@@ -11,6 +11,7 @@ import { Metric } from "@/components/Metric";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
 import { formatAge, formatClock, formatGp, formatNumber, formatPercent } from "@/lib/format";
+import { loadItemCatalog } from "@/lib/clientItemCatalog";
 import { searchItems } from "@/lib/itemSearch";
 import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 import type { InvestmentTrackerSummary, ItemMeta, TrackedInvestmentLot } from "@/lib/types";
@@ -18,11 +19,6 @@ import type { InvestmentTrackerSummary, ItemMeta, TrackedInvestmentLot } from "@
 type TrackerResponse = {
   data?: TrackedInvestmentLot[];
   meta?: InvestmentTrackerSummary;
-  error?: string;
-};
-
-type ItemsResponse = {
-  data?: ItemMeta[];
   error?: string;
 };
 
@@ -94,11 +90,7 @@ export function InvestmentTrackerPage() {
   useEffect(() => {
     let alive = true;
     Promise.all([
-      fetch("/api/items").then(async (response) => {
-        const payload = (await response.json()) as ItemsResponse;
-        if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load item list.");
-        return payload.data ?? [];
-      }),
+      loadItemCatalog(),
       loadTracker()
     ])
       .then(([nextItems]) => {

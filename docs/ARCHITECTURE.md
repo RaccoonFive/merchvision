@@ -106,7 +106,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 Every upstream request includes `Merchvision/0.1` and `USER_AGENT_CONTACT` in the User-Agent. Requests fail early when the contact value is missing.
 
-Item Lookup requests the existing one-hour timeseries with `includeRhythm=true` to receive a deterministic Market Rhythm summary alongside the normalized points. This is a single-item, cache-coalesced request. Since the upstream hourly series covers only the latest seven days, the UI presents cells as local-time observations, never as a recurring seasonal model, fill estimate, or profit forecast.
+Item Lookup requests the existing one-hour timeseries with `includeRhythm=true` to receive both its default seven-day chart and a deterministic Market Rhythm summary from one response. Since the upstream hourly series covers only the latest seven days, the UI presents cells as local-time observations, never as a recurring seasonal model, fill estimate, or profit forecast.
 
 The Wiki client uses a process-local in-memory cache and a `pending` map that coalesces concurrent requests for the same key. Default TTLs are:
 
@@ -115,6 +115,8 @@ The Wiki client uses a process-local in-memory cache and a `pending` map that co
 | Latest prices | `OSRS_LATEST_CACHE_SECONDS` | 60 seconds |
 | Item mapping | `OSRS_MAPPING_CACHE_SECONDS` | 86,400 seconds |
 | Timeseries and 24-hour summaries | `OSRS_TIMESERIES_CACHE_SECONDS` | 300 seconds |
+
+Normalized item metadata is cached rather than rebuilt from the raw mapping on every request. Flip and investment candidate analysis is also memoized against the exact cached market snapshot, so changing filters reuses the already-enriched candidate universe. The browser shares one item-catalog request across the header search and page-level item selectors, and `/api/items` permits browser and shared-cache reuse because the response contains only public mapping data.
 
 This cache is intentionally simple, but it has operational consequences:
 

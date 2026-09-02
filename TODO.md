@@ -28,7 +28,7 @@ Last updated: 2026-09-01
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
-- The current validation baseline passes 124 tests, type checking, and a production build.
+- The current validation baseline passes 128 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 
@@ -160,6 +160,7 @@ Promote a bet into a milestone only after the first three milestones are complet
 
 ## Completed
 
+- **2026-09-01:** Reused enriched market analysis across filter requests for unchanged snapshots, deduplicated item-catalog and Item Lookup history transfers, cached normalized mapping data, lazy-loaded item icons, and removed repeated sticky-table layout measurement while scrolling.
 - **2026-09-01:** Added a compact global item search to the application header with ranked item previews, keyboard navigation, and direct Item Lookup routing.
 - **2026-09-01:** Added dual-track Flip Finder rankings with Reliable as the default, an experimental five-minute High Upside model, paired-quote health, bounded public-market calibration, and protected model comparison reports.
 - **2026-08-25:** Added the private Investment Tracker with separate editable purchase lots, net instant-sell valuation after prospective GE tax, partial-data reporting, and account ownership enforcement.

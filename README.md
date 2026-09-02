@@ -102,7 +102,7 @@ TODO.md              Active milestone, backlog, and delivery history
 
 - Keep all direct OSRS Wiki Prices API calls in `lib/osrsWiki.ts`.
 - Unit and route tests mock upstream data and should not call the live Wiki API.
-- The in-memory Wiki cache is process-local; it is not shared across server instances and does not survive restarts.
+- The in-memory Wiki and market-analysis caches are process-local; they are not shared across server instances and do not survive restarts.
 - High Upside remains experimental while its public-market completion proxy is calibrated. Configure the protected job using [the calibration runbook](docs/flip-calibration.md).
 - Run `npm test` and `npm run typecheck` after meaningful code changes. Run `npm run build` for UI, route, configuration, dependency, or Next.js changes.
 - Read [AGENTS.md](AGENTS.md) before contributing with a coding agent.
