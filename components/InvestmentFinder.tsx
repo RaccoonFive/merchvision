@@ -247,7 +247,14 @@ export function InvestmentFinder() {
                             <div className="item-cell">
                               <ItemIcon icon={candidate.icon} className="item-icon" />
                               <div>
-                                <div className="item-name">{candidate.name}</div>
+                                <Link
+                                  className="item-name item-lookup-link"
+                                  href={`/lookup/${candidate.id}`}
+                                  onClick={(event) => event.stopPropagation()}
+                                  onKeyDown={(event) => event.stopPropagation()}
+                                >
+                                  {candidate.name}
+                                </Link>
                                 <div className="item-meta">{candidate.members ? "Members" : "F2P"} {candidate.warnings[0] ? `- ${candidate.warnings[0]}` : ""}</div>
                               </div>
                             </div>

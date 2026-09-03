@@ -27,7 +27,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 - `app/**/page.tsx` defines App Router entry points.
 - `components/AppShell.tsx` owns navigation, session-aware account controls, theme switching, sidebar state, and the global item quick-search placement. `components/HeaderItemSearch.tsx` loads the cached item metadata collection through `/api/items` and routes selections to Item Lookup.
-- `components/FlipFinder.tsx`, `InvestmentFinder.tsx`, `ItemLookup.tsx`, and `FavoritesPage.tsx` own the main interactive experiences. Flip Finder preserves the last successful results when a refresh fails and distinguishes current, stale, partially enriched, empty, and unavailable states.
+- `components/FlipFinder.tsx`, `InvestmentFinder.tsx`, `ItemLookup.tsx`, and `FavoritesPage.tsx` own the main interactive experiences. Finder item names link directly to the canonical Item Lookup route while their rows retain quick-detail selection. Flip Finder preserves the last successful results when a refresh fails and distinguishes current, stale, partially enriched, empty, and unavailable states.
 - Price-history charts share a dynamically imported Recharts renderer. Ranking pages defer that bundle until a detail panel opens, while Item Lookup defers it until usable chart data is available.
 - Account, Favorites, and Investment Tracker provide route-level loading UI so their dynamic session checks do not leave navigation without immediate feedback.
 - Client components request internal `/api/**` endpoints. They do not call the Wiki API or database directly.
@@ -51,6 +51,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - `lib/investmentTracker.ts` owns purchase-lot validation, live net-liquidation valuation, partial portfolio summaries, and tracker enrichment.
 - `lib/tax.ts` owns the GE tax rule.
 - `lib/marketRhythm.ts` derives Item Lookup's latest-seven-days hourly observations, after-tax spread quality, matched volume, and volatility summary.
+- `lib/itemResearch.ts` adapts the Reliable seven-day market-analysis policy for Item Lookup, adds hourly-history freshness and volume availability, and preserves missing analysis as unavailable rather than zero.
 - `lib/quote.ts` owns current item quote calculations and quote-level warnings.
 - `lib/types.ts` owns shared market and API-facing domain types.
 
@@ -87,7 +88,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 | `DELETE /api/investment-tracker/[lotId]` | Permanently remove a lot | `{ deleted: true }` | Authenticated owner |
 | `GET /api/items` | Return normalized item metadata | `{ data }` | Public |
 | `GET /api/items/[id]/quote` | Return item metadata and current quote | `{ item, quote }` | Public |
-| `GET /api/items/[id]/timeseries` | Return normalized timeseries points and, when requested, Market Rhythm analysis | `{ data, rhythm? }` | Public |
+| `GET /api/items/[id]/timeseries` | Return normalized timeseries points and, when requested, Market Rhythm and canonical Item Lookup research analysis | `{ data, rhythm?, research? }` | Public |
 | `GET /api/prices/latest` | Return normalized latest prices | `{ data }` | Public |
 | `GET /api/favorites` | Return the current user's enriched favorites | `{ data }` | Authenticated |
 | `GET /api/favorites/[itemId]` | Check favorite state | `{ favorited }` | Authenticated |
@@ -108,7 +109,9 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 Every upstream request includes `Merchvision/0.1` and `USER_AGENT_CONTACT` in the User-Agent. Requests fail early when the contact value is missing.
 
-Item Lookup requests the existing one-hour timeseries with `includeRhythm=true` to receive both its default seven-day chart and a deterministic Market Rhythm summary from one response. Since the upstream hourly series covers only the latest seven days, the UI presents cells as local-time observations, never as a recurring seasonal model, fill estimate, or profit forecast.
+Item Lookup requests the existing one-hour timeseries with `includeRhythm=true&includeResearch=true` to receive its default seven-day chart, deterministic Market Rhythm summary, and canonical research measures from one response. Item metadata is loaded through the cached mapping only when research is requested so the executability heuristic can respect a known buy limit. Since the upstream hourly series covers only the latest seven days, the UI presents cells as local-time observations, never as a recurring seasonal model, fill estimate, or profit forecast.
+
+Item Lookup reuses the Reliable ranking's seven-day formulas for median after-tax spread, spread variability, positive-spread ratio, midpoint volatility, median matched hourly volume, sample coverage, confidence, and estimated executable units. It separately reports the age of the latest complete hourly sample and whether paired volume samples exist. Current quote-pair age uses the older high/low side and quote skew shows whether the two observations were synchronized. The UI separates current observations, historical calculations, and capacity estimates, and does not substitute zero for missing price or volume evidence.
 
 The Wiki client uses a process-local in-memory cache and a `pending` map that coalesces concurrent requests for the same key. Default TTLs are:
 

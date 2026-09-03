@@ -8,7 +8,9 @@ describe("buildItemQuote", () => {
       tax: 2,
       netProfit: 18,
       roi: 0.18,
-      freshnessSeconds: 10
+      freshnessSeconds: 10,
+      pairAgeSeconds: 20,
+      quoteSkewSeconds: 10
     });
     expect(buildItemQuote({ id: 1, high: 90, low: 100 }, 1_000)).toMatchObject({
       margin: -10,
@@ -34,7 +36,9 @@ describe("buildItemQuote", () => {
       tax: null,
       netProfit: null,
       roi: null,
-      freshnessSeconds: 10
+      freshnessSeconds: 10,
+      pairAgeSeconds: null,
+      quoteSkewSeconds: null
     });
   });
 
@@ -42,11 +46,22 @@ describe("buildItemQuote", () => {
     const quote = buildItemQuote({ id: 1, high: 90, highTime: 1, low: 100, lowTime: 1 }, 4_000);
     expect(buildItemQuoteWarnings(quote)).toEqual([
       "The latest quotes produce a negative margin after GE tax.",
-      "The freshest quote is over one hour old and may not reflect the current market."
+      "The available quote data is over one hour old and may not reflect the current market."
     ]);
 
     expect(buildItemQuoteWarnings(buildItemQuote({ id: 1, high: 90 }))).toContain(
       "This item does not currently have both a high and low quote, so its margin is unavailable."
+    );
+  });
+
+  it("uses the older side for pair age and warns when quote sides are out of sync", () => {
+    const quote = buildItemQuote({ id: 1, high: 120, highTime: 3_900, low: 100, lowTime: 2_900 }, 4_000);
+
+    expect(quote.freshnessSeconds).toBe(100);
+    expect(quote.pairAgeSeconds).toBe(1_100);
+    expect(quote.quoteSkewSeconds).toBe(1_000);
+    expect(buildItemQuoteWarnings(quote)).toContain(
+      "The high and low trades are over 15 minutes apart, so the observed margin may not be simultaneous."
     );
   });
 });

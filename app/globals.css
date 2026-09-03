@@ -1269,6 +1269,24 @@ tbody tr.selected {
   font-weight: 700;
 }
 
+.item-lookup-link {
+  color: var(--text);
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+}
+
+.item-lookup-link:hover,
+.item-lookup-link:focus-visible {
+  color: var(--accent-strong);
+  text-decoration-color: currentColor;
+}
+
+.item-lookup-link:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .item-meta,
 .muted {
   color: var(--muted);
@@ -2179,6 +2197,58 @@ tbody tr.selected {
   gap: 10px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-top: 16px;
+}
+
+.lookup-analysis-section {
+  margin-top: 18px;
+}
+
+.lookup-analysis-section.historical {
+  border-top: 1px solid color-mix(in srgb, var(--line) 42%, transparent);
+  margin-top: 20px;
+  padding-top: 18px;
+}
+
+.lookup-analysis-head {
+  align-items: flex-start;
+  display: flex;
+  gap: 10px;
+}
+
+.lookup-analysis-head h3,
+.lookup-analysis-head p {
+  margin: 0;
+}
+
+.lookup-analysis-head p {
+  line-height: 1.45;
+  margin-top: 3px;
+}
+
+.research-kind {
+  background: var(--soft-subtle);
+  border-radius: 999px;
+  color: var(--accent-strong);
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+  padding: 4px 7px;
+  text-transform: uppercase;
+}
+
+.lookup-analysis-note {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+  margin: 10px 0 0;
+}
+
+.estimate-section {
+  border-top: 1px dashed color-mix(in srgb, var(--line) 65%, transparent);
+  margin-top: 16px;
+  padding-top: 16px;
 }
 
 .lookup-metric small {

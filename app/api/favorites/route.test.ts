@@ -36,7 +36,9 @@ describe("GET /api/favorites", () => {
         tax: 0,
         netProfit: 2,
         roi: 0.5,
-        freshnessSeconds: null
+        freshnessSeconds: null,
+        pairAgeSeconds: null,
+        quoteSkewSeconds: null
       }
     }]);
 

@@ -440,7 +440,14 @@ function FlipTable({
                 <div className="item-cell">
                   <ItemIcon icon={flip.icon} className="item-icon" />
                   <div>
-                    <div className="item-name">{flip.name}</div>
+                    <Link
+                      className="item-name item-lookup-link"
+                      href={`/lookup/${flip.id}`}
+                      onClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    >
+                      {flip.name}
+                    </Link>
                     <div className="item-meta">
                       {flip.members ? "Members" : "F2P"}
                       {flip.warnings.length > 0 ? ` · ${flip.warnings.length} warning${flip.warnings.length === 1 ? "" : "s"}` : ""}

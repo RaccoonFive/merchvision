@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
-vi.mock("@/lib/osrsWiki", () => ({ getTimeseries: vi.fn() }));
+vi.mock("@/lib/osrsWiki", () => ({ getItems: vi.fn(), getTimeseries: vi.fn() }));
 
-import { getTimeseries } from "@/lib/osrsWiki";
+import { getItems, getTimeseries } from "@/lib/osrsWiki";
 
+const mockedGetItems = vi.mocked(getItems);
 const mockedGetTimeseries = vi.mocked(getTimeseries);
 const context = { params: Promise.resolve({ id: "4151" }) };
 
@@ -14,6 +15,7 @@ describe("GET /api/items/[id]/timeseries", () => {
     mockedGetTimeseries.mockResolvedValue([
       { timestamp: 1, avgHighPrice: 1_100, avgLowPrice: 1_000, highPriceVolume: 100, lowPriceVolume: 80 }
     ]);
+    mockedGetItems.mockResolvedValue([{ id: 4151, name: "Abyssal whip", members: true, limit: 70 }]);
   });
 
   it("returns normalized timeseries points by default", async () => {
@@ -21,8 +23,35 @@ describe("GET /api/items/[id]/timeseries", () => {
 
     expect(response.status).toBe(200);
     expect(mockedGetTimeseries).toHaveBeenCalledWith(4151, "6h");
+    expect(mockedGetItems).not.toHaveBeenCalled();
     expect(await response.json()).toEqual({
       data: [{ timestamp: 1, avgHighPrice: 1_100, avgLowPrice: 1_000, highPriceVolume: 100, lowPriceVolume: 80 }]
+    });
+  });
+
+  it("adds canonical seven-day research using the item's buy limit when requested", async () => {
+    const response = await GET(
+      new Request("http://localhost/api/items/4151/timeseries?timestep=1h&includeResearch=true"),
+      context
+    );
+    const payload = await response.json();
+
+    expect(mockedGetItems).toHaveBeenCalledOnce();
+    expect(payload).toMatchObject({
+      data: [{ timestamp: 1 }],
+      research: {
+        market: {
+          historicalNetMarginMedian: 78,
+          positiveSpreadRatio: 1,
+          medianMatchedHourlyVolume: 80,
+          estimatedExecutableUnitsPerHour: 0.8,
+          rawExpectedGpPerHour: 62.4,
+          sampleCount: 1
+        },
+        sourcePointCount: 1,
+        volumeSampleCount: 1,
+        latestSampleTime: 1
+      }
     });
   });
 

@@ -24,11 +24,12 @@ Last updated: 2026-09-03
 - Flip enrichment is bounded to balanced shortlists and produces deterministic confidence, stability, spread-quality, and executability estimates.
 - Item Lookup exposes current quote math, warnings, Favorites, and 1-day, 7-day, 3-month, and 1-year price history.
 - Item Lookup includes Market Rhythm: a local-time heatmap of observed hourly after-tax spread quality and matched volume from the latest seven days, with explicit missing-data and non-forecast caveats.
+- Item Lookup separates current quote-pair observations, seven-day market-quality measures, and conservative executability estimates, with explicit partial and unavailable states.
 - A compact global header search provides keyboard-friendly item lookup with item previews from every application page.
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
-- The current validation baseline passes 132 tests, type checking, and a production build.
+- The current validation baseline passes 140 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 
@@ -82,12 +83,12 @@ Item Lookup becomes the canonical research view for validating a Flip Finder can
 
 ### Research Experience
 
-- [ ] Link every Flip Finder and Investment Finder result clearly to its Item Lookup research view.
-- [ ] Add historical after-tax spread, positive-spread ratio, matched volume, volatility, freshness, sample coverage, and estimated-executability analysis.
-- [ ] Explain how each measure should influence a merchant's decision without suggesting exact buy or sell offers.
-- [ ] Retain the existing 1-day, 7-day, 3-month, and 1-year history ranges.
-- [ ] Keep current observations, historical calculations, and estimates visually distinct.
-- [ ] Represent missing samples and unavailable calculations explicitly rather than substituting zeroes.
+- [x] Link every Flip Finder and Investment Finder result clearly to its Item Lookup research view.
+- [x] Add historical after-tax spread, positive-spread ratio, matched volume, volatility, freshness, sample coverage, and estimated-executability analysis.
+- [x] Explain how each measure should influence a merchant's decision without suggesting exact buy or sell offers.
+- [x] Retain the existing 1-day, 7-day, 3-month, and 1-year history ranges.
+- [x] Keep current observations, historical calculations, and estimates visually distinct.
+- [x] Represent missing samples and unavailable calculations explicitly rather than substituting zeroes.
 
 ### Live Data Behavior
 
@@ -99,7 +100,7 @@ Item Lookup becomes the canonical research view for validating a Flip Finder can
 
 ### Verification
 
-- [ ] Test historical-analysis formulas, missing samples, partial histories, unsupported values, and empty responses.
+- [x] Test historical-analysis formulas, missing samples, partial histories, unsupported values, and empty responses.
 - [ ] Test refresh intervals, pause/resume behavior, overlapping-request prevention, and degraded-data states.
 - [ ] Verify keyboard and narrow-screen usability for charts, refresh controls, and research metrics.
 - [ ] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
@@ -160,6 +161,7 @@ Promote a bet into a milestone only after the first three milestones are complet
 
 ## Completed
 
+- **2026-09-03:** Made Item Lookup the canonical Finder drill-down with direct result links, conservative quote-pair freshness, seven-day market-quality analysis, explicit evidence states, and separately labeled executability estimates.
 - **2026-09-03:** Completed the trustworthy Flip Finder milestone with aggregate enrichment health, preserved results after refresh failures, distinct current/stale/partial/unavailable and chart states, explicit 12-hour traded-volume labeling, and a reproducible score total.
 - **2026-09-02:** Reduced cold navigation payloads for chart-capable pages by roughly 100 KB each through deferred chart rendering, and added immediate route loading states for session-gated pages.
 - **2026-09-01:** Reused enriched market analysis across filter requests for unchanged snapshots, deduplicated item-catalog and Item Lookup history transfers, cached normalized mapping data, lazy-loaded item icons, and removed repeated sticky-table layout measurement while scrolling.

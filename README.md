@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Tests: 132 passing" src="https://img.shields.io/badge/tests-132_passing-6f9d5c?style=for-the-badge&amp;labelColor=202219" />
+  <img alt="Tests: 140 passing" src="https://img.shields.io/badge/tests-140_passing-6f9d5c?style=for-the-badge&amp;labelColor=202219" />
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-d4af55?style=for-the-badge&amp;logo=next.js&amp;logoColor=white&amp;labelColor=202219" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-587b9b?style=for-the-badge&amp;logo=typescript&amp;logoColor=white&amp;labelColor=202219" />
   <a href="https://prices.runescape.wiki/"><img alt="OSRS Wiki Prices API" src="https://img.shields.io/badge/data-OSRS_Wiki_Prices-bb8644?style=for-the-badge&amp;labelColor=202219" /></a>
@@ -31,7 +31,7 @@ It is a **decision-support tool**, not a profit oracle. Current trades are obser
 | ⚔️ **Flip Finder — Reliable** | Which short-term markets have repeatable quality? | Seven-day median after-tax margins, conservative GP/hour, buy-limit profit, liquidity, freshness, stability, confidence, and warnings. |
 | 🔥 **Flip Finder — High Upside** | Which fresh markets deserve a closer look right now? | Five-minute two-sided coverage, capturable margin, capacity estimates, paired-quote health, confidence, and risk-adjusted GP/hour. Experimental by design. |
 | 📈 **Investment Finder** | Which liquid items have sustained recent momentum? | Positive 24-hour and seven-day midpoint trends, volatility, directional consistency, sample coverage, and liquidity. |
-| 🔎 **Item Lookup** | Does one specific market hold up under inspection? | Latest quotes, after-tax margin, freshness, price history, warnings, and a local-time Market Rhythm heatmap. |
+| 🔎 **Item Lookup** | Does one specific market hold up under inspection? | Latest quote-pair health, seven-day market quality and executability estimates, price history, warnings, and a local-time Market Rhythm heatmap. |
 | 🎒 **Investment Tracker** | What is the current net value of my manually entered purchase lots? | Private purchase lots, prospective GE tax, net liquidation value, unrealized profit, stale quotes, and partial-data states. |
 | ⭐ **Favorites** | What do my watched items look like now? | A private watchlist enriched with current public quotes. |
 
@@ -71,6 +71,7 @@ flowchart LR
 
 - [`lib/osrsWiki.ts`](lib/osrsWiki.ts) is the only direct OSRS Wiki API integration.
 - [`lib/scoring.ts`](lib/scoring.ts) and [`lib/upsideScoring.ts`](lib/upsideScoring.ts) own deterministic flip analysis and ranking.
+- [`lib/itemResearch.ts`](lib/itemResearch.ts) applies the Reliable seven-day evidence policy to Item Lookup.
 - [`lib/investments.ts`](lib/investments.ts) owns investment momentum analysis.
 - [`lib/investmentTracker.ts`](lib/investmentTracker.ts) values private, manually entered purchase lots.
 - Process-local TTL caches, request coalescing, bounded shortlists, and lazy chart bundles keep the repeated workflow responsive and respectful of the Wiki API.

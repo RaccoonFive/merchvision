@@ -27,6 +27,8 @@ export type ItemQuote = {
   netProfit: number | null;
   roi: number | null;
   freshnessSeconds: number | null;
+  pairAgeSeconds: number | null;
+  quoteSkewSeconds: number | null;
 };
 
 export type ItemQuoteResponse = {
@@ -155,6 +157,14 @@ export type MarketAnalysis = {
   rawExpectedGpPerHour: number;
   confidence: number;
   volatilityPenalty: number;
+};
+
+export type ItemResearchAnalysis = {
+  market: MarketAnalysis | null;
+  sourcePointCount: number;
+  volumeSampleCount: number;
+  latestSampleTime: number | null;
+  freshnessSeconds: number | null;
 };
 
 export type FlipView = "reliable" | "upside";

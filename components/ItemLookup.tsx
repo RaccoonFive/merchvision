@@ -12,7 +12,7 @@ import { formatAge, formatCompact, formatGp, formatNullableGp, formatNumber, for
 import { loadItemCatalog } from "@/lib/clientItemCatalog";
 import { searchItems } from "@/lib/itemSearch";
 import { buildItemQuoteWarnings } from "@/lib/quote";
-import type { ItemMeta, ItemQuoteResponse, MarketRhythm, MarketRhythmSample, PricePoint } from "@/lib/types";
+import type { ItemMeta, ItemQuoteResponse, ItemResearchAnalysis, MarketRhythm, MarketRhythmSample, PricePoint } from "@/lib/types";
 
 type ApiResponse<T> = {
   data?: T;
@@ -59,6 +59,7 @@ export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = tr
   const [chartData, setChartData] = useState<PricePoint[]>([]);
   const [hourlyHistory, setHourlyHistory] = useState<HourlyHistory | null>(null);
   const [marketRhythm, setMarketRhythm] = useState<MarketRhythm | null>(null);
+  const [research, setResearch] = useState<ItemResearchAnalysis | null>(null);
   const [chartRange, setChartRange] = useState<ChartRange>("7D");
   const [chartLoading, setChartLoading] = useState(Boolean(initialItemId));
   const [rhythmLoading, setRhythmLoading] = useState(Boolean(initialItemId));
@@ -158,6 +159,7 @@ export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = tr
   useEffect(() => {
     if (!initialItemId) {
       setMarketRhythm(null);
+      setResearch(null);
       setRhythmError(null);
       setRhythmLoading(false);
       return;
@@ -167,24 +169,29 @@ export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = tr
     setRhythmLoading(true);
     setRhythmError(null);
 
-    fetch(`/api/items/${initialItemId}/timeseries?timestep=1h&includeRhythm=true`)
+    fetch(`/api/items/${initialItemId}/timeseries?timestep=1h&includeRhythm=true&includeResearch=true`)
       .then(async (response) => {
-        const payload = (await response.json()) as ApiResponse<PricePoint[]> & { rhythm?: MarketRhythm };
-        if (!response.ok || payload.error || !payload.rhythm) {
+        const payload = (await response.json()) as ApiResponse<PricePoint[]> & {
+          research?: ItemResearchAnalysis;
+          rhythm?: MarketRhythm;
+        };
+        if (!response.ok || payload.error || !payload.rhythm || !payload.research) {
           throw new Error(payload.error ?? "Unable to load the last seven days of hourly market data.");
         }
-        return { data: payload.data ?? [], rhythm: payload.rhythm };
+        return { data: payload.data ?? [], research: payload.research, rhythm: payload.rhythm };
       })
-      .then(({ data, rhythm }) => {
+      .then(({ data, research: nextResearch, rhythm }) => {
         if (alive) {
           setHourlyHistory({ itemId: initialItemId, data });
           setMarketRhythm(rhythm);
+          setResearch(nextResearch);
         }
       })
       .catch((err) => {
         if (alive) {
           setHourlyHistory({ itemId: initialItemId, data: [] });
           setMarketRhythm(null);
+          setResearch(null);
           setRhythmError(err instanceof Error ? err.message : "Unable to load the last seven days of hourly market data.");
         }
       })
@@ -301,6 +308,7 @@ export function ItemLookupContent({ initialItemId, onItemSelect, showSearch = tr
                 favoriteLoading={favoriteLoading}
                 favorited={favorited}
                 marketRhythm={marketRhythm}
+                research={research}
                 onToggleFavorite={toggleFavorite}
                 onChartRangeChange={setChartRange}
                 rhythmError={rhythmError}
@@ -322,6 +330,7 @@ function QuoteDetails({
   favorited,
   favoriteLoading,
   marketRhythm,
+  research,
   onToggleFavorite,
   onChartRangeChange,
   rhythmError,
@@ -335,6 +344,7 @@ function QuoteDetails({
   favorited: boolean;
   favoriteLoading: boolean;
   marketRhythm: MarketRhythm | null;
+  research: ItemResearchAnalysis | null;
   onToggleFavorite: () => void;
   onChartRangeChange: (range: ChartRange) => void;
   rhythmError: string | null;
@@ -359,7 +369,7 @@ function QuoteDetails({
         <div className="lookup-detail-actions">
           <div className="quote-status">
             <RefreshCw size={14} />
-            {quote.freshnessSeconds === null ? "No recent quote" : `Freshest trade ${formatAge(quote.freshnessSeconds)} ago`}
+            {quote.pairAgeSeconds === null ? "No complete quote pair" : `Quote pair ${formatAge(quote.pairAgeSeconds)} old`}
           </div>
           <button
             aria-label={favorited ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`}
@@ -390,16 +400,27 @@ function QuoteDetails({
         </div>
       ) : null}
 
-      <div className="lookup-metric-grid">
-        <Metric label="Buy price (latest low)" value={formatNullableGp(quote.low)} detail={formatTimestamp(quote.lowTime)} className="lookup-metric" />
-        <Metric label="Sell price (latest high)" value={formatNullableGp(quote.high)} detail={formatTimestamp(quote.highTime)} className="lookup-metric" />
-        <Metric label="Gross margin" value={formatNullableGp(quote.margin)} tone={valueTone(quote.margin)} className="lookup-metric" />
-        <Metric label="GE tax" value={formatNullableGp(quote.tax)} className="lookup-metric" />
-        <Metric label="Net margin" value={formatNullableGp(quote.netProfit)} tone={valueTone(quote.netProfit)} className="lookup-metric" />
-        <Metric label="ROI" value={quote.roi === null ? "Unavailable" : formatPercent(quote.roi)} tone={valueTone(quote.roi)} className="lookup-metric" />
-        <Metric label="Buy limit" value={item.limit ? formatNumber(item.limit) : "Unknown"} className="lookup-metric" />
-        <Metric label="Freshness" value={quote.freshnessSeconds === null ? "Unavailable" : formatAge(quote.freshnessSeconds)} className="lookup-metric" />
-      </div>
+      <section className="lookup-analysis-section" aria-labelledby="current-market-title">
+        <ResearchHeading
+          description="Latest public high and low trades. These are observations, not suggested offer prices."
+          id="current-market-title"
+          kind="Observed now"
+          title="Current market"
+        />
+        <div className="lookup-metric-grid">
+          <Metric label="Buy price (latest low)" value={formatNullableGp(quote.low)} detail={formatTimestamp(quote.lowTime)} className="lookup-metric" />
+          <Metric label="Sell price (latest high)" value={formatNullableGp(quote.high)} detail={formatTimestamp(quote.highTime)} className="lookup-metric" />
+          <Metric label="Gross margin" value={formatNullableGp(quote.margin)} tone={valueTone(quote.margin)} className="lookup-metric" />
+          <Metric label="GE tax" value={formatNullableGp(quote.tax)} className="lookup-metric" />
+          <Metric label="Net margin" value={formatNullableGp(quote.netProfit)} tone={valueTone(quote.netProfit)} className="lookup-metric" />
+          <Metric label="ROI" value={quote.roi === null ? "Unavailable" : formatPercent(quote.roi)} tone={valueTone(quote.roi)} className="lookup-metric" />
+          <Metric label="Buy limit" value={item.limit ? formatNumber(item.limit) : "Unknown"} className="lookup-metric" />
+          <Metric label="Quote pair age" value={quote.pairAgeSeconds === null ? "Unavailable" : formatAge(quote.pairAgeSeconds)} detail="Age of the older side" className="lookup-metric" />
+          <Metric label="Quote skew" value={quote.quoteSkewSeconds === null ? "Unavailable" : formatAge(quote.quoteSkewSeconds)} detail="Time between high and low trades" className="lookup-metric" />
+        </div>
+      </section>
+
+      <ItemResearchPanel error={rhythmError} loading={rhythmLoading} research={research} buyLimit={item.limit} />
 
       <div className="lookup-chart-panel">
         <div className="lookup-chart-head">
@@ -438,8 +459,81 @@ function QuoteDetails({
         </div>
       </div>
 
-      <MarketRhythmPanel error={rhythmError} loading={rhythmLoading} rhythm={marketRhythm} />
+      {!rhythmLoading && !rhythmError ? <MarketRhythmPanel error={null} loading={false} rhythm={marketRhythm} /> : null}
     </>
+  );
+}
+
+function ResearchHeading({ description, id, kind, title }: { description: string; id: string; kind: string; title: string }) {
+  return (
+    <div className="lookup-analysis-head">
+      <span className="research-kind">{kind}</span>
+      <div>
+        <h3 id={id}>{title}</h3>
+        <p className="muted">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function ItemResearchPanel({
+  buyLimit,
+  error,
+  loading,
+  research
+}: {
+  buyLimit?: number;
+  error: string | null;
+  loading: boolean;
+  research: ItemResearchAnalysis | null;
+}) {
+  const market = research?.market ?? null;
+  const hasVolume = (research?.volumeSampleCount ?? 0) > 0;
+
+  return (
+    <section className="lookup-analysis-section historical" aria-labelledby="historical-market-title">
+      <ResearchHeading
+        description="Hourly calculations from the latest seven days. Prefer broad positive-spread coverage, steady margins, and sufficient samples over an isolated spike."
+        id="historical-market-title"
+        kind="Measured history"
+        title="Seven-day market quality"
+      />
+      {loading ? <LoadingSpinner label="Analyzing seven-day market quality..." /> : null}
+      {!loading && error ? <div className="error" role="alert">{error}</div> : null}
+      {!loading && !error && !market ? (
+        <div className="empty">No complete hourly price samples are available, so historical measures and estimates are unavailable.</div>
+      ) : null}
+      {!loading && !error && market && research ? (
+        <>
+          <div className="lookup-metric-grid research-metric-grid">
+            <Metric label="Median net spread" value={formatGp(market.historicalNetMarginMedian)} tone={valueTone(market.historicalNetMarginMedian)} className="lookup-metric" />
+            <Metric label="Positive-spread hours" value={formatPercent(market.positiveSpreadRatio)} className="lookup-metric" />
+            <Metric label="Spread variability" value={formatPercent(market.historicalNetMarginVariability)} className="lookup-metric" />
+            <Metric label="Midpoint variation" value={formatPercent(market.midpointPriceVolatility)} className="lookup-metric" />
+            <Metric label="Median matched vol/hr" value={hasVolume ? formatNumber(market.medianMatchedHourlyVolume) : "Unavailable"} detail={hasVolume ? `${research.volumeSampleCount} volume samples` : "No paired volume samples"} className="lookup-metric" />
+            <Metric label="Sample coverage" value={formatPercent(market.sampleCoverage)} detail={`${market.sampleCount} usable of ${research.sourcePointCount} returned · 168 expected`} className="lookup-metric" />
+            <Metric label="Latest hourly sample" value={research.freshnessSeconds === null ? "Unavailable" : `${formatAge(research.freshnessSeconds)} ago`} detail={formatTimestamp(research.latestSampleTime)} className="lookup-metric" />
+            <Metric label="History confidence" value={formatPercent(market.confidence)} detail="Coverage, consistency, and volume" className="lookup-metric" />
+          </div>
+          <p className="lookup-analysis-note">Matched volume measures public activity, not available stock or a guaranteed fill. Higher variation and missing hours make the current spread less dependable.</p>
+
+          <div className="estimate-section" aria-labelledby="executability-title">
+            <ResearchHeading
+              description="Capacity heuristics derived from historical volume. Treat these as a comparison aid, never a fill-speed or profit promise."
+              id="executability-title"
+              kind="Conservative estimate"
+              title="Estimated executability"
+            />
+            <div className="lookup-metric-grid estimate-metric-grid">
+              <Metric label="Estimated units/hr" value={hasVolume ? formatNumber(market.estimatedExecutableUnitsPerHour) : "Unavailable"} className="lookup-metric" />
+              <Metric label="Historical GP/hr estimate" value={hasVolume ? formatGp(market.rawExpectedGpPerHour) : "Unavailable"} tone={hasVolume ? valueTone(market.rawExpectedGpPerHour) : "muted"} className="lookup-metric" />
+              <Metric label="Volume share assumed" value={hasVolume ? "1%" : "Unavailable"} detail="Of median matched hourly volume" className="lookup-metric" />
+              <Metric label="Buy-limit cap" value={buyLimit ? `${formatNumber(buyLimit / 4)} units/hr` : "Unavailable"} detail={buyLimit ? "One quarter of the 4-hour limit" : "Published limit unknown"} className="lookup-metric" />
+            </div>
+          </div>
+        </>
+      ) : null}
+    </section>
   );
 }
 
@@ -475,12 +569,6 @@ function MarketRhythmPanel({
       ) : null}
       {!loading && !error && rhythm && rhythm.sampleCount > 0 && grid ? (
         <>
-          <div className="market-rhythm-metrics">
-            <Metric label="Usable observed hours" value={`${rhythm.sampleCount} of ${rhythm.sourcePointCount}`} />
-            <Metric label="Positive after-tax hours" value={formatPercent(rhythm.positiveSpreadRatio)} />
-            <Metric label="Median matched vol/hr" value={rhythm.medianMatchedHourlyVolume === null ? "Unavailable" : formatNumber(rhythm.medianMatchedHourlyVolume)} />
-            <Metric label="Hourly price variation" value={formatPercent(rhythm.midpointPriceVolatility)} />
-          </div>
           <div className="market-rhythm-scroll">
             <div className="market-rhythm-grid" role="grid" aria-label="Observed hourly matched volume and after-tax spread">
               <div className="rhythm-corner" role="columnheader">Hour</div>
