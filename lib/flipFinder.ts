@@ -26,17 +26,46 @@ type UniverseMemo<T> = {
   prices: LatestPrice[];
   summaries: MarketSummary[] | undefined;
   timeBucket: number;
-  value: Promise<T[]>;
+  value: Promise<FlipUniverseResult<T>>;
+};
+
+export type FlipDataHealth = {
+  summaryAvailable: boolean;
+  historyRequested: number;
+  historySucceeded: number;
+  historyFailed: number;
+  isPartial: boolean;
+};
+
+export type FlipLoadResult<T> = {
+  data: T[];
+  health: FlipDataHealth;
+};
+
+type FlipUniverseResult<T> = FlipLoadResult<T>;
+
+type TimeseriesLoadResult = {
+  pointsByItem: Map<number, PricePoint[]>;
+  failed: number;
 };
 
 let reliableUniverseMemo: UniverseMemo<FlipCandidate> | undefined;
 let upsideUniverseMemo: UniverseMemo<UpsideFlipCandidate> | undefined;
 
 export async function loadReliableFlips(filters: FlipFilters): Promise<FlipCandidate[]> {
-  return filterAndSortFlips(await loadReliableCandidateUniverse(), filters);
+  return (await loadReliableFlipResult(filters)).data;
+}
+
+export async function loadReliableFlipResult(filters: FlipFilters): Promise<FlipLoadResult<FlipCandidate>> {
+  const result = await loadReliableUniverseResult();
+  return { data: filterAndSortFlips(result.data, filters), health: result.health };
 }
 
 export async function loadReliableCandidateUniverse(): Promise<FlipCandidate[]> {
+  return (await loadReliableUniverseResult()).data;
+}
+
+async function loadReliableUniverseResult(): Promise<FlipUniverseResult<FlipCandidate>> {
   const nowSeconds = Math.floor(Date.now() / 1000);
   const [items, prices, summaries] = await Promise.all([
     getItems(),
@@ -52,15 +81,18 @@ export async function loadReliableCandidateUniverse(): Promise<FlipCandidate[]> 
   const value = (async () => {
     const preliminary = buildFlipCandidates({ items, prices, nowSeconds });
     const historyTargets = reliableHistoryShortlist(preliminary, summaries, RELIABLE_HISTORY_SHORTLIST_SIZE);
-    const timeseriesByItem = await getRecentTimeseries(
+    const histories = await getRecentTimeseries(
       historyTargets.map((candidate) => candidate.id),
       "1h"
     );
     const volumesByItem = new Map(
-      [...timeseriesByItem.entries()].map(([id, points]) => [id, volumeFromTimeseries(points.slice(-12))])
+      [...histories.pointsByItem.entries()].map(([id, points]) => [id, volumeFromTimeseries(points.slice(-12))])
     );
-    const analysesByItem = reliableMarketAnalyses(historyTargets, items, timeseriesByItem);
-    return buildFlipCandidates({ items, prices, volumesByItem, analysesByItem, nowSeconds });
+    const analysesByItem = reliableMarketAnalyses(historyTargets, items, histories.pointsByItem);
+    return {
+      data: buildFlipCandidates({ items, prices, volumesByItem, analysesByItem, nowSeconds }),
+      health: dataHealth(summaries, historyTargets.length, histories.failed)
+    };
   })();
 
   reliableUniverseMemo = { items, prices, summaries, timeBucket, value };
@@ -71,10 +103,19 @@ export async function loadReliableCandidateUniverse(): Promise<FlipCandidate[]> 
 }
 
 export async function loadUpsideFlips(filters: UpsideFlipFilters): Promise<UpsideFlipCandidate[]> {
-  return filterAndSortUpsideFlips(await loadUpsideCandidateUniverse(), filters);
+  return (await loadUpsideFlipResult(filters)).data;
+}
+
+export async function loadUpsideFlipResult(filters: UpsideFlipFilters): Promise<FlipLoadResult<UpsideFlipCandidate>> {
+  const result = await loadUpsideUniverseResult();
+  return { data: filterAndSortUpsideFlips(result.data, filters), health: result.health };
 }
 
 export async function loadUpsideCandidateUniverse(): Promise<UpsideFlipCandidate[]> {
+  return (await loadUpsideUniverseResult()).data;
+}
+
+async function loadUpsideUniverseResult(): Promise<FlipUniverseResult<UpsideFlipCandidate>> {
   const nowSeconds = Math.floor(Date.now() / 1000);
   const [items, prices, summaries] = await Promise.all([
     getItems(),
@@ -91,18 +132,21 @@ export async function loadUpsideCandidateUniverse(): Promise<UpsideFlipCandidate
     const preliminary = buildFlipCandidates({ items, prices, nowSeconds });
     const targets = buildUpsideShortlist(preliminary, summaries);
     const targetIds = new Set(targets.map((candidate) => candidate.id));
-    const timeseriesByItem = await getRecentTimeseriesBatched(
+    const histories = await getRecentTimeseriesBatched(
       targets.map((candidate) => candidate.id),
       "5m",
       UPSIDE_HISTORY_BATCH_SIZE
     );
 
-    return buildUpsideCandidates({
-      items,
-      prices: prices.filter((price) => targetIds.has(price.id)),
-      pointsByItem: timeseriesByItem,
-      nowSeconds
-    });
+    return {
+      data: buildUpsideCandidates({
+        items,
+        prices: prices.filter((price) => targetIds.has(price.id)),
+        pointsByItem: histories.pointsByItem,
+        nowSeconds
+      }),
+      health: dataHealth(summaries, targets.length, histories.failed)
+    };
   })();
 
   upsideUniverseMemo = { items, prices, summaries, timeBucket, value };
@@ -155,25 +199,28 @@ function reliableHistoryShortlist(
   return [...selected.values()];
 }
 
-async function getRecentTimeseries(ids: number[], timestep: "1h" | "5m"): Promise<Map<number, PricePoint[]>> {
+async function getRecentTimeseries(ids: number[], timestep: "1h" | "5m"): Promise<TimeseriesLoadResult> {
+  let failed = 0;
   const pairs = await Promise.all(
     ids.map(async (id) => {
       try {
         return [id, await getTimeseries(id, timestep)] as const;
       } catch {
+        failed += 1;
         return [id, [] as PricePoint[]] as const;
       }
     })
   );
-  return new Map(pairs);
+  return { pointsByItem: new Map(pairs), failed };
 }
 
 async function getRecentTimeseriesBatched(
   ids: number[],
   timestep: "5m",
   batchSize: number
-): Promise<Map<number, PricePoint[]>> {
+): Promise<TimeseriesLoadResult> {
   const pairs: Array<readonly [number, PricePoint[]]> = [];
+  let failed = 0;
 
   for (let index = 0; index < ids.length; index += batchSize) {
     const batch = ids.slice(index, index + batchSize);
@@ -182,6 +229,7 @@ async function getRecentTimeseriesBatched(
         try {
           return [id, await getTimeseries(id, timestep)] as const;
         } catch {
+          failed += 1;
           return [id, [] as PricePoint[]] as const;
         }
       })
@@ -189,7 +237,21 @@ async function getRecentTimeseriesBatched(
     pairs.push(...results);
   }
 
-  return new Map(pairs);
+  return { pointsByItem: new Map(pairs), failed };
+}
+
+function dataHealth(
+  summaries: MarketSummary[] | undefined,
+  historyRequested: number,
+  historyFailed: number
+): FlipDataHealth {
+  return {
+    summaryAvailable: Boolean(summaries?.length),
+    historyRequested,
+    historySucceeded: historyRequested - historyFailed,
+    historyFailed,
+    isPartial: !summaries?.length || historyFailed > 0
+  };
 }
 
 function reliableMarketAnalyses(

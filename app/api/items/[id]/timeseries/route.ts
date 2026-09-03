@@ -20,10 +20,7 @@ export async function GET(request: Request, context: Context) {
 
     const data = await getTimeseries(itemId, timestep);
     return NextResponse.json(includeRhythm ? { data, rhythm: analyzeMarketRhythm(data) } : { data });
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to load item timeseries." },
-      { status: 500 }
-    );
+  } catch {
+    return NextResponse.json({ error: "Unable to load item price history." }, { status: 500 });
   }
 }

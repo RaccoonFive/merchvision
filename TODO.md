@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-09-02
+Last updated: 2026-09-03
 
 ## Product Direction
 
@@ -28,11 +28,11 @@ Last updated: 2026-09-02
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
-- The current validation baseline passes 128 tests, type checking, and a production build.
+- The current validation baseline passes 132 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 
-Status: **Active**
+Status: **Completed**
 
 ### Outcome
 
@@ -57,7 +57,7 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 - [x] Label current observations, historical measures, and estimates distinctly.
 - [x] Clarify trailing traded volume, matched hourly volume, per-item net profit, buy-limit profit, and estimated units per hour.
 - [x] Surface every material warning without silently hiding warnings after the first four.
-- [ ] Keep loading, empty, stale, partial-history, and upstream-failure states clear on desktop and narrow screens.
+- [x] Keep loading, empty, stale, partial-history, and upstream-failure states clear on desktop and narrow screens.
 
 ### Tuning And Verification
 
@@ -68,13 +68,13 @@ An active merchant can scan a shortlist of credible opportunities, recognize the
 
 ### Completion Gate
 
-- [ ] A user can recognize why a candidate is credible or risky from the table and detail panel without needing to understand point-by-point score arithmetic.
-- [ ] Returned score components reproduce the displayed aggregate score for every candidate.
-- [ ] No label implies that volume, fill speed, executable units, or profit is guaranteed.
+- [x] A user can recognize why a candidate is credible or risky from the table and detail panel without needing to understand point-by-point score arithmetic.
+- [x] Returned score components reproduce the displayed aggregate score for every candidate.
+- [x] No label implies that volume, fill speed, executable units, or profit is guaranteed.
 
 ## Milestone 2 - Live Item Research
 
-Status: **Planned next**
+Status: **Active**
 
 ### Outcome
 
@@ -160,6 +160,7 @@ Promote a bet into a milestone only after the first three milestones are complet
 
 ## Completed
 
+- **2026-09-03:** Completed the trustworthy Flip Finder milestone with aggregate enrichment health, preserved results after refresh failures, distinct current/stale/partial/unavailable and chart states, explicit 12-hour traded-volume labeling, and a reproducible score total.
 - **2026-09-02:** Reduced cold navigation payloads for chart-capable pages by roughly 100 KB each through deferred chart rendering, and added immediate route loading states for session-gated pages.
 - **2026-09-01:** Reused enriched market analysis across filter requests for unchanged snapshots, deduplicated item-catalog and Item Lookup history transfers, cached normalized mapping data, lazy-loaded item icons, and removed repeated sticky-table layout measurement while scrolling.
 - **2026-09-01:** Added a compact global item search to the application header with ranked item previews, keyboard navigation, and direct Item Lookup routing.

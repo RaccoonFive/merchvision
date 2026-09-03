@@ -47,6 +47,13 @@ describe("GET /api/flips", () => {
       stability: 1,
       totalBuyLimitProfit: 60_000
     });
+    expect(payload.meta.health).toEqual({
+      summaryAvailable: true,
+      historyRequested: 1,
+      historySucceeded: 1,
+      historyFailed: 0,
+      isPartial: false
+    });
   });
 
   it("filters by market confidence", async () => {
@@ -174,6 +181,13 @@ describe("GET /api/flips", () => {
 
     expect(response.status).toBe(200);
     expect(mockedGetTimeseries).toHaveBeenCalledTimes(100);
+    expect((await response.json()).meta.health).toMatchObject({
+      summaryAvailable: false,
+      historyRequested: 100,
+      historySucceeded: 100,
+      historyFailed: 0,
+      isPartial: true
+    });
   });
 
   it("returns the separately modeled High Upside view on demand", async () => {
@@ -224,6 +238,13 @@ describe("GET /api/flips", () => {
 
     expect(response.status).toBe(200);
     expect(payload.data.map((candidate: { id: number }) => candidate.id)).toEqual([1]);
+    expect(payload.meta.health).toEqual({
+      summaryAvailable: true,
+      historyRequested: 2,
+      historySucceeded: 1,
+      historyFailed: 1,
+      isPartial: true
+    });
   });
 
   it("limits High Upside timeseries enrichment to ten concurrent requests", async () => {

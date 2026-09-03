@@ -1515,6 +1515,20 @@ tbody tr.selected {
   color: var(--bad);
 }
 
+.score-breakdown-total {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: grid;
+  font-size: 12px;
+  gap: 5px 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding-top: 9px;
+}
+
+.score-breakdown-total span {
+  color: var(--muted);
+}
+
 .metric {
   background: var(--subtle-bg);
   border: 1px solid var(--line);
@@ -1622,6 +1636,40 @@ tbody tr.selected {
 
 .error {
   color: var(--bad);
+}
+
+.data-health-banner {
+  align-items: center;
+  background: color-mix(in srgb, var(--warn) 10%, var(--panel));
+  border-bottom: 1px solid color-mix(in srgb, var(--warn) 30%, var(--line));
+  color: var(--warn);
+  display: flex;
+  font-size: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.data-health-banner span {
+  min-width: 0;
+}
+
+.data-health-banner svg {
+  flex: 0 0 auto;
+}
+
+.data-health-banner.error-banner {
+  background: color-mix(in srgb, var(--bad) 8%, var(--panel));
+  border-bottom-color: color-mix(in srgb, var(--bad) 28%, var(--line));
+  color: var(--bad);
+}
+
+.compact-btn {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 0 10px;
 }
 
 .refresh-btn {

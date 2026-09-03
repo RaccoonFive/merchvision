@@ -52,4 +52,13 @@ describe("GET /api/items/[id]/timeseries", () => {
     expect(response.status).toBe(400);
     expect(mockedGetTimeseries).not.toHaveBeenCalled();
   });
+
+  it("returns a safe error when upstream history is unavailable", async () => {
+    mockedGetTimeseries.mockRejectedValue(new Error("private upstream payload"));
+
+    const response = await GET(new Request("http://localhost/api/items/4151/timeseries"), context);
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "Unable to load item price history." });
+  });
 });

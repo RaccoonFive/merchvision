@@ -27,7 +27,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 - `app/**/page.tsx` defines App Router entry points.
 - `components/AppShell.tsx` owns navigation, session-aware account controls, theme switching, sidebar state, and the global item quick-search placement. `components/HeaderItemSearch.tsx` loads the cached item metadata collection through `/api/items` and routes selections to Item Lookup.
-- `components/FlipFinder.tsx`, `InvestmentFinder.tsx`, `ItemLookup.tsx`, and `FavoritesPage.tsx` own the main interactive experiences.
+- `components/FlipFinder.tsx`, `InvestmentFinder.tsx`, `ItemLookup.tsx`, and `FavoritesPage.tsx` own the main interactive experiences. Flip Finder preserves the last successful results when a refresh fails and distinguishes current, stale, partially enriched, empty, and unavailable states.
 - Price-history charts share a dynamically imported Recharts renderer. Ranking pages defer that bundle until a detail panel opens, while Item Lookup defers it until usable chart data is available.
 - Account, Favorites, and Investment Tracker provide route-level loading UI so their dynamic session checks do not leave navigation without immediate feedback.
 - Client components request internal `/api/**` endpoints. They do not call the Wiki API or database directly.
@@ -79,7 +79,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 | Endpoint | Responsibility | Success shape | Access |
 | --- | --- | --- | --- |
-| `GET /api/flips?view=reliable\|upside` | Rank and filter the default Reliable or experimental High Upside candidates | `{ data, meta }` | Public |
+| `GET /api/flips?view=reliable\|upside` | Rank and filter the default Reliable or experimental High Upside candidates | `{ data, meta: { health, ... } }` | Public |
 | `GET /api/investments` | Rank and filter investment candidates | `{ data, meta }` | Public |
 | `GET /api/investment-tracker` | Enrich the current user's purchase lots with current valuation | `{ data, meta }` | Authenticated |
 | `POST /api/investment-tracker` | Create a separate purchase lot | `{ data }` | Authenticated |
@@ -118,14 +118,14 @@ The Wiki client uses a process-local in-memory cache and a `pending` map that co
 | Item mapping | `OSRS_MAPPING_CACHE_SECONDS` | 86,400 seconds |
 | Timeseries and 24-hour summaries | `OSRS_TIMESERIES_CACHE_SECONDS` | 300 seconds |
 
-Normalized item metadata is cached rather than rebuilt from the raw mapping on every request. Flip and investment candidate analysis is also memoized against the exact cached market snapshot, so changing filters reuses the already-enriched candidate universe. The browser shares one item-catalog request across the header search and page-level item selectors, and `/api/items` permits browser and shared-cache reuse because the response contains only public mapping data.
+Normalized item metadata is cached rather than rebuilt from the raw mapping on every request. Flip and investment candidate analysis is also memoized against the exact cached market snapshot, so changing filters reuses the already-enriched candidate universe. Flip ranking responses include aggregate data-health metadata for 24-hour-summary availability and bounded history-request success or failure counts; they do not expose upstream payloads or per-item failure details. The browser shares one item-catalog request across the header search and page-level item selectors, and `/api/items` permits browser and shared-cache reuse because the response contains only public mapping data.
 
 This cache is intentionally simple, but it has operational consequences:
 
 - It is empty after a process restart.
 - It is not shared across application instances.
 - It does not provide durable stale-while-revalidate behavior.
-- Upstream failures are handled per route; timeseries enrichment failures can be skipped or represented as missing analysis depending on the flow.
+- Upstream failures are handled per route; Flip Finder exposes partial enrichment without failing usable results, while complete route failures use safe messages and retain the last successful client snapshot during refreshes.
 
 Any move to multiple production instances should explicitly revisit shared caching, request limits, retries, timeouts, and data-health reporting.
 

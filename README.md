@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Tests: 129 passing" src="https://img.shields.io/badge/tests-129_passing-6f9d5c?style=for-the-badge&amp;labelColor=202219" />
+  <img alt="Tests: 132 passing" src="https://img.shields.io/badge/tests-132_passing-6f9d5c?style=for-the-badge&amp;labelColor=202219" />
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-d4af55?style=for-the-badge&amp;logo=next.js&amp;logoColor=white&amp;labelColor=202219" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-587b9b?style=for-the-badge&amp;logo=typescript&amp;logoColor=white&amp;labelColor=202219" />
   <a href="https://prices.runescape.wiki/"><img alt="OSRS Wiki Prices API" src="https://img.shields.io/badge/data-OSRS_Wiki_Prices-bb8644?style=for-the-badge&amp;labelColor=202219" /></a>

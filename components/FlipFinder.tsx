@@ -10,6 +10,7 @@ import type {
   RankedFlipCandidate,
   UpsideFlipCandidate
 } from "@/lib/types";
+import type { FlipDataHealth } from "@/lib/flipFinder";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
 import { ItemLookupDialog } from "@/components/ItemLookupDialog";
@@ -18,7 +19,8 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Metric } from "@/components/Metric";
 import { SortableTableHeader } from "@/components/SortableTableHeader";
 import { StickyTable } from "@/components/StickyTable";
-import { formatAge, formatClock, formatGp, formatNumber, formatPercent } from "@/lib/format";
+import { formatAge, formatGp, formatNumber, formatPercent } from "@/lib/format";
+import { flipDataHealthMessage, flipStatusLabel } from "@/lib/flipHealth";
 import { sortTableRows, type SortDirection } from "@/lib/tableSort";
 
 type FlipsResponse = {
@@ -26,6 +28,7 @@ type FlipsResponse = {
   error?: string;
   meta?: {
     generatedAt: string;
+    health: FlipDataHealth;
     modelVersion: string;
     view: FlipView;
   };
@@ -103,7 +106,9 @@ export function FlipFinder() {
   const [chartData, setChartData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(false);
+  const [chartError, setChartError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dataHealth, setDataHealth] = useState<FlipDataHealth | null>(null);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
   const [modelVersion, setModelVersion] = useState<string | null>(null);
   const [tableSort, setTableSort] = useState<{ key: FlipSortKey; direction: SortDirection }>({
@@ -128,11 +133,11 @@ export function FlipFinder() {
       if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load flips.");
       const nextFlips = (payload.data ?? []).filter((flip) => flip.view === view);
       setFlips(nextFlips);
+      setDataHealth(payload.meta?.health ?? null);
       setGeneratedAt(payload.meta?.generatedAt ?? null);
       setModelVersion(payload.meta?.modelVersion ?? null);
       setSelectedId((current) => (current && nextFlips.some((flip) => flip.id === current) ? current : null));
     } catch (err) {
-      setFlips([]);
       setError(err instanceof Error ? err.message : "Unable to load flips.");
     } finally {
       setLoading(false);
@@ -146,11 +151,13 @@ export function FlipFinder() {
   useEffect(() => {
     if (!detailPanelOpen || !selected?.id) {
       setChartData([]);
+      setChartError(null);
       return;
     }
 
     let alive = true;
     setChartLoading(true);
+    setChartError(null);
     const timestep = selected.view === "upside" ? "5m" : "1h";
     fetch(`/api/items/${selected.id}/timeseries?timestep=${timestep}`)
       .then(async (response) => {
@@ -158,8 +165,11 @@ export function FlipFinder() {
         if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load chart.");
         if (alive) setChartData(payload.data ?? []);
       })
-      .catch(() => {
-        if (alive) setChartData([]);
+      .catch((err) => {
+        if (alive) {
+          setChartData([]);
+          setChartError(err instanceof Error ? err.message : "Unable to load chart.");
+        }
       })
       .finally(() => {
         if (alive) setChartLoading(false);
@@ -181,6 +191,7 @@ export function FlipFinder() {
     setSelectedId(null);
     setDetailPanelOpen(false);
     setGeneratedAt(null);
+    setDataHealth(null);
     setModelVersion(null);
     setTableSort({ key: nextView === "upside" ? "riskAdjustedGpPerHour" : "score", direction: "desc" });
     setFilters((current) => ({
@@ -204,8 +215,8 @@ export function FlipFinder() {
       title="Flip Finder"
       headerActions={
         <div className="status-pill">
-          <span className="status-pill-copy" title={generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}>
-            {generatedAt ? `Updated ${formatClock(generatedAt)}` : "Waiting for prices"}
+          <span className="status-pill-copy" title={flipStatusLabel({ dataHealth, error, flips, generatedAt })}>
+            {flipStatusLabel({ dataHealth, error, flips, generatedAt })}
           </span>
           <button className="refresh-btn" disabled={loading} onClick={loadFlips} type="button" aria-label={loading ? "Refreshing flips" : "Refresh flips"} title={loading ? "Refreshing flips" : "Refresh flips"}>
             {loading ? <LoadingSpinner size="small" variant="button" /> : <RefreshCw aria-hidden="true" size={14} />}
@@ -234,10 +245,27 @@ export function FlipFinder() {
 
           <div className={`main-grid${detailPanelOpen ? "" : " detail-panel-closed"}`}>
             <section className="table-wrap" aria-label={`${view === "reliable" ? "Reliable" : "High Upside"} ranked flips`}>
-              {error ? <div className="error">{error}</div> : null}
-              {loading ? <LoadingSpinner label={view === "upside" ? "Analyzing recent opportunities..." : "Loading live margins..."} /> : null}
-              {!loading && !error && flips.length === 0 ? <div className="empty">No flips meet this view&apos;s evidence and filter requirements.</div> : null}
-              {!loading && !error && flips.length > 0 ? (
+              {error ? (
+                <div className={flips.length > 0 ? "data-health-banner error-banner" : "error"} role="alert">
+                  <span>{flips.length > 0 ? `${error} Showing the previous results.` : error}</span>
+                  <button className="secondary-btn compact-btn" disabled={loading} onClick={loadFlips} type="button">Try again</button>
+                </div>
+              ) : null}
+              {!error && dataHealth?.isPartial ? (
+                <div className="data-health-banner" role="status">
+                  <AlertTriangle aria-hidden="true" size={16} />
+                  <span>{flipDataHealthMessage(dataHealth)}</span>
+                </div>
+              ) : null}
+              {loading && flips.length === 0 ? <LoadingSpinner label={view === "upside" ? "Analyzing recent opportunities..." : "Loading live margins..."} /> : null}
+              {!loading && !error && flips.length === 0 ? (
+                <div className="empty">
+                  {dataHealth?.isPartial
+                    ? "No candidates meet this view's evidence and filter requirements in the market data that was available."
+                    : "No flips meet this view's evidence and filter requirements."}
+                </div>
+              ) : null}
+              {flips.length > 0 ? (
                 <FlipTable
                   detailPanelOpen={detailPanelOpen}
                   filters={filters}
@@ -256,7 +284,7 @@ export function FlipFinder() {
             </section>
 
             {detailPanelOpen ? (
-              <FlipDetails chartData={chartData} chartLoading={chartLoading} selected={selected} theme={theme} onClose={() => setDetailPanelOpen(false)} onLookup={setLookupItemId} />
+              <FlipDetails chartData={chartData} chartError={chartError} chartLoading={chartLoading} selected={selected} theme={theme} onClose={() => setDetailPanelOpen(false)} onLookup={setLookupItemId} />
             ) : null}
           </div>
 
@@ -369,9 +397,9 @@ function FlipTable({
                 }} />
               </>
             ) : null}
-            <SortableTableHeader label={view === "upside" ? "4h matched volume" : "Volume"} active={tableSort.key === "volume"} direction={tableSort.direction} onSort={() => toggleTableSort("volume")} filter={{
+            <SortableTableHeader label={view === "upside" ? "4h matched volume" : "12h traded volume"} active={tableSort.key === "volume"} direction={tableSort.direction} onSort={() => toggleTableSort("volume")} filter={{
               active: Boolean(filters.minVolume),
-              fields: [{ id: "minVolume", label: `Minimum ${view === "upside" ? "four-hour matched" : "trailing"} volume`, type: "number", value: filters.minVolume }],
+              fields: [{ id: "minVolume", label: `Minimum ${view === "upside" ? "four-hour matched" : "12-hour traded"} volume`, type: "number", value: filters.minVolume }],
               onApply: (values) => updateFilter("minVolume", String(values.minVolume))
             }} />
             {view === "reliable" ? (
@@ -468,6 +496,7 @@ function UpsideCells({ flip }: { flip: UpsideFlipCandidate }) {
 
 function FlipDetails({
   chartData,
+  chartError,
   chartLoading,
   selected,
   theme,
@@ -475,6 +504,7 @@ function FlipDetails({
   onLookup
 }: {
   chartData: PricePoint[];
+  chartError: string | null;
   chartLoading: boolean;
   selected?: RankedFlipCandidate;
   theme: Theme;
@@ -514,7 +544,11 @@ function FlipDetails({
           <div>
             <h3>{selected.view === "upside" ? "Recent five-minute prices" : "Recent hourly prices"}</h3>
             <div className="chart">
-              {chartLoading ? <LoadingSpinner label="Loading chart..." /> : (
+              {chartLoading ? <LoadingSpinner label="Loading chart..." /> : chartError ? (
+                <div className="error" role="alert">{chartError}</div>
+              ) : chartData.length === 0 ? (
+                <div className="empty">No recent price observations are available.</div>
+              ) : (
                 <LazyPriceHistoryChart
                   colors={chartColors(theme)}
                   data={chartData.map(toChartPoint)}
@@ -533,6 +567,10 @@ function FlipDetails({
                   <li className={component.kind} key={component.label}><span>{component.label}</span><strong>{formatScorePoints(component.points, true)}</strong></li>
                 ))}
               </ul>
+              <div className="score-breakdown-total">
+                <span>Component total</span><strong>{formatScorePoints(selected.scoreBreakdown.rawScore)}</strong>
+                <span>Displayed score (rounded, 0–100)</span><strong>{selected.scoreBreakdown.score}</strong>
+              </div>
             </section>
           ) : null}
         </>
