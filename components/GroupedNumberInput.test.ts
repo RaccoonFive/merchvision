@@ -14,7 +14,21 @@ describe("GroupedNumberInput", () => {
     expect(normalizeGroupedNumberInput("1,000,000")).toBe("1000000");
   });
 
-  it("rejects non-numeric input", () => {
-    expect(normalizeGroupedNumberInput("10k")).toBeNull();
+  it("expands case-insensitive thousand, million, and billion suffixes", () => {
+    expect(normalizeGroupedNumberInput("50k")).toBe("50000");
+    expect(normalizeGroupedNumberInput("1.5M")).toBe("1500000");
+    expect(normalizeGroupedNumberInput("2b")).toBe("2000000000");
+  });
+
+  it("expands shorthand exactly when the result contains a decimal", () => {
+    expect(normalizeGroupedNumberInput("1.2345k")).toBe("1234.5");
+    expect(normalizeGroupedNumberInput("0.000000001b")).toBe("1");
+  });
+
+  it("accepts separators before a suffix and rejects invalid input", () => {
+    expect(normalizeGroupedNumberInput("50 k")).toBe("50000");
+    expect(normalizeGroupedNumberInput("1,000k")).toBe("1000000");
+    expect(normalizeGroupedNumberInput("10x")).toBeNull();
+    expect(normalizeGroupedNumberInput("k")).toBeNull();
   });
 });
