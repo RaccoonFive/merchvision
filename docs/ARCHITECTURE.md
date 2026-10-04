@@ -32,6 +32,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - Account, Favorites, and Investment Tracker provide route-level loading UI so their dynamic session checks do not leave navigation without immediate feedback.
 - Client components request internal `/api/**` endpoints. They do not call the Wiki API or database directly.
 - Theme and sidebar preferences are stored in browser `localStorage`; they are not account data.
+- At widths of 1050px and below, navigation uses a compact rail and the header search occupies its own row. At 760px and below, navigation becomes a horizontally scrollable labeled strip above the tool. These viewport layouts preserve the saved desktop sidebar preference. On tablet and mobile, market tables use bounded scroll regions with native sticky headers and a pinned item column; desktop retains the mirrored sticky table header and existing layout.
 
 ### Route Handlers
 

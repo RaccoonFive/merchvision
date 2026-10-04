@@ -2596,26 +2596,223 @@ tbody tr.selected {
 }
 
 @media (max-width: 1050px) {
+  /* Compact navigation is viewport-driven; retain the saved desktop preference. */
+  :root .app-frame {
+    grid-template-columns: 68px minmax(0, 1fr);
+  }
+
+  :root .sidebar-head {
+    flex-direction: column;
+  }
+
+  :root .sidebar .sidebar-brand-copy,
+  :root .sidebar .nav-item span,
+  :root .sidebar .sidebar-account span,
+  .sidebar-toggle {
+    display: none;
+  }
+
+  :root .sidebar .nav-item,
+  :root .sidebar .account-action,
+  :root .sidebar .account-summary {
+    justify-content: center;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .app-shell {
+    padding: 16px;
+  }
+
+  .topbar {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .header-item-search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-left: 0;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .status-pill-copy {
+    max-width: 28vw;
+  }
+
   .theme-picker-trigger {
     justify-content: center;
-    min-width: 34px;
+    min-width: 44px;
     padding: 0;
-    width: 34px;
+    width: 44px;
   }
 
   .theme-picker-trigger span,
   .theme-picker-trigger svg:last-child {
     display: none;
   }
-}
 
-@media (max-width: 760px) {
+  .theme-menu {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 160px);
+    overflow-y: auto;
+  }
+
+  .topbar-actions {
+    position: relative;
+  }
+
+  .theme-picker {
+    position: static;
+  }
+
   .flip-view-toolbar {
     align-items: stretch;
     flex-direction: column;
     gap: 8px;
   }
 
+  .flip-view-description {
+    text-align: left;
+  }
+
+  .main-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .investment-entry-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .investment-item-field,
+  .investment-add-btn {
+    grid-column: 1 / -1;
+  }
+
+  .main-grid > *,
+  .lookup-layout > *,
+  .investment-tracker-layout > *,
+  .account-layout > *,
+  .field,
+  .metric,
+  .detail-head,
+  .detail-head > div {
+    min-width: 0;
+  }
+
+  .detail-title-actions h2,
+  .metric strong,
+  .account-panel h2,
+  .account-panel .subtitle {
+    overflow-wrap: anywhere;
+  }
+
+  .detail-icon,
+  .detail-title-new-tab {
+    flex-shrink: 0;
+  }
+
+  /* A bounded, native table viewport keeps details within reach on touch screens. */
+  .sticky-table-header {
+    display: none;
+  }
+
+  .table-scroll {
+    border-radius: inherit;
+    max-height: min(65dvh, 640px);
+    overflow: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .sticky-table-shell > .table-scroll thead {
+    height: auto;
+    visibility: visible;
+  }
+
+  .sticky-table-shell > .table-scroll thead th {
+    border-bottom: 1px solid var(--line);
+    height: auto;
+    line-height: normal;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .table-scroll th:first-child,
+  .table-scroll td:first-child {
+    left: 0;
+    max-width: 200px;
+    min-width: 180px;
+    position: sticky;
+    white-space: normal;
+  }
+
+  .sticky-table-shell > .table-scroll thead th:first-child {
+    z-index: 3;
+  }
+
+  .table-scroll td:first-child {
+    background: var(--panel);
+    z-index: 1;
+  }
+
+  .table-scroll tr:hover td:first-child,
+  .table-scroll tr.selected td:first-child,
+  .table-scroll tr:focus-visible td:first-child {
+    background: var(--panel-2);
+  }
+
+  .table-scroll:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .header-item-search input,
+  .field input,
+  .field select,
+  .table-filter-fields input:not([type="checkbox"]),
+  .table-filter-fields select,
+  .investment-table td input {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .theme-picker-trigger,
+  .refresh-btn,
+  .detail-panel-close,
+  .icon-btn,
+  .table-filter-popover-head button {
+    flex-basis: 44px;
+    height: 44px;
+    width: 44px;
+  }
+
+  .table-filter-button {
+    height: 44px;
+    width: 44px;
+  }
+
+  .table-sort-button,
+  .favorite-toggle,
+  .primary-btn,
+  .secondary-btn,
+  .primary-link,
+  .flip-view-tabs button,
+  .chart-range-selector button,
+  .account-mode-switch button,
+  .account-form .text-btn,
+  .table-filter-check,
+  .table-filter-apply,
+  .table-filter-clear {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 760px) {
   .flip-view-tabs {
     align-self: stretch;
   }
@@ -2625,34 +2822,60 @@ tbody tr.selected {
     justify-content: center;
   }
 
-  .flip-view-description {
-    text-align: left;
-  }
-
-  .app-frame,
-  .app-frame.sidebar-collapsed {
-    grid-template-columns: 60px minmax(0, 1fr);
+  :root .app-frame {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .sidebar {
-    padding: 10px 7px;
+    border-bottom: 1px solid var(--line);
+    border-right: 0;
+    display: grid;
+    gap: 8px 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    height: auto;
+    padding: 10px 12px;
+    position: static;
   }
 
-  .sidebar-head {
-    flex-direction: column;
+  :root .sidebar-head {
+    flex-direction: row;
   }
 
-  .sidebar-brand-copy,
-  .nav-item span,
-  .sidebar-account span {
-    display: none;
+  :root .sidebar .sidebar-brand-copy,
+  :root .sidebar .nav-item span {
+    display: block;
   }
 
-  .nav-item,
-  .account-action,
-  .account-summary {
-    justify-content: center;
-    padding: 0;
+  .sidebar-nav {
+    display: flex;
+    gap: 6px;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 0;
+    min-width: 0;
+    overflow-x: auto;
+    padding: 2px;
+  }
+
+  :root .sidebar .nav-item {
+    flex: 0 0 auto;
+    font-size: 12px;
+    gap: 7px;
+    padding: 0 10px;
+  }
+
+  .sidebar-account {
+    display: flex;
+    gap: 4px;
+    grid-column: 2;
+    grid-row: 1;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  :root .sidebar .account-action,
+  :root .sidebar .account-summary {
+    width: 44px;
   }
 
   .app-shell {
@@ -2664,20 +2887,13 @@ tbody tr.selected {
   }
 
   .topbar > h1 {
-    flex: 0 1 auto;
-    font-size: 16px;
-    max-width: clamp(72px, 20vw, 150px);
+    font-size: 20px;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
-  .header-item-search {
-    flex: 1 1 auto;
-    margin-left: 0;
-    max-width: none;
-    min-width: 120px;
+  :root[data-theme="dark"] .topbar > h1 {
+    font-size: 22px;
   }
 
   .topbar-actions {
@@ -2689,8 +2905,56 @@ tbody tr.selected {
   }
 
   .theme-menu {
-    left: 0;
-    right: auto;
+    bottom: 8px;
+    left: 8px;
+    max-height: calc(100dvh - 16px);
+    position: fixed;
+    right: 8px;
+    top: auto;
+    width: auto;
+  }
+
+  /* Override the filter's inline desktop anchor to keep its touch sheet in view. */
+  .table-filter-popover {
+    bottom: 8px;
+    left: 8px !important;
+    max-height: calc(100dvh - 16px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    right: 8px;
+    top: auto !important;
+    width: auto;
+  }
+
+  .lookup-result,
+  .account-panel,
+  .investment-entry-panel,
+  .detail-panel {
+    padding: 12px;
+  }
+
+  .item-lookup-dialog {
+    max-height: calc(100dvh - 16px);
+    max-width: calc(100vw - 16px);
+  }
+
+  .item-lookup-dialog-content {
+    padding: 10px;
+  }
+
+  .item-lookup-dialog-head {
+    background: var(--soft-panel-raised);
+    position: sticky;
+    top: -10px;
+    z-index: 5;
+  }
+
+  .lookup-analysis-head {
+    flex-wrap: wrap;
+  }
+
+  .data-health-banner {
+    flex-wrap: wrap;
   }
 
   .lookup-detail-head {
@@ -2723,6 +2987,12 @@ tbody tr.selected {
 }
 
 @media (max-width: 520px) {
+  .flip-view-tabs button {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+  }
+
   .header-item-search input {
     padding-right: 10px;
   }

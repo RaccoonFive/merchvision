@@ -86,7 +86,7 @@ export function StickyTable({ children }: { children: TableElement }) {
           {header}
         </table>
       </div>
-      <div className="table-scroll" ref={scrollRef}>
+      <div aria-label="Market table" className="table-scroll" ref={scrollRef} role="region" tabIndex={0}>
         {children}
       </div>
     </div>

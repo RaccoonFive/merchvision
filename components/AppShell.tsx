@@ -121,23 +121,23 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
         </div>
 
         <nav className="sidebar-nav" aria-label="Main navigation">
-          <Link className={`nav-item${activePath === "/" ? " active" : ""}`} href="/" title="Flip Finder">
+          <Link aria-current={activePath === "/" ? "page" : undefined} aria-label="Flip Finder" className={`nav-item${activePath === "/" ? " active" : ""}`} href="/" title="Flip Finder">
             <TrendingUp size={19} />
             <span>Flip Finder</span>
           </Link>
-          <Link className={`nav-item${activePath === "/investments" ? " active" : ""}`} href="/investments" title="Investment Finder">
+          <Link aria-current={activePath === "/investments" ? "page" : undefined} aria-label="Investment Finder" className={`nav-item${activePath === "/investments" ? " active" : ""}`} href="/investments" title="Investment Finder">
             <ChartNoAxesCombined size={19} />
             <span>Investment Finder</span>
           </Link>
-          <Link className={`nav-item${activePath === "/investment-tracker" ? " active" : ""}`} href="/investment-tracker" title="Investment Tracker">
+          <Link aria-current={activePath === "/investment-tracker" ? "page" : undefined} aria-label="Investment Tracker" className={`nav-item${activePath === "/investment-tracker" ? " active" : ""}`} href="/investment-tracker" title="Investment Tracker">
             <BriefcaseBusiness size={19} />
             <span>Investment Tracker</span>
           </Link>
-          <Link className={`nav-item${activePath === "/lookup" ? " active" : ""}`} href="/lookup" title="Item Lookup">
+          <Link aria-current={activePath === "/lookup" ? "page" : undefined} aria-label="Item Lookup" className={`nav-item${activePath === "/lookup" ? " active" : ""}`} href="/lookup" title="Item Lookup">
             <Search size={19} />
             <span>Item Lookup</span>
           </Link>
-          <Link className={`nav-item${activePath === "/favorites" ? " active" : ""}`} href="/favorites" title="Favorites">
+          <Link aria-current={activePath === "/favorites" ? "page" : undefined} aria-label="Favorites" className={`nav-item${activePath === "/favorites" ? " active" : ""}`} href="/favorites" title="Favorites">
             <Star size={19} />
             <span>Favorites</span>
           </Link>
@@ -146,7 +146,7 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
         <div className="sidebar-account">
           {session?.user ? (
             <>
-              <Link className={`account-summary${activePath === "/account" ? " active" : ""}`} href="/account" title={session.user.displayUsername ?? session.user.username ?? session.user.email}>
+              <Link aria-label="Your account" className={`account-summary${activePath === "/account" ? " active" : ""}`} href="/account" title={session.user.displayUsername ?? session.user.username ?? session.user.email}>
                 <User size={18} />
                 <span>
                   <strong>{session.user.displayUsername ?? session.user.username ?? session.user.name}</strong>
@@ -159,7 +159,7 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
               </button>
             </>
           ) : (
-            <Link className={`account-action${activePath === "/account" ? " active" : ""}`} href="/account" title="Sign in">
+            <Link aria-label="Sign in" className={`account-action${activePath === "/account" ? " active" : ""}`} href="/account" title="Sign in">
               <LogIn size={18} />
               <span>{sessionPending ? <LoadingSpinner label="Checking account..." size="small" variant="button" /> : "Sign in"}</span>
             </Link>
@@ -175,6 +175,7 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
             <div className="theme-picker" ref={themePickerRef}>
               <button
                 aria-controls="theme-menu"
+                aria-label="Choose theme"
                 aria-expanded={themeMenuOpen}
                 aria-haspopup="listbox"
                 className="theme-picker-trigger"
