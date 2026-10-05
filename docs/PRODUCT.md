@@ -72,6 +72,12 @@ Let a user find an item from a compact, keyboard-friendly search in the applicat
 
 Let a signed-in user save a watchlist and revisit current public-market information. Favorites remain distinct from manually recorded Investment Tracker lots and must not imply that the user bought, sold, or owns an item.
 
+### Boss Loot Reference
+
+Provide a public, searchable grid of repeatable combat, Wilderness, Slayer, skilling, and minigame bosses, plus raids. Shared reward activities such as Barrows, the Gauntlet, and raids have one card per activity. Selecting a card opens a full drop-table dialog with quantities, source rates, reward conditions, and current observed instant-sell GP per unit before GE tax.
+
+Keep conditional, multi-roll, mode-specific, and shared-table rates distinct. Shared-table rates describe rolls within that table, not unconditional per-kill chances. Loot comes from live Wiki pages with a visible fetch date and source links; missing or unsupported data must be marked partial. Unmatched items, items not sold on the GE, unavailable prices, and stale quotes are separate states. This reference does not estimate GP per kill or track loot, kills, or player activity.
+
 ### Planned Portfolio Suggestions
 
 Use a one-time budget to propose a diversified set of opportunities. The budget and recommendation must remain ephemeral: do not persist bankroll or allocations, record execution, or automatically create Investment Tracker lots.

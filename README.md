@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Tests: 140 passing" src="https://img.shields.io/badge/tests-140_passing-6f9d5c?style=for-the-badge&amp;labelColor=202219" />
+  <img alt="Tests: 172 passing" src="https://img.shields.io/badge/tests-172_passing-6f9d5c?style=for-the-badge&amp;labelColor=202219" />
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-d4af55?style=for-the-badge&amp;logo=next.js&amp;logoColor=white&amp;labelColor=202219" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-587b9b?style=for-the-badge&amp;logo=typescript&amp;logoColor=white&amp;labelColor=202219" />
   <a href="https://prices.runescape.wiki/"><img alt="OSRS Wiki Prices API" src="https://img.shields.io/badge/data-OSRS_Wiki_Prices-bb8644?style=for-the-badge&amp;labelColor=202219" /></a>
@@ -32,6 +32,7 @@ It is a **decision-support tool**, not a profit oracle. Current trades are obser
 | 🔥 **Flip Finder — High Upside** | Which fresh markets deserve a closer look right now? | Five-minute two-sided coverage, capturable margin, capacity estimates, paired-quote health, confidence, and risk-adjusted GP/hour. Experimental by design. |
 | 📈 **Investment Finder** | Which liquid items have sustained recent momentum? | Positive 24-hour and seven-day midpoint trends, volatility, directional consistency, sample coverage, and liquidity. |
 | 🔎 **Item Lookup** | Does one specific market hold up under inspection? | Latest quote-pair health, seven-day market quality and executability estimates, price history, warnings, and a local-time Market Rhythm heatmap. |
+| 💀 **Bosses** | What loot can I obtain from a boss or reward activity? | A searchable boss grid, live Wiki drop tables, reward conditions, and observed instant-sell prices per unit before tax. |
 | 🎒 **Investment Tracker** | What is the current net value of my manually entered purchase lots? | Private purchase lots, prospective GE tax, net liquidation value, unrealized profit, stale quotes, and partial-data states. |
 | ⭐ **Favorites** | What do my watched items look like now? | A private watchlist enriched with current public quotes. |
 
@@ -70,6 +71,7 @@ flowchart LR
 ```
 
 - [`lib/osrsWiki.ts`](lib/osrsWiki.ts) is the only direct OSRS Wiki API integration.
+- [`lib/bossCatalog.ts`](lib/bossCatalog.ts) maps repeatable bosses and shared reward activities to their Wiki sources; [`lib/bossDrops.ts`](lib/bossDrops.ts) extracts loot and matches public item prices.
 - [`lib/scoring.ts`](lib/scoring.ts) and [`lib/upsideScoring.ts`](lib/upsideScoring.ts) own deterministic flip analysis and ranking.
 - [`lib/itemResearch.ts`](lib/itemResearch.ts) applies the Reliable seven-day evidence policy to Item Lookup.
 - [`lib/investments.ts`](lib/investments.ts) owns investment momentum analysis.
@@ -192,7 +194,7 @@ npm run build
 
 ## Data source and disclaimer
 
-Market information comes from the community-run [OSRS Wiki Real-Time Prices API](https://prices.runescape.wiki/). Merchvision identifies itself through a configurable User-Agent, bounds timeseries enrichment, and caches responses to avoid unnecessary upstream load.
+Market information comes from the community-run [OSRS Wiki Real-Time Prices API](https://prices.runescape.wiki/). Boss artwork and loot reference come from the [OSRS Wiki](https://oldschool.runescape.wiki/w/Boss); live drop tables use its MediaWiki API and are cached for 24 hours. Merchvision identifies itself through a configurable User-Agent, bounds upstream work, and caches responses to avoid unnecessary load. Boss prices are observed instant-sell quotes before GE tax, not guaranteed proceeds or GP-per-kill estimates.
 
 Merchvision is an independent fan project. It is not affiliated with, endorsed by, or sponsored by Jagex. Old School RuneScape and RuneScape are trademarks of Jagex. Public market observations and every derived estimate may be incomplete, stale, or non-executable—always verify a market before committing GP.
 

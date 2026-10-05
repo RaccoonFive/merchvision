@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-09-03
+Last updated: 2026-10-04
 
 ## Product Direction
 
@@ -29,7 +29,8 @@ Last updated: 2026-09-03
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
-- The current validation baseline passes 140 tests, type checking, and a production build.
+- The public Bosses dashboard covers 70 boss/reward activities with searchable square cards, live Wiki loot dialogs, conditional rates, and observed instant-sell prices.
+- The current validation baseline passes 172 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 
@@ -98,6 +99,13 @@ Item Lookup becomes the canonical research view for validating a Flip Finder can
 - [ ] Add bounded Wiki request timeouts and user-safe failure messages while preserving request coalescing and TTL caching.
 - [ ] Keep request frequency respectful of the Wiki API and avoid unbounded per-item history enrichment.
 
+### Boss Loot Reference
+
+- [x] Add a public boss grid with search, categories, accessible loot dialogs, and shared reward-activity cards.
+- [x] Fetch full live Wiki drop tables through allowlisted sources, preserve conditions and variants, and bound/coalesce/cache upstream work.
+- [x] Enrich loot with observed instant-sell prices and explicit stale, missing, unmatched, and partial-data states.
+- [x] Verify extraction, API boundaries, caching, keyboard/mobile behavior, full tests, type checking, and production build.
+
 ### Verification
 
 - [x] Test historical-analysis formulas, missing samples, partial histories, unsupported values, and empty responses.
@@ -134,6 +142,7 @@ These tasks support a small private deployment and do not require production-sca
 - [ ] Review material dependency audit findings before dependency or deployment updates.
 - [ ] Document the private deployment environment, migration command, restart procedure, and common recovery steps.
 - [ ] Keep a lightweight health indication for database availability and Wiki data freshness.
+- [ ] Recheck boss roster coverage and reward-section mappings when OSRS adds bosses or the Wiki changes loot layouts.
 
 Production-scale rate limiting, distributed caching, centralized observability, recovery drills, and multi-instance operations are out of scope unless deployment needs change.
 

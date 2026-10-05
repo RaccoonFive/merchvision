@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, ChartNoAxesCombined, Check, ChevronDown, ChevronsLeft, ChevronsRight, LogIn, LogOut, Palette, Search, Star, TrendingUp, User } from "lucide-react";
+import { BriefcaseBusiness, ChartNoAxesCombined, Check, ChevronDown, ChevronsLeft, ChevronsRight, LogIn, LogOut, Palette, Search, Skull, Star, TrendingUp, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ import { DEFAULT_THEME, THEME_OPTIONS, resolveTheme, themeFavicon, type Theme } 
 export type { Theme } from "@/lib/theme";
 
 type AppShellProps = {
-  activePath: "/" | "/investments" | "/investment-tracker" | "/lookup" | "/favorites" | "/account";
+  activePath: "/" | "/investments" | "/investment-tracker" | "/lookup" | "/bosses" | "/favorites" | "/account";
   title: string;
   headerActions?: ReactNode;
   children: (theme: Theme) => ReactNode;
@@ -136,6 +136,10 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
           <Link aria-current={activePath === "/lookup" ? "page" : undefined} aria-label="Item Lookup" className={`nav-item${activePath === "/lookup" ? " active" : ""}`} href="/lookup" title="Item Lookup">
             <Search size={19} />
             <span>Item Lookup</span>
+          </Link>
+          <Link aria-current={activePath === "/bosses" ? "page" : undefined} aria-label="Bosses" className={`nav-item${activePath === "/bosses" ? " active" : ""}`} href="/bosses" title="Bosses">
+            <Skull size={19} />
+            <span>Bosses</span>
           </Link>
           <Link aria-current={activePath === "/favorites" ? "page" : undefined} aria-label="Favorites" className={`nav-item${activePath === "/favorites" ? " active" : ""}`} href="/favorites" title="Favorites">
             <Star size={19} />

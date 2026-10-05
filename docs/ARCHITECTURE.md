@@ -16,10 +16,10 @@ Next.js application
   |-- Better Auth sessions
   |-- Prisma persistence ----------------------> MySQL
   |
-  `-- centralized Wiki client -----------------> OSRS Wiki Prices API
+  `-- centralized Wiki client -----------------> OSRS Wiki Prices and MediaWiki APIs
 ```
 
-The application is a single Next.js codebase. Market data comes from the public OSRS Wiki Real-Time Prices API. MySQL stores authentication records, favorites, private manually entered investment lots, and bounded user-independent flip observations used for model calibration. Full market snapshots, filters, budgets, sales, private trade outcomes, and realized-profit history are not persisted.
+The application is a single Next.js codebase. Market data comes from the public OSRS Wiki Real-Time Prices API; boss loot reference comes from the Wiki MediaWiki API. MySQL stores authentication records, favorites, private manually entered investment lots, and bounded user-independent flip observations used for model calibration. Full market snapshots, filters, budgets, sales, private trade outcomes, and realized-profit history are not persisted.
 
 ## Runtime Boundaries
 
@@ -44,6 +44,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 ### Market Domain
 
 - `lib/osrsWiki.ts` is the only direct Wiki Prices API client.
+- `lib/bossCatalog.ts` defines the public boss roster, artwork, encounters, and allowlisted loot source sections. `lib/bossDrops.ts` uses Cheerio to extract typed drop rows and enrich them with shared mapping/latest-price snapshots; no upstream HTML is rendered.
 - `lib/scoring.ts` owns flip construction, seven-day market analysis, warnings, filtering, and sorting.
 - `lib/upsideScoring.ts` owns the experimental five-minute High Upside gate, analysis, capacity estimate, confidence, filtering, and ranking.
 - `lib/flipFinder.ts` coordinates the separate Reliable and High Upside enrichment paths.
@@ -74,6 +75,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 | `/investments` | Investment Finder | Public |
 | `/investment-tracker` | Manually entered purchase lots and current unrealized net liquidation value | Authenticated; unauthenticated users are redirected |
 | `/lookup` and `/lookup/[id]` | Item search and quote/history inspection | Public; favorite controls require a session |
+| `/bosses` | Searchable boss grid and live drop-table dialogs | Public |
 | `/favorites` | Current quotes for saved items | Authenticated; unauthenticated users are redirected |
 | `/account` | Sign-up, sign-in, session display, and sign-out | Public |
 
@@ -91,6 +93,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 | `GET /api/items/[id]/quote` | Return item metadata and current quote | `{ item, quote }` | Public |
 | `GET /api/items/[id]/timeseries` | Return normalized timeseries points and, when requested, Market Rhythm and canonical Item Lookup research analysis | `{ data, rhythm?, research? }` | Public |
 | `GET /api/prices/latest` | Return normalized latest prices | `{ data }` | Public |
+| `GET /api/bosses/[slug]/drops` | Return typed loot, observed instant-sell prices, source revisions, fetch time, and partial-data flags | `{ data, meta }` | Public |
 | `GET /api/favorites` | Return the current user's enriched favorites | `{ data }` | Authenticated |
 | `GET /api/favorites/[itemId]` | Check favorite state | `{ favorited }` | Authenticated |
 | `PUT /api/favorites/[itemId]` | Save an item | `{ favorited: true }` | Authenticated |
@@ -132,6 +135,16 @@ This cache is intentionally simple, but it has operational consequences:
 - Upstream failures are handled per route; Flip Finder exposes partial enrichment without failing usable results, while complete route failures use safe messages and retain the last successful client snapshot during refreshes.
 
 Any move to multiple production instances should explicitly revisit shared caching, request limits, retries, timeouts, and data-health reporting.
+
+### Boss Loot Data Flow
+
+The boss grid uses a local roster verified against the Wiki Boss list on 2026-10-04. Opening a dialog requests its allowlisted source pages through the MediaWiki parsing API in `lib/osrsWiki.ts`. Named chest and reward pages represent shared activities; configured heading IDs preserve distinct loot modes. Cheerio extracts only drop-table columns, safe Wiki URLs, source prose, and referenced footnotes. Unsupported tables or missing supporting sources produce a partial result; a completely unavailable table returns a safe 503 error.
+
+Successful normalized loot sources are cached for 24 hours and concurrent requests are coalesced. All boss-page requests share a two-request concurrency limit and a 10-second fetch timeout. Referenced shared tables are expanded from a fixed map, bounded to seven supporting sources, with conditional-rate labels. Failed sources are retried rather than cached for a day. Existing Prices API caching is unchanged.
+
+Each response uses one item-mapping snapshot and one latest-price snapshot; there are no per-drop quote or history requests. Explicit item IDs take precedence over unique exact normalized names. Ambiguous or unmatched names never receive guessed prices. The latest low is shown per unit before tax, preserving its timestamp; quotes over one hour old are marked stale. Market failures leave usable loot visible, while confirmed items not sold on the GE remain distinct from unmatched items.
+
+The browser coalesces requests and retains completed responses in memory for 60 seconds. Manual refresh bypasses that browser cache while respecting server TTLs. Dialog cleanup prevents responses for a previous selection from updating a new dialog. The feature adds no authentication or persistence. Wiki-derived HTML fixtures include source revision links and CC BY-NC-SA 3.0 attribution; tests do not depend on live requests.
 
 ## Flip Finder Data Flow
 
