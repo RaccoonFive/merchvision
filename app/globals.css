@@ -527,7 +527,7 @@ button {
 }
 
 .sidebar-brand-copy strong {
-  font-family: var(--font-display);
+  font-family: var(--font-space-grotesk), var(--font-open-sans), sans-serif;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -2693,8 +2693,6 @@ tbody tr.selected {
 
 :root[data-theme="dark"] .sidebar-brand-copy strong {
   color: var(--accent-strong);
-  font-size: 17px;
-  letter-spacing: 0.015em;
 }
 
 :root[data-theme="dark"] h1,
