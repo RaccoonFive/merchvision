@@ -29,7 +29,7 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 - **Conservative:** use defensible buy, sell, tax, volume, and freshness assumptions.
 - **Explainable:** expose the metrics, warnings, assumptions, and uncertainty behind rankings.
 - **Market-quality focused:** reward stable spreads, sufficient samples, liquidity, confidence, and likely executability.
-- **Fast to scan:** put the tool and ranked results first; avoid a marketing-first workflow.
+- **Fast to scan:** use a minimal, fullscreen homepage with a single app entrance; keep research views focused on ranked results.
 - **Private by design:** keep manually entered investment lots private to the account and avoid collecting sales, realized outcomes, synchronized trades, or bankroll.
 
 ## Product Principles
@@ -44,6 +44,10 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 8. **Earn complexity.** Add features when they improve the core decision, not merely because the data or technology makes them possible.
 
 ## Core Experiences
+
+### Homepage
+
+On the first visit to `/` in a browser, provide a fullscreen OSRS-themed entry point with edge-to-edge game artwork, a short headline, and a centered golden frosted-glass “Open app” button leading to Flip Finder at `/flips`. Remember that visit in a browser cookie for one year and send later visits to `/` directly to Flip Finder. Clearing the cookie or using another browser shows the introduction again; visiting a tool directly remains supported. Keep the landing page available at `/welcome` for every visitor, with the app’s Welcome link and brand logo leading there. This public entrance uses a fixed cinematic palette and sits outside the application shell. Shared navigation, item search, account controls, and saved themes are available after entering the app. Avoid simulated live market statistics. Individual tool views remain dense and utility-focused.
 
 ### Flip Finder
 

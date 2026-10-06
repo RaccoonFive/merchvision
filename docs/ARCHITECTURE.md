@@ -28,6 +28,8 @@ The application is a single Next.js codebase. Market data comes from the public 
 ### Pages And Components
 
 - `app/**/page.tsx` defines App Router entry points.
+- `components/HomePage.tsx` provides the fullscreen landing page at `/welcome` and on the first root visit as a server component with local artwork and one app-entry link to `/flips`. The app’s Welcome link and brand logo always point to `/welcome`, which remains available regardless of the visit cookie. The landing page sits outside the application shell and does not request market rankings, item metadata, or session state.
+- `middleware.ts` applies only to `/`: the first actual GET displays the introduction and sets an HttpOnly, SameSite=Lax visit cookie for one year; later requests with that marker redirect to `/flips`. Prefetches and HEAD requests do not set the marker. The root page is dynamic so client navigation rechecks the cookie instead of reusing a cached first-visit page. This browser preference is independent of authentication and does not affect direct tool routes.
 - `components/AppShell.tsx` owns navigation, session-aware account controls, theme switching, sidebar state, and the global item quick-search placement. `components/HeaderItemSearch.tsx` loads the cached item metadata collection through `/api/items` and routes selections to Item Lookup.
 - `components/FlipFinder.tsx`, `InvestmentFinder.tsx`, `ItemLookup.tsx`, and `FavoritesPage.tsx` own the main interactive experiences. Finder item names link directly to the canonical Item Lookup route while their rows retain quick-detail selection. Flip Finder preserves the last successful results when a refresh fails and distinguishes current, stale, partially enriched, empty, and unavailable states.
 - Price-history charts share a dynamically imported Recharts renderer. Ranking pages defer that bundle until a detail panel opens, while Item Lookup defers it until usable chart data is available.
@@ -73,7 +75,9 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 | Route | Responsibility | Access |
 | --- | --- | --- |
-| `/` | Flip Finder | Public |
+| `/` | First-visit introduction; redirects returning browsers to Flip Finder | Public |
+| `/welcome` | Landing page, always available through Welcome and the brand logo | Public |
+| `/flips` | Flip Finder | Public |
 | `/investments` | Investment Finder | Public |
 | `/investment-tracker` | Manually entered purchase lots and current unrealized net liquidation value | Authenticated; unauthenticated users are redirected |
 | `/lookup` and `/lookup/[id]` | Item search and quote/history inspection | Public; favorite controls require a session |

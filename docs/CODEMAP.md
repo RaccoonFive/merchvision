@@ -18,6 +18,7 @@ Paths below are relative to the repository root. Tests are colocated `*.test.ts`
 
 | Area | Start with | Closest tests |
 | --- | --- | --- |
+| Homepage and tool entry points | `middleware.ts` → `app/page.tsx` → `components/HomePage.tsx`, `app/welcome/page.tsx`, `app/flips/page.tsx`, `public/images/home/` | `middleware.test.ts`, `components/HomePage.test.ts`, `components/AppShell.test.ts` |
 | Reliable flips | `components/FlipFinder.tsx` → `app/api/flips/route.ts` → `lib/flipFinder.ts` → `lib/scoring.ts` | `lib/scoring.test.ts`, `app/api/flips/route.test.ts` |
 | High Upside flips | Same UI/route/coordinator; `lib/upsideScoring.ts` owns the separate policy | `lib/upsideScoring.test.ts`, `app/api/flips/route.test.ts` |
 | Filters and sorting | `lib/query.ts` parses URL filters; `lib/tableSort.ts` sorts UI rows; domain files own ranking sorts | `lib/query.test.ts`, `lib/tableSort.test.ts`, scoring/investment tests |
@@ -32,7 +33,7 @@ Paths below are relative to the repository root. Tests are colocated `*.test.ts`
 | Favorites | `components/FavoritesPage.tsx`, favorite controls in `components/ItemLookup.tsx`, `app/api/favorites/**`, `lib/favorites.ts` | `lib/favorites.test.ts`, both favorite route tests, `app/favorites/page.test.ts` |
 | Accounts and ownership | `components/AccountPage.tsx`, `lib/auth.ts`, `lib/auth-client.ts`, `lib/session.ts`, `lib/redirect.ts`, `lib/prisma.ts`, `prisma/schema.prisma`, `app/api/auth/[...all]/route.ts` | `lib/redirect.test.ts`, authenticated route and page tests |
 | Public calibration | `app/api/internal/flip-calibration/route.ts`, `lib/flipCalibration.ts`, `lib/flipCalibrationAnalysis.ts`, `FlipObservation` in `prisma/schema.prisma` | Both calibration library tests and calibration route test |
-| Navigation, themes, and layout | `components/AppShell.tsx`, `lib/theme.ts`, `app/layout.tsx`, `app/globals.css` | `components/AppShell.test.ts`, `lib/theme.test.ts` |
+| Navigation, themes, and layout | `components/AppShell.tsx`, `lib/theme.ts`, `app/layout.tsx`, `app/globals.css` | `components/AppShell.test.ts`, `lib/theme.test.ts`, `app/layout.test.ts` |
 | Tables and number entry | `components/StickyTable.tsx`, `components/SortableTableHeader.tsx`, `components/TableFilter.tsx`, `components/GroupedNumberInput.tsx` | `components/StickyTable.test.ts`, `components/GroupedNumberInput.test.ts` |
 | Chart loading and compatibility | `components/LazyPriceHistoryChart.tsx`, `components/PriceHistoryChart.tsx`, their callers, `package.json` | `lib/chartCompatibility.test.ts`; verify rendered UI separately |
 

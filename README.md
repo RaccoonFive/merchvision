@@ -144,6 +144,8 @@ npm run dev -- -p 3100
 
 Open [http://localhost:3100](http://localhost:3100).
 
+On the first visit to `/`, the fullscreen OSRS-themed landing page opens the app through a centered golden frosted-glass “Open app” button. A browser cookie remembers that visit for one year; subsequent visits to `/` redirect straight to Flip Finder at [http://localhost:3100/flips](http://localhost:3100/flips). Clearing the cookie or using another browser shows the introduction again. The app’s Welcome link and brand logo always open the landing page at [http://localhost:3100/welcome](http://localhost:3100/welcome), so it remains available to returning visitors.
+
 ## Commands
 
 | Command | Purpose |
@@ -165,7 +167,7 @@ components/          Interactive tools, tables, dialogs, charts, and application
 lib/                 Market logic, scoring, Wiki integration, auth, and persistence helpers
 prisma/              MySQL schema and committed migrations
 docs/                Product, architecture, calibration, and operational documentation
-public/              Theme-aware application icons
+public/              Theme-aware application icons and local homepage artwork
 AGENTS.md             Durable repository guidance for coding agents
 TODO.md               Active milestone, backlog, and delivery history
 ```

@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import { HomePage } from "@/components/HomePage";
 
-// Recheck the visit cookie on navigation instead of reusing the first-visit page cache.
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
-  title: "Merchvision — Your Grand Exchange toolkit",
+  title: "Welcome — Merchvision",
   description: "Explore Old School RuneScape markets with explainable flip research, item insights, and a private investment tracker."
 };
 
-export default function Home() {
+export default function WelcomePage() {
   return <HomePage />;
 }

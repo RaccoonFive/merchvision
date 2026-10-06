@@ -211,7 +211,7 @@ export function FlipFinder() {
 
   return (
     <AppShell
-      activePath="/"
+      activePath="/flips"
       title="Flip Finder"
       headerActions={
         <div className="status-pill">

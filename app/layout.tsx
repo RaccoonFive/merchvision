@@ -1,22 +1,27 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { Alegreya, Open_Sans, Space_Grotesk } from "next/font/google";
 import { DEFAULT_THEME, THEME_FAVICONS, THEME_VALUES } from "@/lib/theme";
 import "./globals.css";
 
 const openSans = Open_Sans({
-  subsets: ["latin"],
-  variable: "--font-open-sans"
+  subsets: ["latin"]
 });
 
 const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk"
+  subsets: ["latin"]
 });
 
 const alegreya = Alegreya({
-  subsets: ["latin"],
-  variable: "--font-alegreya"
+  subsets: ["latin"]
 });
+
+// Theme rules resolve on html; direct font families also avoid stale generated class names during HMR.
+const fontVariables = {
+  "--font-open-sans": openSans.style.fontFamily,
+  "--font-space-grotesk": spaceGrotesk.style.fontFamily,
+  "--font-alegreya": alegreya.style.fontFamily
+} as CSSProperties;
 
 const themeScript = `
   try {
@@ -41,12 +46,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html data-sidebar-collapsed="false" data-theme="dark" lang="en" suppressHydrationWarning>
+    <html data-sidebar-collapsed="false" data-theme="dark" lang="en" style={fontVariables} suppressHydrationWarning>
       <head>
         <link data-theme-favicon href="/favicon-dark.svg" rel="icon" type="image/svg+xml" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={`${openSans.variable} ${spaceGrotesk.variable} ${alegreya.variable}`}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

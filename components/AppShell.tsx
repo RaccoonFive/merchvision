@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, ChartNoAxesCombined, Check, ChevronDown, ChevronsLeft, ChevronsRight, LogIn, LogOut, Palette, Search, Skull, Star, TrendingUp, User } from "lucide-react";
+import { BriefcaseBusiness, ChartNoAxesCombined, Check, ChevronDown, ChevronsLeft, ChevronsRight, House, LogIn, LogOut, Palette, Search, Skull, Star, TrendingUp, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ import { DEFAULT_THEME, THEME_OPTIONS, resolveTheme, themeFavicon, type Theme } 
 export type { Theme } from "@/lib/theme";
 
 type AppShellProps = {
-  activePath: "/" | "/investments" | "/investment-tracker" | "/lookup" | "/bosses" | "/favorites" | "/account";
+  activePath: "/welcome" | "/flips" | "/investments" | "/investment-tracker" | "/lookup" | "/bosses" | "/favorites" | "/account" | "/session-planner";
   title: string;
   headerActions?: ReactNode;
   children: (theme: Theme) => ReactNode;
@@ -102,7 +102,7 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
     <div className={`app-frame${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
       <aside className="sidebar">
         <div className="sidebar-head">
-          <Link className="brand" href="/" aria-label="Merchvision home">
+          <Link className="brand" href="/welcome" aria-label="Merchvision home">
             <LogoMark className="brand-mark" />
             <div className="sidebar-brand-copy">
               <strong>Merchvision</strong>
@@ -121,7 +121,11 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
         </div>
 
         <nav className="sidebar-nav" aria-label="Main navigation">
-          <Link aria-current={activePath === "/" ? "page" : undefined} aria-label="Flip Finder" className={`nav-item${activePath === "/" ? " active" : ""}`} href="/" title="Flip Finder">
+          <Link aria-current={activePath === "/welcome" ? "page" : undefined} aria-label="Welcome" className={`nav-item${activePath === "/welcome" ? " active" : ""}`} href="/welcome" title="Welcome">
+            <House size={19} />
+            <span>Welcome</span>
+          </Link>
+          <Link aria-current={activePath === "/flips" ? "page" : undefined} aria-label="Flip Finder" className={`nav-item${activePath === "/flips" ? " active" : ""}`} href="/flips" title="Flip Finder">
             <TrendingUp size={19} />
             <span>Flip Finder</span>
           </Link>

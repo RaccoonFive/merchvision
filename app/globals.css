@@ -1,3 +1,74 @@
+/* The public entrance fills the viewport; tool layouts use AppShell. */
+.home-page {
+  --logo-mark-start: #e4c66f;
+  --logo-mark-end: #8b6428;
+  --logo-mark-bg: #202219;
+  --logo-mark-trend: #91bd78;
+  background: #11160f;
+  color: #f4ebd5;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  padding: 30px 42px 22px;
+  position: relative;
+}
+
+.home-page .home-backdrop {
+  filter: blur(2px) saturate(0.92);
+  object-fit: cover;
+  object-position: 55% center;
+  /* Keep the blurred image edges outside the viewport. */
+  transform: scale(1.02);
+  z-index: -3;
+}
+
+.home-backdrop-shade {
+  background: radial-gradient(ellipse at 50% 48%, rgb(20 17 11 / 66%) 0%, rgb(20 17 11 / 30%) 38%, transparent 72%), radial-gradient(ellipse at 50% 20%, rgb(233 173 75 / 10%), transparent 65%), linear-gradient(180deg, rgb(8 13 9 / 50%) 0%, rgb(8 13 9 / 20%) 35%, rgb(8 13 9 / 42%) 70%, rgb(8 13 9 / 90%) 100%);
+  inset: 0;
+  position: absolute;
+  z-index: -2;
+}
+
+.home-header { align-items: center; display: flex; gap: 16px; justify-content: space-between; }
+.home-brand { align-items: center; display: flex; font-size: 18px; font-weight: 700; gap: 10px; letter-spacing: -0.03em; }
+.home-brand-mark { height: 34px; width: 34px; }
+.home-location { color: #d1c7ad; font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; }
+.home-location > span { color: #dfc170; margin-right: 8px; }
+.home-content { align-items: center; display: flex; flex-direction: column; gap: 40px; justify-content: center; padding: 40px 0; text-align: center; }
+.home-content #home-heading { color: #f4ebd5; font-family: var(--font-alegreya), Georgia, serif; font-size: clamp(64px, 7.2vw, 104px); font-weight: 500; letter-spacing: -0.045em; line-height: 0.94; margin: 0; text-shadow: 0 2px 12px rgb(13 12 8 / 35%); }
+.home-content #home-heading em { color: #e7c879; font-weight: 500; }
+.home-open-app { align-items: center; backdrop-filter: blur(12px); background: rgb(170 129 58 / 22%); border: 1px solid rgb(231 200 121 / 30%); border-radius: 999px; box-shadow: 0 8px 24px rgb(11 10 6 / 18%), inset 0 1px rgb(255 225 171 / 16%); color: #f1d99d; display: inline-flex; font-size: 14px; font-weight: 600; justify-content: center; letter-spacing: 0.03em; max-width: 100%; min-height: 54px; padding: 0 20px; text-decoration: none; transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; width: 196px; }
+.home-open-app:hover { background: rgb(231 200 121 / 20%); border-color: rgb(231 200 121 / 48%); }
+.home-footer { color: #b4af9f; display: flex; flex-wrap: wrap; font-size: 9px; gap: 7px 24px; justify-content: space-between; line-height: 1.8; }
+.home-footer a { color: inherit; text-underline-offset: 3px; }
+.home-page a:focus-visible { outline: 2px solid #f3d997; outline-offset: 5px; }
+
+@media (max-width: 760px) {
+  .home-page { padding: 22px 24px 18px; }
+  .home-brand { font-size: 16px; }
+  .home-brand-mark { height: 30px; width: 30px; }
+  .home-location { font-size: 8px; letter-spacing: 0.06em; }
+  .home-content { gap: 32px; padding: 32px 0; }
+  .home-content #home-heading { font-size: clamp(60px, 12vw, 82px); }
+  .home-open-app { font-size: 12px; min-height: 48px; padding: 0 12px; }
+  .home-footer { flex-direction: column; font-size: 8px; gap: 3px; text-align: center; }
+}
+
+@media (max-height: 700px) {
+  .home-page { padding-top: 18px; }
+  .home-content { gap: 28px; padding: 20px 0; }
+  .home-content #home-heading { font-size: clamp(54px, 8vw, 72px); }
+}
+
+@media (max-height: 500px) and (min-width: 600px) {
+  .home-content { gap: 20px; padding: 4px 0; }
+  .home-content #home-heading { font-size: 46px; }
+  .home-open-app { min-height: 44px; }
+}
+
 :root {
   color-scheme: dark;
   /* Grand Exchange after dusk: charcoal stone, parchment, bronze, and moss. */

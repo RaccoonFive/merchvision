@@ -25,7 +25,7 @@
 - Treat fill speed, executable volume, and projected profit as estimates, never guarantees.
 - Keep Flip Finder rankings independent of a user's bankroll.
 - Keep position tracking limited to private, manually entered Investment Tracker purchase lots. Do not add sales, realized-profit history, open offers, trade journaling, RuneLite synchronization, or saved bankroll unless the product contract is explicitly changed.
-- Keep the first screen focused on the tool; do not replace it with a marketing landing page.
+- Keep research screens focused on the tools and results. The homepage uses a fullscreen OSRS-themed introduction with a single app entrance outside AppShell.
 
 ## Repository Map
 
