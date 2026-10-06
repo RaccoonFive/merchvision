@@ -52,10 +52,6 @@ type TimeseriesLoadResult = {
 let reliableUniverseMemo: UniverseMemo<FlipCandidate> | undefined;
 let upsideUniverseMemo: UniverseMemo<UpsideFlipCandidate> | undefined;
 
-export async function loadReliableFlips(filters: FlipFilters): Promise<FlipCandidate[]> {
-  return (await loadReliableFlipResult(filters)).data;
-}
-
 export async function loadReliableFlipResult(filters: FlipFilters): Promise<FlipLoadResult<FlipCandidate>> {
   const result = await loadReliableUniverseResult();
   return { data: filterAndSortFlips(result.data, filters), health: result.health };
@@ -100,10 +96,6 @@ async function loadReliableUniverseResult(): Promise<FlipUniverseResult<FlipCand
     if (reliableUniverseMemo?.value === value) reliableUniverseMemo = undefined;
   });
   return value;
-}
-
-export async function loadUpsideFlips(filters: UpsideFlipFilters): Promise<UpsideFlipCandidate[]> {
-  return (await loadUpsideFlipResult(filters)).data;
 }
 
 export async function loadUpsideFlipResult(filters: UpsideFlipFilters): Promise<FlipLoadResult<UpsideFlipCandidate>> {

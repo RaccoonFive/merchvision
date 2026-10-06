@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-10-05
+Last updated: 2026-10-06
 
 ## Product Direction
 
@@ -30,7 +30,7 @@ Last updated: 2026-10-05
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
 - The public Bosses dashboard covers 70 boss/reward activities with searchable square cards, live Wiki loot dialogs, conditional rates, and observed instant-sell prices.
-- The current validation baseline passes 172 tests, type checking, and a production build.
+- The current validation baseline passes 184 tests, type checking, and a production build.
 
 ## Milestone 1 - Trustworthy Flip Rankings
 

@@ -2517,13 +2517,6 @@ tbody tr.selected {
   background: rgb(var(--rhythm-negative) / var(--rhythm-strength, 0.78));
 }
 
-.market-rhythm-metrics {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 14px;
-}
-
 .market-rhythm-scroll {
   margin-top: 14px;
   overflow-x: auto;
@@ -2737,10 +2730,6 @@ tbody tr.selected {
   }
 
   .lookup-metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .market-rhythm-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -3233,10 +3222,6 @@ tbody tr.selected {
 
   .metric-grid,
   .lookup-metric-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .market-rhythm-metrics {
     grid-template-columns: 1fr;
   }
 

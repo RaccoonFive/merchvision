@@ -142,25 +142,6 @@ export async function get24hPrices(): Promise<MarketSummary[]> {
   });
 }
 
-export async function getRecentVolumes(ids: number[]): Promise<Map<number, number>> {
-  const uniqueIds = ids.slice(0, 100);
-  const pairs = await Promise.all(
-    uniqueIds.map(async (id) => {
-      try {
-        const points = await getTimeseries(id, "1h");
-        const volume = points
-          .slice(-12)
-          .reduce((total, point) => total + (point.highPriceVolume ?? 0) + (point.lowPriceVolume ?? 0), 0);
-        return [id, volume] as const;
-      } catch {
-        return [id, 0] as const;
-      }
-    })
-  );
-
-  return new Map(pairs);
-}
-
 async function wikiFetch<T>(path: string): Promise<T> {
   const contact = process.env.USER_AGENT_CONTACT;
   if (!contact) {
