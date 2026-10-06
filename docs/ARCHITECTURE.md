@@ -2,6 +2,8 @@
 
 This document describes the implemented system and its durable boundaries. Keep it synchronized with structural changes; use `TODO.md` for planned work that is not yet implemented.
 
+For task-specific implementation and test entry points, use [Task-to-Code Map](CODEMAP.md).
+
 ## System Context
 
 ```text
@@ -113,6 +115,8 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 Every upstream request includes `Merchvision/0.1` and `USER_AGENT_CONTACT` in the User-Agent. Requests fail early when the contact value is missing.
 
+Prices API requests currently have no explicit fetch timeout. The separate MediaWiki loot path has the timeout described below; bounded Prices API timeouts remain active roadmap work.
+
 Item Lookup requests the existing one-hour timeseries with `includeRhythm=true&includeResearch=true` to receive its default seven-day chart, deterministic Market Rhythm summary, and canonical research measures from one response. Item metadata is loaded through the cached mapping only when research is requested so the executability heuristic can respect a known buy limit. Since the upstream hourly series covers only the latest seven days, the UI presents cells as local-time observations, never as a recurring seasonal model, fill estimate, or profit forecast.
 
 Item Lookup reuses the Reliable ranking's seven-day formulas for median after-tax spread, spread variability, positive-spread ratio, midpoint volatility, median matched hourly volume, sample coverage, confidence, and estimated executable units. It separately reports the age of the latest complete hourly sample and whether paired volume samples exist. Current quote-pair age uses the older high/low side and quote skew shows whether the two observations were synchronized. The UI separates current observations, historical calculations, and capacity estimates, and does not substitute zero for missing price or volume evidence.
@@ -132,7 +136,7 @@ This cache is intentionally simple, but it has operational consequences:
 - It is empty after a process restart.
 - It is not shared across application instances.
 - It does not provide durable stale-while-revalidate behavior.
-- Upstream failures are handled per route; Flip Finder exposes partial enrichment without failing usable results, while complete route failures use safe messages and retain the last successful client snapshot during refreshes.
+- Upstream failures are handled per route. Flip Finder exposes partial enrichment without failing usable results, returns a fixed safe message for complete route failures, and retains the last successful client snapshot during refreshes. Some older market and favorite handlers still forward caught `Error.message`; normalizing those errors remains reliability work in `TODO.md`.
 
 Any move to multiple production instances should explicitly revisit shared caching, request limits, retries, timeouts, and data-health reporting.
 

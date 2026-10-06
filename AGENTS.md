@@ -8,6 +8,16 @@
 - Read `TODO.md` before roadmap work. It is the source of truth for the active milestone and backlog.
 - When documentation and code disagree, verify the implemented behavior, then update the stale documentation in the same change.
 
+## Context Efficiency
+
+- Use `docs/CODEMAP.md` to locate the implementation, tests, and documentation for the requested task. Read the matching entries, then inspect the actual code before editing.
+- Read the relevant sections of the documents required above; do not load every document or large source file for every task. Reuse context already read during the session unless it changed.
+- Search named files or directories with `rg -n`, then read bounded sections with `sed` or `nl`. Expand to callers, shared types, and tests when needed to establish the behavior.
+- Exclude dependencies, build output, generated files, lockfiles, and fixture bodies from broad discovery unless they are directly relevant. Avoid tool output truncation; narrow the query instead of repeating a large dump.
+- Run focused tests while iterating, then complete the verification requirements below. Efficient context use must not replace source inspection or required checks.
+- Keep durable policy here, implementation navigation in `docs/CODEMAP.md`, product intent in `docs/PRODUCT.md`, system details in `docs/ARCHITECTURE.md`, and delivery status in `TODO.md`. Prefer links over duplicated explanations.
+- For an unfinished handoff, record the objective, changed files, decisions, checks and their results, and next step. Do not create permanent session logs or speculative memory files by default.
+
 ## Product Guardrails
 
 - Merchvision helps Old School RuneScape players discover conservative, explainable Grand Exchange opportunities from public market data.

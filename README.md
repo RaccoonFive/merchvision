@@ -174,6 +174,7 @@ TODO.md               Active milestone, backlog, and delivery history
 
 | Document | Start here when… |
 | --- | --- |
+| [Task-to-Code Map](docs/CODEMAP.md) | You need the implementation, closest tests, and relevant docs for a specific change. |
 | [Product Contract](docs/PRODUCT.md) | You want to understand the product principles, privacy boundaries, and non-goals. |
 | [Architecture](docs/ARCHITECTURE.md) | You are changing data flow, APIs, caching, authentication, persistence, or scoring. |
 | [Roadmap](TODO.md) | You want the active milestone, planned work, or delivery history. |

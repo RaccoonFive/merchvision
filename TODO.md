@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-10-04
+Last updated: 2026-10-05
 
 ## Product Direction
 
@@ -138,7 +138,7 @@ Investment Finder remains a secondary tool that produces an explainable shortlis
 These tasks support a small private deployment and do not require production-scale infrastructure.
 
 - [ ] Document and verify a basic MySQL backup and restore procedure for accounts and Favorites.
-- [ ] Keep application errors free of secrets, session details, database internals, and unnecessary upstream payloads.
+- [ ] Replace caught `Error.message` forwarding in items, latest prices, item quotes, investments, and favorite routes with user-safe failures; test that upstream and database details are not returned.
 - [ ] Review material dependency audit findings before dependency or deployment updates.
 - [ ] Document the private deployment environment, migration command, restart procedure, and common recovery steps.
 - [ ] Keep a lightweight health indication for database availability and Wiki data freshness.
