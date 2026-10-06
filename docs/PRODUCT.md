@@ -49,6 +49,8 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 
 On the first visit to `/` in a browser, provide a fullscreen OSRS-themed entry point with edge-to-edge game artwork, a short headline, and a centered golden frosted-glass “Open app” button leading to Flip Finder at `/flips`. Small decorative glass tiles containing OSRS item icons drift in a scattered arrangement, concentrated around the outer edges with a sparse center that leaves the headline and entrance clear. Thin the scatter on smaller viewports, hide the tiles on short screens, and keep them still when reduced motion is preferred. Remember that visit in a browser cookie for one year and send later visits to `/` directly to Flip Finder. Clearing the cookie or using another browser shows the introduction again; visiting a tool directly remains supported. Keep the landing page available at `/welcome` for every visitor, with the app’s Welcome link and brand logo leading there. This public entrance uses a fixed cinematic palette and sits outside the application shell. Shared navigation, item search, account controls, and saved themes are available after entering the app. Avoid simulated live market statistics. Individual tool views remain dense and utility-focused.
 
+On opening the introduction, fade in the headline first, then fade in the app entrance after the headline is fully visible. Show both immediately when reduced motion is preferred.
+
 ### Flip Finder
 
 Provide two ranked, filterable views of short-term buy-low/sell-high opportunities:
