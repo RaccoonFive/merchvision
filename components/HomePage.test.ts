@@ -1,5 +1,6 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { load } from "cheerio";
 import { describe, expect, it } from "vitest";
 import { HomePage } from "./HomePage";
 import Home from "@/app/page";
@@ -36,5 +37,20 @@ describe("homepage entry points", () => {
     expect(markup).toContain('sizes="100vw"');
     expect(markup).toContain("w=640&amp;q=90 640w");
     expect(markup).toContain("w=3840&amp;q=90 3840w");
+  });
+
+  it("keeps the scattered local item pictures decorative and outside the app entrance", () => {
+    const $ = load(renderToStaticMarkup(createElement(HomePage)));
+    const decoration = $(".home-floating-items");
+    expect(decoration.attr("aria-hidden")).toBe("true");
+    expect(decoration.find(".home-item-tile")).toHaveLength(20);
+    expect(decoration.find("img")).toHaveLength(20);
+    decoration.find("img").each((_, image) => {
+      expect($(image).attr("alt")).toBe("");
+      expect($(image).attr("src")).toMatch(/^\/images\/home\/items\/[a-z-]+\.png$/);
+      expect($(image).attr("draggable")).toBe("false");
+    });
+    expect(decoration.find("a, button, [tabindex]")).toHaveLength(0);
+    expect($('.home-page a[href="/flips"]')).toHaveLength(1);
   });
 });

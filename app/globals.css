@@ -32,6 +32,67 @@
   z-index: -2;
 }
 
+.home-floating-items {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.home-item-tile {
+  align-items: center;
+  animation: home-item-float var(--float-duration) ease-in-out var(--float-delay) infinite;
+  backdrop-filter: blur(6px);
+  background: linear-gradient(145deg, rgb(191 147 78 / 18%), rgb(52 40 23 / 30%));
+  border: 1px solid rgb(231 200 121 / 24%);
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgb(11 10 6 / 20%), inset 0 1px rgb(255 225 171 / 12%);
+  display: flex;
+  height: var(--tile-size);
+  justify-content: center;
+  position: absolute;
+  transform: rotate(var(--tile-rotation));
+  width: var(--tile-size);
+}
+
+.home-item-tile img {
+  filter: drop-shadow(0 2px 3px rgb(11 10 6 / 35%));
+  height: 36px;
+  image-rendering: pixelated;
+  object-fit: contain;
+  width: 36px;
+}
+
+.home-item-dragon-scimitar { --tile-size: 60px; --tile-rotation: -9deg; --float-duration: 12s; --float-delay: -3s; --float-rise: -12px; left: 14%; top: 22%; }
+.home-item-abyssal-whip { --tile-size: 52px; --tile-rotation: 7deg; --float-duration: 10s; --float-delay: -6s; --float-rise: -10px; left: 7%; top: 40%; }
+.home-item-dragon-boots { --tile-size: 64px; --tile-rotation: -7deg; --float-duration: 14s; --float-delay: -10s; --float-rise: -16px; left: 16%; top: 62%; }
+.home-item-rune-platebody { --tile-size: 56px; --tile-rotation: 8deg; --float-duration: 11s; --float-delay: -4s; --float-rise: -12px; left: 9%; top: 80%; }
+.home-item-twisted-bow { --tile-size: 68px; --tile-rotation: 10deg; --float-duration: 14s; --float-delay: -8s; --float-rise: -16px; right: 12%; top: 19%; }
+.home-item-prayer-potion { --tile-size: 54px; --tile-rotation: -7deg; --float-duration: 11s; --float-delay: -3s; --float-rise: -10px; right: 7%; top: 39%; }
+.home-item-nature-rune { --tile-size: 48px; --tile-rotation: 8deg; --float-duration: 9s; --float-delay: -5s; --float-rise: -12px; right: 15%; top: 62%; }
+.home-item-shark { --tile-size: 60px; --tile-rotation: -9deg; --float-duration: 12s; --float-delay: -7s; --float-rise: -14px; right: 9%; top: 80%; }
+.home-item-dragon-dagger { --tile-size: 44px; --tile-rotation: 12deg; --float-duration: 9s; --float-delay: -2s; --float-rise: -10px; left: 3%; top: 21%; }
+.home-item-blood-rune { --tile-size: 48px; --tile-rotation: -11deg; --float-duration: 13s; --float-delay: -9s; --float-rise: -12px; left: 3%; top: 61%; }
+.home-item-granite-maul { --tile-size: 50px; --tile-rotation: -12deg; --float-duration: 10s; --float-delay: -4s; --float-rise: -14px; right: 2%; top: 28%; }
+.home-item-dark-bow { --tile-size: 54px; --tile-rotation: 11deg; --float-duration: 12s; --float-delay: -5s; --float-rise: -12px; right: 2%; top: 64%; }
+.home-item-amulet-of-fury { --tile-size: 48px; --tile-rotation: 8deg; --float-duration: 11s; --float-delay: -7s; --float-rise: -12px; left: 25%; top: 14%; }
+.home-item-fire-rune { --tile-size: 44px; --tile-rotation: -8deg; --float-duration: 13s; --float-delay: -5s; --float-rise: -10px; left: 39%; top: 11%; }
+.home-item-berserker-ring { --tile-size: 48px; --tile-rotation: 12deg; --float-duration: 10s; --float-delay: -3s; --float-rise: -14px; left: 57%; top: 16%; }
+.home-item-saradomin-brew { --tile-size: 52px; --tile-rotation: -6deg; --float-duration: 14s; --float-delay: -11s; --float-rise: -16px; right: 19%; top: 12%; }
+.home-item-rune-scimitar { --tile-size: 50px; --tile-rotation: -12deg; --float-duration: 12s; --float-delay: -9s; --float-rise: -14px; bottom: 17%; left: 24%; }
+.home-item-magic-logs { --tile-size: 48px; --tile-rotation: 7deg; --float-duration: 9s; --float-delay: -4s; --float-rise: -10px; bottom: 11%; left: 37%; }
+.home-item-bandos-chestplate { --tile-size: 56px; --tile-rotation: -7deg; --float-duration: 14s; --float-delay: -6s; --float-rise: -16px; bottom: 11%; left: 55%; }
+.home-item-armadyl-helmet { --tile-size: 46px; --tile-rotation: 9deg; --float-duration: 11s; --float-delay: -8s; --float-rise: -12px; bottom: 17%; right: 21%; }
+
+@keyframes home-item-float {
+  0%, 100% { transform: translateY(0) rotate(var(--tile-rotation)); }
+  50% { transform: translateY(var(--float-rise)) rotate(calc(var(--tile-rotation) + 4deg)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-item-tile { animation: none; }
+}
+
 .home-header { align-items: center; display: flex; gap: 16px; justify-content: space-between; }
 .home-brand { align-items: center; display: flex; font-size: 18px; font-weight: 700; gap: 10px; letter-spacing: -0.03em; }
 .home-brand-mark { height: 34px; width: 34px; }
@@ -46,6 +107,11 @@
 .home-footer a { color: inherit; text-underline-offset: 3px; }
 .home-page a:focus-visible { outline: 2px solid #f3d997; outline-offset: 5px; }
 
+/* Thin the outer scatter before it crowds the entrance on smaller viewports. */
+@media (max-width: 1100px), (max-height: 700px) {
+  .home-item-fringe { display: none; }
+}
+
 @media (max-width: 760px) {
   .home-page { padding: 22px 24px 18px; }
   .home-brand { font-size: 16px; }
@@ -55,6 +121,20 @@
   .home-content #home-heading { font-size: clamp(60px, 12vw, 82px); }
   .home-open-app { font-size: 12px; min-height: 48px; padding: 0 12px; }
   .home-footer { flex-direction: column; font-size: 8px; gap: 3px; text-align: center; }
+  .home-item-tile { --tile-size: 42px; border-radius: 11px; }
+  .home-item-tile img { height: 30px; width: 30px; }
+  .home-item-abyssal-whip, .home-item-dragon-boots, .home-item-prayer-potion, .home-item-nature-rune { display: none; }
+  .home-item-peripheral { display: none; }
+  .home-item-dragon-scimitar { left: 6%; top: 22%; }
+  .home-item-twisted-bow { right: 6%; top: 22%; }
+  .home-item-rune-platebody { left: 7%; top: 76%; }
+  .home-item-shark { right: 7%; top: 76%; }
+  .home-item-fire-rune { --tile-size: 36px; display: flex; left: 45%; top: 14%; }
+  .home-item-magic-logs { --tile-size: 38px; bottom: auto; display: flex; left: 44%; top: 81%; }
+}
+
+@media (max-height: 500px) {
+  .home-floating-items { display: none; }
 }
 
 @media (max-height: 700px) {
