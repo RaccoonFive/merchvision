@@ -13,7 +13,7 @@ import { DEFAULT_THEME, THEME_OPTIONS, resolveTheme, themeFavicon, type Theme } 
 export type { Theme } from "@/lib/theme";
 
 type AppShellProps = {
-  activePath: "/welcome" | "/flips" | "/investments" | "/investment-tracker" | "/lookup" | "/bosses" | "/favorites" | "/account" | "/session-planner";
+  activePath: "/welcome" | "/flips" | "/investments" | "/investment-tracker" | "/lookup" | "/bosses" | "/favorites" | "/account";
   title: string;
   headerActions?: ReactNode;
   children: (theme: Theme) => ReactNode;
