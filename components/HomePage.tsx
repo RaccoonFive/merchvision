@@ -44,7 +44,7 @@ export function HomePage() {
       </header>
 
       <main aria-labelledby="home-heading" className="home-content">
-        <h1 id="home-heading">Good trades<br />start <em>here.</em></h1>
+        <h1 id="home-heading">Good trades<br />start <em>here</em></h1>
         <Link className="home-open-app" href="/flips">Open app</Link>
       </main>
 
