@@ -236,9 +236,12 @@ Investment Tracker values are estimates based on public quotes, not confirmed fi
 
 ## Testing Strategy
 
-- `lib/*.test.ts` covers deterministic formulas, normalization, filtering, and helper behavior.
-- `app/api/**/*.test.ts` tests route contracts with mocked dependencies.
-- Page tests cover server-page authentication and routing behavior.
+- Tests live in `tests/`, mirroring the source tree and importing application code through the `@/` alias.
+- `tests/lib/*.test.ts` covers deterministic formulas, normalization, filtering, and helper behavior.
+- `tests/app/api/**/*.test.ts` tests route contracts with mocked dependencies.
+- `tests/app/**/page.test.ts` covers server-page authentication and routing behavior.
+- `tests/components/*.test.ts` covers component helpers and static markup; `tests/middleware.test.ts` covers homepage redirects.
+- Shared HTML fixtures and their source/licensing notes live in `tests/fixtures/`.
 - Tests use mocked market data and must not rely on the live Wiki API.
 - `npm test`, `npm run typecheck`, and `npm run build` form the current validation baseline.
 

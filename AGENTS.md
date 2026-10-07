@@ -31,6 +31,7 @@
 
 - `app/**`: Next.js App Router pages and route handlers.
 - `components/**`: client-facing features and shared UI.
+- `tests/**`: Vitest tests mirroring source paths, with shared test data in `tests/fixtures/**`.
 - `lib/osrsWiki.ts`: the only direct integration with the OSRS Wiki Prices API.
 - `lib/scoring.ts`: flip candidate construction, market analysis, warnings, filters, and ranking.
 - `lib/investments.ts`: investment trend analysis and ranking.

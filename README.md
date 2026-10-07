@@ -165,12 +165,15 @@ On the first visit to `/`, the fullscreen OSRS-themed landing page opens the app
 app/                 Next.js pages and validated API route handlers
 components/          Interactive tools, tables, dialogs, charts, and application shell
 lib/                 Market logic, scoring, Wiki integration, auth, and persistence helpers
+tests/               Vitest tests mirroring the source tree, with shared fixtures
 prisma/              MySQL schema and committed migrations
 docs/                Product, architecture, calibration, and operational documentation
 public/              Theme-aware application icons and local homepage artwork
 AGENTS.md             Durable repository guidance for coding agents
 TODO.md               Active milestone, backlog, and delivery history
 ```
+
+Tests live under `tests/app/`, `tests/components/`, and `tests/lib/`, matching their source paths. Root-level modules such as `middleware.ts` have tests directly under `tests/`. Shared test data and its attribution live in `tests/fixtures/`; tests import application code through the `@/` alias.
 
 ## Project docs
 
