@@ -6,12 +6,13 @@ type MetricProps = {
   detail?: string;
   tone?: MetricTone;
   accent?: "sky" | "violet" | "gold";
+  emphasis?: "primary";
   className?: string;
 };
 
-export function Metric({ label, value, detail, tone, accent, className }: MetricProps) {
+export function Metric({ label, value, detail, tone, accent, emphasis, className }: MetricProps) {
   return (
-    <div className={`metric${className ? ` ${className}` : ""}`} data-accent={accent} data-tone={tone}>
+    <div className={`metric${className ? ` ${className}` : ""}`} data-accent={accent} data-tone={tone} data-emphasis={emphasis}>
       <span>{label}</span>
       <strong className={tone}>{value}</strong>
       {detail ? <small>{detail}</small> : null}

@@ -45,6 +45,8 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 
 Application themes use coordinated emerald, blue, violet, gold, and coral accents to distinguish tools, research categories, and boss categories. Soft color washes and highlighted selections add depth without reducing table density. Financial gains, losses, and market warnings retain their semantic colors and text labels in every theme.
 
+Research tables emphasize the key historical margin and profit estimates, with supporting figures visually quieter. Metric cards use neutral backgrounds by default; selected decision-driving values receive an accent and larger type. Unavailable estimates retain a neutral presentation.
+
 ## Core Experiences
 
 ### Homepage

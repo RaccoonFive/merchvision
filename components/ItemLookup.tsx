@@ -412,7 +412,7 @@ function QuoteDetails({
           <Metric label="Sell price (latest high)" value={formatNullableGp(quote.high)} detail={formatTimestamp(quote.highTime)} className="lookup-metric" />
           <Metric label="Gross margin" value={formatNullableGp(quote.margin)} tone={valueTone(quote.margin)} className="lookup-metric" />
           <Metric label="GE tax" value={formatNullableGp(quote.tax)} className="lookup-metric" />
-          <Metric label="Net margin" value={formatNullableGp(quote.netProfit)} tone={valueTone(quote.netProfit)} className="lookup-metric" />
+          <Metric emphasis={quote.netProfit === null ? undefined : "primary"} label="Net margin" value={formatNullableGp(quote.netProfit)} tone={valueTone(quote.netProfit)} className="lookup-metric" />
           <Metric label="ROI" value={quote.roi === null ? "Unavailable" : formatPercent(quote.roi)} tone={valueTone(quote.roi)} className="lookup-metric" />
           <Metric accent="gold" label="Buy limit" value={item.limit ? formatNumber(item.limit) : "Unknown"} className="lookup-metric" />
           <Metric label="Quote pair age" value={quote.pairAgeSeconds === null ? "Unavailable" : formatAge(quote.pairAgeSeconds)} detail="Age of the older side" className="lookup-metric" />
@@ -506,7 +506,7 @@ function ItemResearchPanel({
       {!loading && !error && market && research ? (
         <>
           <div className="lookup-metric-grid research-metric-grid">
-            <Metric label="Median net spread" value={formatGp(market.historicalNetMarginMedian)} tone={valueTone(market.historicalNetMarginMedian)} className="lookup-metric" />
+            <Metric emphasis="primary" label="Median net spread" value={formatGp(market.historicalNetMarginMedian)} tone={valueTone(market.historicalNetMarginMedian)} className="lookup-metric" />
             <Metric label="Positive-spread hours" value={formatPercent(market.positiveSpreadRatio)} className="lookup-metric" />
             <Metric label="Spread variability" value={formatPercent(market.historicalNetMarginVariability)} className="lookup-metric" />
             <Metric label="Midpoint variation" value={formatPercent(market.midpointPriceVolatility)} className="lookup-metric" />
@@ -526,7 +526,7 @@ function ItemResearchPanel({
             />
             <div className="lookup-metric-grid estimate-metric-grid">
               <Metric label="Estimated units/hr" value={hasVolume ? formatNumber(market.estimatedExecutableUnitsPerHour) : "Unavailable"} className="lookup-metric" />
-              <Metric label="Historical GP/hr estimate" value={hasVolume ? formatGp(market.rawExpectedGpPerHour) : "Unavailable"} tone={hasVolume ? valueTone(market.rawExpectedGpPerHour) : "muted"} className="lookup-metric" />
+              <Metric emphasis={hasVolume ? "primary" : undefined} label="Historical GP/hr estimate" value={hasVolume ? formatGp(market.rawExpectedGpPerHour) : "Unavailable"} tone={hasVolume ? valueTone(market.rawExpectedGpPerHour) : "muted"} className="lookup-metric" />
               <Metric label="Volume share assumed" value={hasVolume ? "1%" : "Unavailable"} detail="Of median matched hourly volume" className="lookup-metric" />
               <Metric label="Buy-limit cap" value={buyLimit ? `${formatNumber(buyLimit / 4)} units/hr` : "Unavailable"} detail={buyLimit ? "One quarter of the 4-hour limit" : "Published limit unknown"} className="lookup-metric" />
             </div>

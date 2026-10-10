@@ -324,7 +324,7 @@ function FlipTable({
 
   return (
     <StickyTable>
-      <table>
+      <table className="flip-table">
         <thead>
           <tr>
             <SortableTableHeader label="Item" active={tableSort.key === "name"} direction={tableSort.direction} onSort={() => toggleTableSort("name")} filter={{
@@ -338,6 +338,21 @@ function FlipTable({
                 updateFilter("members", String(values.members));
               }
             }} />
+            {view === "reliable" ? (
+              <>
+                {header("Est. GP/hr", "conservativeExpectedGpPerHour")}
+                {header("7d median net", "historicalNetMarginMedian")}
+              </>
+            ) : (
+              <>
+                <SortableTableHeader label="Risk-adj. GP/hr (est.)" active={tableSort.key === "riskAdjustedGpPerHour"} direction={tableSort.direction} onSort={() => toggleTableSort("riskAdjustedGpPerHour")} filter={{
+                  active: Boolean(filters.minExpectedGpPerHour),
+                  fields: [{ id: "minExpectedGpPerHour", label: "Minimum risk-adjusted GP/hour", type: "number", value: filters.minExpectedGpPerHour }],
+                  onApply: (values) => updateFilter("minExpectedGpPerHour", String(values.minExpectedGpPerHour))
+                }} />
+                {header("Capturable net (est.)", "capturableNetMargin")}
+              </>
+            )}
             <SortableTableHeader label="Buy observed" active={tableSort.key === "buyPrice"} direction={tableSort.direction} onSort={() => toggleTableSort("buyPrice")} filter={{
               active: Boolean(filters.maxPrice),
               fields: [{ id: "maxPrice", label: "Maximum observed buy price", type: "number", value: filters.maxPrice }],
@@ -353,17 +368,9 @@ function FlipTable({
               <>
                 {header("Margin", "margin")}
                 {header("Tax", "tax")}
-                {header("7d median net", "historicalNetMarginMedian")}
-                {header("Est. GP/hr", "conservativeExpectedGpPerHour")}
               </>
             ) : (
               <>
-                {header("Capturable net (est.)", "capturableNetMargin")}
-                <SortableTableHeader label="Risk-adj. GP/hr (est.)" active={tableSort.key === "riskAdjustedGpPerHour"} direction={tableSort.direction} onSort={() => toggleTableSort("riskAdjustedGpPerHour")} filter={{
-                  active: Boolean(filters.minExpectedGpPerHour),
-                  fields: [{ id: "minExpectedGpPerHour", label: "Minimum risk-adjusted GP/hour", type: "number", value: filters.minExpectedGpPerHour }],
-                  onApply: (values) => updateFilter("minExpectedGpPerHour", String(values.minExpectedGpPerHour))
-                }} />
                 <SortableTableHeader label="Opp. confidence" active={tableSort.key === "opportunityConfidence"} direction={tableSort.direction} onSort={() => toggleTableSort("opportunityConfidence")} filter={{
                   active: Boolean(filters.minOpportunityConfidence),
                   fields: [{ id: "minOpportunityConfidence", label: "Minimum opportunity confidence %", type: "number", value: filters.minOpportunityConfidence }],
@@ -455,10 +462,21 @@ function FlipTable({
                   </div>
                 </div>
               </td>
+              {flip.view === "reliable" ? <ReliableCells flip={flip} /> : <UpsideCells flip={flip} />}
               <td>{formatGp(flip.buyPrice)}</td>
               <td>{formatGp(flip.sellPrice)}</td>
               <td className="profit">{formatGp(flip.netProfit)}</td>
-              {flip.view === "reliable" ? <ReliableCells flip={flip} /> : <UpsideCells flip={flip} />}
+              {flip.view === "reliable" ? (
+                <>
+                  <td>{formatGp(flip.margin)}</td>
+                  <td>{formatGp(flip.tax)}</td>
+                </>
+              ) : (
+                <>
+                  <td>{formatPercent(flip.upsideAnalysis.opportunityConfidence)}</td>
+                  <td>{formatNumber(flip.upsideAnalysis.estimatedUnitsPerHour)}</td>
+                </>
+              )}
               <td>{formatPercent(flip.roi)}</td>
               {flip.view === "reliable" ? (
                 <>
@@ -482,10 +500,8 @@ function FlipTable({
 function ReliableCells({ flip }: { flip: FlipCandidate }) {
   return (
     <>
-      <td>{formatGp(flip.margin)}</td>
-      <td>{formatGp(flip.tax)}</td>
-      <td>{flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatGp(flip.marketAnalysis.historicalNetMarginMedian) : "Unavailable"}</td>
-      <td>{flip.conservativeExpectedGpPerHour === null ? "Unavailable" : formatGp(flip.conservativeExpectedGpPerHour)}</td>
+      <td className={flip.conservativeExpectedGpPerHour === null ? undefined : "table-key-value profit"}>{flip.conservativeExpectedGpPerHour === null ? "Unavailable" : formatGp(flip.conservativeExpectedGpPerHour)}</td>
+      <td className={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? "table-key-value" : undefined}>{flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatGp(flip.marketAnalysis.historicalNetMarginMedian) : "Unavailable"}</td>
     </>
   );
 }
@@ -493,10 +509,8 @@ function ReliableCells({ flip }: { flip: FlipCandidate }) {
 function UpsideCells({ flip }: { flip: UpsideFlipCandidate }) {
   return (
     <>
-      <td>{formatGp(flip.upsideAnalysis.capturableNetMargin)}</td>
-      <td className="profit">{formatGp(flip.upsideAnalysis.riskAdjustedGpPerHour)}</td>
-      <td>{formatPercent(flip.upsideAnalysis.opportunityConfidence)}</td>
-      <td>{formatNumber(flip.upsideAnalysis.estimatedUnitsPerHour)}</td>
+      <td className="table-key-value profit">{formatGp(flip.upsideAnalysis.riskAdjustedGpPerHour)}</td>
+      <td className="table-key-value">{formatGp(flip.upsideAnalysis.capturableNetMargin)}</td>
     </>
   );
 }
@@ -591,11 +605,11 @@ function ReliableDetails({ flip }: { flip: FlipCandidate }) {
     <>
       <div className="score-summary"><span>Repeatability score</span><strong>{flip.score}/100</strong></div>
       <div className="metric-grid compact">
+        <Metric emphasis={flip.repeatableNetProfit === null ? undefined : "primary"} label="Repeatable net profit" value={flip.repeatableNetProfit === null ? "Unavailable" : formatGp(flip.repeatableNetProfit)} tone={flip.repeatableNetProfit === null ? "muted" : "profit"} />
+        <Metric emphasis={flip.conservativeExpectedGpPerHour === null ? undefined : "primary"} label="Conservative GP/hr (estimate)" value={flip.conservativeExpectedGpPerHour === null ? "Unavailable" : formatGp(flip.conservativeExpectedGpPerHour)} tone={flip.conservativeExpectedGpPerHour === null ? "muted" : "profit"} />
         <Metric label="Current net profit (observed)" value={formatGp(flip.netProfit)} tone="profit" />
         <Metric label="Current ROI (observed)" value={formatPercent(flip.roi)} />
         <Metric accent="violet" label="7d median net margin" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatGp(flip.marketAnalysis.historicalNetMarginMedian) : "Unavailable"} />
-        <Metric label="Repeatable net profit" value={flip.repeatableNetProfit === null ? "Unavailable" : formatGp(flip.repeatableNetProfit)} tone="profit" />
-        <Metric label="Conservative GP/hr (estimate)" value={flip.conservativeExpectedGpPerHour === null ? "Unavailable" : formatGp(flip.conservativeExpectedGpPerHour)} tone="profit" />
         <Metric accent="violet" label="Positive after-tax hours" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatPercent(flip.marketAnalysis.positiveSpreadRatio) : "Unavailable"} />
         <Metric accent="gold" label="Buy limit" value={flip.buyLimit ? formatNumber(flip.buyLimit) : "Unknown"} />
         <Metric label="Current buy-limit profit (estimate)" value={formatGp(flip.totalBuyLimitProfit)} tone="profit" />
@@ -623,8 +637,8 @@ function UpsideDetails({ flip }: { flip: UpsideFlipCandidate }) {
         <small>{formatPercent(analysis.opportunityConfidence)} opportunity confidence</small>
       </div>
       <div className="metric-grid compact">
+        <Metric emphasis="primary" label="Capturable net margin (estimate)" value={formatGp(analysis.capturableNetMargin)} tone="profit" />
         <Metric label="Current net profit (observed)" value={formatGp(flip.netProfit)} tone="profit" />
-        <Metric label="Capturable net margin (estimate)" value={formatGp(analysis.capturableNetMargin)} tone="profit" />
         <Metric accent="violet" label="24h net-margin P90" value={formatGp(analysis.netMarginP90)} />
         <Metric label="Base GP/hr (estimate)" value={formatGp(analysis.baseEstimatedGpPerHour)} tone="profit" />
         <Metric label="Estimated units/hr" value={formatNumber(analysis.estimatedUnitsPerHour)} />

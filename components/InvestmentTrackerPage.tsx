@@ -289,6 +289,7 @@ export function InvestmentTrackerPage() {
                   detail={partialDetail(summary)}
                 />
                 <Metric
+                  emphasis="primary"
                   label={summary.isPartial ? "Unrealized profit (partial)" : "Unrealized profit"}
                   value={formatGp(summary.currentProfit)}
                   tone={profitTone(summary.currentProfit)}

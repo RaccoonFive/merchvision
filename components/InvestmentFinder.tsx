@@ -307,8 +307,8 @@ export function InvestmentFinder() {
                     </div>
 
                     <div className="metric-grid">
-                      <Metric label="24h trend" value={formatPercent(selected.shortTrend)} tone="profit" />
-                      <Metric label="7d trend" value={formatPercent(selected.mediumTrend)} tone="profit" />
+                      <Metric emphasis="primary" label="24h trend" value={formatPercent(selected.shortTrend)} tone="profit" />
+                      <Metric emphasis="primary" label="7d trend" value={formatPercent(selected.mediumTrend)} tone="profit" />
                       <Metric label="Trend consistency" value={formatPercent(selected.consistency)} />
                       <Metric label="Confidence" value={formatPercent(selected.confidence)} />
                       <Metric label="Hourly volatility" value={formatPercent(selected.volatility)} />
