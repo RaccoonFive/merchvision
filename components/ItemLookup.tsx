@@ -414,7 +414,7 @@ function QuoteDetails({
           <Metric label="GE tax" value={formatNullableGp(quote.tax)} className="lookup-metric" />
           <Metric label="Net margin" value={formatNullableGp(quote.netProfit)} tone={valueTone(quote.netProfit)} className="lookup-metric" />
           <Metric label="ROI" value={quote.roi === null ? "Unavailable" : formatPercent(quote.roi)} tone={valueTone(quote.roi)} className="lookup-metric" />
-          <Metric label="Buy limit" value={item.limit ? formatNumber(item.limit) : "Unknown"} className="lookup-metric" />
+          <Metric accent="gold" label="Buy limit" value={item.limit ? formatNumber(item.limit) : "Unknown"} className="lookup-metric" />
           <Metric label="Quote pair age" value={quote.pairAgeSeconds === null ? "Unavailable" : formatAge(quote.pairAgeSeconds)} detail="Age of the older side" className="lookup-metric" />
           <Metric label="Quote skew" value={quote.quoteSkewSeconds === null ? "Unavailable" : formatAge(quote.quoteSkewSeconds)} detail="Time between high and low trades" className="lookup-metric" />
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ExternalLink, RefreshCw, X } from "lucide-react";
+import { AlertTriangle, ExternalLink, Flame, RefreshCw, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
@@ -228,11 +228,11 @@ export function FlipFinder() {
         <>
           <div className="flip-view-toolbar">
             <div className="flip-view-tabs" role="tablist" aria-label="Flip ranking view">
-              <button aria-selected={view === "reliable"} className={view === "reliable" ? "active" : ""} onClick={() => changeView("reliable")} role="tab" type="button">
-                Reliable
+              <button aria-selected={view === "reliable"} className={view === "reliable" ? "active" : ""} data-view="reliable" onClick={() => changeView("reliable")} role="tab" type="button">
+                <ShieldCheck aria-hidden="true" size={16} /> Reliable
               </button>
-              <button aria-selected={view === "upside"} className={view === "upside" ? "active" : ""} onClick={() => changeView("upside")} role="tab" type="button">
-                High Upside <span className="experimental-badge">Experimental</span>
+              <button aria-selected={view === "upside"} className={view === "upside" ? "active" : ""} data-view="upside" onClick={() => changeView("upside")} role="tab" type="button">
+                <Flame aria-hidden="true" size={16} /> High Upside <span className="experimental-badge">Experimental</span>
               </button>
             </div>
             <p className="flip-view-description">
@@ -593,18 +593,18 @@ function ReliableDetails({ flip }: { flip: FlipCandidate }) {
       <div className="metric-grid compact">
         <Metric label="Current net profit (observed)" value={formatGp(flip.netProfit)} tone="profit" />
         <Metric label="Current ROI (observed)" value={formatPercent(flip.roi)} />
-        <Metric label="7d median net margin" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatGp(flip.marketAnalysis.historicalNetMarginMedian) : "Unavailable"} />
+        <Metric accent="violet" label="7d median net margin" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatGp(flip.marketAnalysis.historicalNetMarginMedian) : "Unavailable"} />
         <Metric label="Repeatable net profit" value={flip.repeatableNetProfit === null ? "Unavailable" : formatGp(flip.repeatableNetProfit)} tone="profit" />
         <Metric label="Conservative GP/hr (estimate)" value={flip.conservativeExpectedGpPerHour === null ? "Unavailable" : formatGp(flip.conservativeExpectedGpPerHour)} tone="profit" />
-        <Metric label="Positive after-tax hours" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatPercent(flip.marketAnalysis.positiveSpreadRatio) : "Unavailable"} />
-        <Metric label="Buy limit" value={flip.buyLimit ? formatNumber(flip.buyLimit) : "Unknown"} />
+        <Metric accent="violet" label="Positive after-tax hours" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatPercent(flip.marketAnalysis.positiveSpreadRatio) : "Unavailable"} />
+        <Metric accent="gold" label="Buy limit" value={flip.buyLimit ? formatNumber(flip.buyLimit) : "Unknown"} />
         <Metric label="Current buy-limit profit (estimate)" value={formatGp(flip.totalBuyLimitProfit)} tone="profit" />
-        <Metric label="Historical confidence" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatPercent(flip.confidence) : "Unavailable"} />
+        <Metric accent="violet" label="Historical confidence" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatPercent(flip.confidence) : "Unavailable"} />
         <Metric label="Historical matched vol/hr" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatNumber(flip.marketAnalysis.medianMatchedHourlyVolume) : "Unavailable"} />
         <Metric label="Estimated units/hr" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatNumber(flip.marketAnalysis.estimatedExecutableUnitsPerHour) : "Unavailable"} />
         <Metric label="Quote-pair age (older side)" value={formatAge(flip.quoteHealth.pairAgeSeconds)} />
         <Metric label="Quote timestamp skew" value={formatAge(flip.quoteHealth.skewSeconds)} />
-        <Metric label="Historical stability" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatPercent(flip.stability) : "Unavailable"} />
+        <Metric accent="violet" label="Historical stability" value={flip.marketAnalysis && flip.marketAnalysis.sampleCount > 0 ? formatPercent(flip.stability) : "Unavailable"} />
       </div>
       <p className="research-note">
         The seven-day median resists isolated margin spikes. Repeatable profit uses the lower of the current net margin and that median. Estimated GP/hour assumes 1% of median matched hourly volume and is capped by a known four-hour buy limit. Quote age uses the older side of the pair. These are conservative estimates, not observed fills or guaranteed profit.
@@ -625,7 +625,7 @@ function UpsideDetails({ flip }: { flip: UpsideFlipCandidate }) {
       <div className="metric-grid compact">
         <Metric label="Current net profit (observed)" value={formatGp(flip.netProfit)} tone="profit" />
         <Metric label="Capturable net margin (estimate)" value={formatGp(analysis.capturableNetMargin)} tone="profit" />
-        <Metric label="24h net-margin P90" value={formatGp(analysis.netMarginP90)} />
+        <Metric accent="violet" label="24h net-margin P90" value={formatGp(analysis.netMarginP90)} />
         <Metric label="Base GP/hr (estimate)" value={formatGp(analysis.baseEstimatedGpPerHour)} tone="profit" />
         <Metric label="Estimated units/hr" value={formatNumber(analysis.estimatedUnitsPerHour)} />
         <Metric label="P25 matched volume/hr" value={formatNumber(analysis.matchedVolumeP25PerHour)} />
@@ -637,7 +637,7 @@ function UpsideDetails({ flip }: { flip: UpsideFlipCandidate }) {
         <Metric label="Midpoint volatility" value={formatPercent(analysis.midpointPriceVolatility)} />
         <Metric label="Quote-pair age (older side)" value={formatAge(flip.quoteHealth.pairAgeSeconds)} />
         <Metric label="Quote timestamp skew" value={formatAge(flip.quoteHealth.skewSeconds)} />
-        <Metric label="Buy limit" value={formatNumber(flip.buyLimit)} />
+        <Metric accent="gold" label="Buy limit" value={formatNumber(flip.buyLimit)} />
         <Metric label="Current ROI (observed)" value={formatPercent(flip.roi)} />
       </div>
       <p className="research-note">

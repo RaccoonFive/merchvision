@@ -99,7 +99,7 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
   }
 
   return (
-    <div className={`app-frame${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
+    <div className={`app-frame${sidebarCollapsed ? " sidebar-collapsed" : ""}`} data-tool={activePath.slice(1)}>
       <aside className="sidebar">
         <div className="sidebar-head">
           <Link className="brand" href="/welcome" aria-label="Merchvision home">
@@ -121,31 +121,31 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
         </div>
 
         <nav className="sidebar-nav" aria-label="Main navigation">
-          <Link aria-current={activePath === "/welcome" ? "page" : undefined} aria-label="Welcome" className={`nav-item${activePath === "/welcome" ? " active" : ""}`} href="/welcome" title="Welcome">
+          <Link aria-current={activePath === "/welcome" ? "page" : undefined} aria-label="Welcome" className={`nav-item${activePath === "/welcome" ? " active" : ""}`} data-tool="welcome" href="/welcome" title="Welcome">
             <House size={19} />
             <span>Welcome</span>
           </Link>
-          <Link aria-current={activePath === "/flips" ? "page" : undefined} aria-label="Flip Finder" className={`nav-item${activePath === "/flips" ? " active" : ""}`} href="/flips" title="Flip Finder">
+          <Link aria-current={activePath === "/flips" ? "page" : undefined} aria-label="Flip Finder" className={`nav-item${activePath === "/flips" ? " active" : ""}`} data-tool="flips" href="/flips" title="Flip Finder">
             <TrendingUp size={19} />
             <span>Flip Finder</span>
           </Link>
-          <Link aria-current={activePath === "/investments" ? "page" : undefined} aria-label="Investment Finder" className={`nav-item${activePath === "/investments" ? " active" : ""}`} href="/investments" title="Investment Finder">
+          <Link aria-current={activePath === "/investments" ? "page" : undefined} aria-label="Investment Finder" className={`nav-item${activePath === "/investments" ? " active" : ""}`} data-tool="investments" href="/investments" title="Investment Finder">
             <ChartNoAxesCombined size={19} />
             <span>Investment Finder</span>
           </Link>
-          <Link aria-current={activePath === "/investment-tracker" ? "page" : undefined} aria-label="Investment Tracker" className={`nav-item${activePath === "/investment-tracker" ? " active" : ""}`} href="/investment-tracker" title="Investment Tracker">
+          <Link aria-current={activePath === "/investment-tracker" ? "page" : undefined} aria-label="Investment Tracker" className={`nav-item${activePath === "/investment-tracker" ? " active" : ""}`} data-tool="investment-tracker" href="/investment-tracker" title="Investment Tracker">
             <BriefcaseBusiness size={19} />
             <span>Investment Tracker</span>
           </Link>
-          <Link aria-current={activePath === "/lookup" ? "page" : undefined} aria-label="Item Lookup" className={`nav-item${activePath === "/lookup" ? " active" : ""}`} href="/lookup" title="Item Lookup">
+          <Link aria-current={activePath === "/lookup" ? "page" : undefined} aria-label="Item Lookup" className={`nav-item${activePath === "/lookup" ? " active" : ""}`} data-tool="lookup" href="/lookup" title="Item Lookup">
             <Search size={19} />
             <span>Item Lookup</span>
           </Link>
-          <Link aria-current={activePath === "/bosses" ? "page" : undefined} aria-label="Bosses" className={`nav-item${activePath === "/bosses" ? " active" : ""}`} href="/bosses" title="Bosses">
+          <Link aria-current={activePath === "/bosses" ? "page" : undefined} aria-label="Bosses" className={`nav-item${activePath === "/bosses" ? " active" : ""}`} data-tool="bosses" href="/bosses" title="Bosses">
             <Skull size={19} />
             <span>Bosses</span>
           </Link>
-          <Link aria-current={activePath === "/favorites" ? "page" : undefined} aria-label="Favorites" className={`nav-item${activePath === "/favorites" ? " active" : ""}`} href="/favorites" title="Favorites">
+          <Link aria-current={activePath === "/favorites" ? "page" : undefined} aria-label="Favorites" className={`nav-item${activePath === "/favorites" ? " active" : ""}`} data-tool="favorites" href="/favorites" title="Favorites">
             <Star size={19} />
             <span>Favorites</span>
           </Link>

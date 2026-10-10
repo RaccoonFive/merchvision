@@ -43,6 +43,14 @@ describe("AppShell compact navigation accessibility", () => {
     }
   });
 
+  it("exposes tool identities for consistent page and navigation accents", () => {
+    const markup = renderShell("/flips");
+    expect(markup).toMatch(/<div[^>]*class="app-frame"[^>]*data-tool="flips"/);
+    for (const tool of ["welcome", "flips", "investments", "investment-tracker", "lookup", "bosses", "favorites"]) {
+      expect(markup).toMatch(new RegExp(`<a[^>]*data-tool="${tool}"[^>]*href="/${tool}"`));
+    }
+  });
+
   it("names the signed-in account control when the account summary is hidden", () => {
     useSession.mockReturnValue({ data: { user: { name: "Merchant", email: "merchant@example.com" } }, isPending: false });
     const markup = renderShell();

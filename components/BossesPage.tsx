@@ -52,7 +52,7 @@ export function BossesPage() {
           {visibleBosses.length ? (
             <div className="boss-grid">
               {visibleBosses.map((boss) => (
-                <button aria-haspopup="dialog" className="boss-card" key={boss.slug} onClick={(event) => {
+                <button aria-haspopup="dialog" className="boss-card" data-category={boss.category} key={boss.slug} onClick={(event) => {
                   triggerRef.current = event.currentTarget;
                   setSelectedBoss(boss);
                 }} type="button">

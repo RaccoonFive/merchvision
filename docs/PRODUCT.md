@@ -43,6 +43,8 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 7. **Optimize the repeated workflow.** Dense, responsive, keyboard-friendly views are preferred over decorative or instructional UI that slows experienced users.
 8. **Earn complexity.** Add features when they improve the core decision, not merely because the data or technology makes them possible.
 
+Application themes use coordinated emerald, blue, violet, gold, and coral accents to distinguish tools, research categories, and boss categories. Soft color washes and highlighted selections add depth without reducing table density. Financial gains, losses, and market warnings retain their semantic colors and text labels in every theme.
+
 ## Core Experiences
 
 ### Homepage
