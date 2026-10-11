@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Tests: 184 passing" src="https://img.shields.io/badge/tests-184_passing-6f9d5c?style=for-the-badge&amp;labelColor=202219" />
+  <img alt="Test suite: Vitest" src="https://img.shields.io/badge/tests-Vitest-6f9d5c?style=for-the-badge&amp;labelColor=202219" />
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-d4af55?style=for-the-badge&amp;logo=next.js&amp;logoColor=white&amp;labelColor=202219" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-587b9b?style=for-the-badge&amp;logo=typescript&amp;logoColor=white&amp;labelColor=202219" />
   <a href="https://prices.runescape.wiki/"><img alt="OSRS Wiki Prices API" src="https://img.shields.io/badge/data-OSRS_Wiki_Prices-bb8644?style=for-the-badge&amp;labelColor=202219" /></a>
@@ -176,6 +176,8 @@ TODO.md               Active milestone, backlog, and delivery history
 Tests live under `tests/app/`, `tests/components/`, and `tests/lib/`, matching their source paths. Root-level modules such as `middleware.ts` have tests directly under `tests/`. Shared test data and its attribution live in `tests/fixtures/`; tests import application code through the `@/` alias.
 
 ## Project docs
+
+The current feature set is sufficient for this stage. Development now focuses on code quality, performance, reliability, and design. New features remain optional, with interest in useful or enjoyable OSRS tools beyond flipping. See the [Roadmap](TODO.md) for active work and deferred ideas.
 
 | Document | Start here when… |
 | --- | --- |

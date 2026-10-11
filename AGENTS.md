@@ -21,6 +21,7 @@
 ## Product Guardrails
 
 - Merchvision helps Old School RuneScape players discover conservative, explainable Grand Exchange opportunities from public market data.
+- Follow the current [development focus](docs/PRODUCT.md#development-focus) and [active roadmap](TODO.md#active-milestone---code-quality-performance-and-design): prioritize improving the existing code, performance, reliability, and design. Keep additional market features deferred by default; optional OSRS features beyond flipping need a concrete user request or selected roadmap task.
 - Optimize for trustworthy market quality, not impressive-looking paper margins.
 - Treat fill speed, executable volume, and projected profit as estimates, never guarantees.
 - Keep Flip Finder rankings independent of a user's bankroll.

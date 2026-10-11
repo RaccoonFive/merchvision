@@ -1,14 +1,16 @@
 # Merchvision Roadmap
 
-Last updated: 2026-10-06
+Last updated: 2026-10-10
 
 ## Product Direction
 
 > Help active OSRS merchants find conservative, evidence-backed Grand Exchange opportunities quickly, then give them enough market history to judge each candidate for themselves.
 
+- The current feature set is sufficient for this stage. Prioritize code quality, performance, reliability, and design over expanding flipping functionality.
+- Keep new features optional. Favor useful or enjoyable OSRS tools beyond flipping when there is a concrete idea worth building; do not treat the idea backlog as a delivery commitment.
 - Lead with ranked opportunities and use item-level analysis as the drill-down experience.
 - Optimize the default ranking for repeatable market quality, not maximum paper profit.
-- Use two fixed, evidence-backed views: Reliable by default and an explicitly experimental High Upside view. Do not add user-defined score weights.
+- Use two fixed, evidence-backed views: Reliable by default and High Upside with separately displayed uncertainty. The High Upside model remains experimental; its tab no longer carries an Experimental badge. Do not add user-defined score weights.
 - Use only the OSRS Wiki Prices API for market data.
 - Keep accounts limited to authentication, Favorites, and private manually entered investment lots.
 - Recommend candidates and expose evidence; do not prescribe offer prices or predict price targets.
@@ -30,115 +32,60 @@ Last updated: 2026-10-06
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
 - The public Bosses dashboard covers 70 boss/reward activities with searchable square cards, live Wiki loot dialogs, conditional rates, and observed instant-sell prices.
-- The current validation baseline passes 184 tests, type checking, and a production build.
+- Flip Finder puts estimated GP/hour and historical or capturable margin beside the item name. Shared metric cards use neutral surfaces, with selective emphasis on the main values.
+- The validation baseline is `npm test`, `npm run typecheck`, and `npm run build`; browser checks are also needed for interaction and layout changes.
 
-## Milestone 1 - Trustworthy Flip Rankings
-
-Status: **Completed**
-
-### Outcome
-
-An active merchant can scan a shortlist of credible opportunities, recognize the key evidence and risks quickly, and distinguish current observations from historical measures and uncertain execution estimates.
-
-### Ranking Policy
-
-- [x] Include stale and low-confidence candidates by default, with an explicit toggle to exclude weak data.
-- [x] Tune the default ranking to balance seven-day repeatable after-tax GP-per-hour and buy-limit profit with matched liquidity, freshness, and sample quality over isolated paper-margin spikes.
-- [x] Preserve the existing search, membership, price, profit, ROI, volume, confidence, stability, buy-limit-profit, freshness, and sorting controls.
-- [x] Keep fixed Reliable and High Upside scoring policies; do not add risk presets or user-configurable score weights.
-- [x] Preserve Reliable as the default and add a separately labeled, lazy-loaded High Upside view.
-- [x] Use paired quote age and timestamp skew instead of treating the freshest side as the complete quote.
-- [x] Bound five-minute High Upside enrichment and exclude stale, unsynchronized, sparse, one-sided, or unknown-limit candidates.
-- [x] Add user-independent public-market proxy calibration with protected scheduling, model isolation, deterministic resolution, and 90-day retention.
-
-### Explanation And UI
-
-- [x] Return named quality and risk signals with every flip alongside the aggregate score.
-- [x] Derive the aggregate score, available score audit detail, and ranking order from the same deterministic scoring path.
-- [x] Keep the results table focused on decision-relevant quality and risk signals; place detailed score arithmetic after the primary market details in the selected-item panel.
-- [x] Label current observations, historical measures, and estimates distinctly.
-- [x] Clarify trailing traded volume, matched hourly volume, per-item net profit, buy-limit profit, and estimated units per hour.
-- [x] Surface every material warning without silently hiding warnings after the first four.
-- [x] Keep loading, empty, stale, partial-history, and upstream-failure states clear on desktop and narrow screens.
-
-### Tuning And Verification
-
-- [x] Document the repeatability tuning: cap scored per-item profit at the seven-day median, make conservative GP/hour the largest driver, give buy-limit profit a modest direct weight, and penalize current-margin spikes so liquid steady markets outrank thin windfalls.
-- [x] Add focused tests for warning thresholds and ranking effects.
-- [x] Cover score-component arithmetic, explanation consistency, filters, and weak-data toggle behavior; confirm stale or low-confidence results are excluded only when requested.
-- [x] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
-
-### Completion Gate
-
-- [x] A user can recognize why a candidate is credible or risky from the table and detail panel without needing to understand point-by-point score arithmetic.
-- [x] Returned score components reproduce the displayed aggregate score for every candidate.
-- [x] No label implies that volume, fill speed, executable units, or profit is guaranteed.
-
-## Milestone 2 - Live Item Research
+## Active Milestone - Code Quality, Performance, And Design
 
 Status: **Active**
 
 ### Outcome
 
-Item Lookup becomes the canonical research view for validating a Flip Finder candidate using current quotes, historical spread behavior, liquidity, volatility, and data quality.
+Make the existing tools easier to maintain, faster to use, and more visually consistent. This milestone improves the shipped experience without requiring new market features.
 
-### Research Experience
+### Code Quality And Reliability
 
-- [x] Link every Flip Finder and Investment Finder result clearly to its Item Lookup research view.
-- [x] Add historical after-tax spread, positive-spread ratio, matched volume, volatility, freshness, sample coverage, and estimated-executability analysis.
-- [x] Explain how each measure should influence a merchant's decision without suggesting exact buy or sell offers.
-- [x] Retain the existing 1-day, 7-day, 3-month, and 1-year history ranges.
-- [x] Keep current observations, historical calculations, and estimates visually distinct.
-- [x] Represent missing samples and unavailable calculations explicitly rather than substituting zeroes.
+- [ ] Review large components and repeated request, state, and UI logic; make scoped refactors where they reduce maintenance cost.
+- [ ] Remove confirmed unused code and simplify unnecessary abstractions without changing market policies or account boundaries.
+- [ ] Add bounded Prices API timeouts while preserving TTL caching and request coalescing.
+- [ ] Replace caught `Error.message` forwarding in items, latest prices, item quotes, investments, and favorite routes with user-safe failures; test that upstream and database details are not returned.
+- [ ] Review cancellation, overlapping requests, and stale responses during navigation, filtering, and dialog changes.
+- [ ] Add focused regression coverage for concrete defects and fragile behavior found during review.
 
-### Live Data Behavior
+### Performance
 
-- [ ] Add controlled auto-refresh to Flip Finder and Item Lookup with a visible interval, last-updated time, pause control, and manual refresh action.
-- [ ] Pause automatic requests when the page is not visible and prevent overlapping refreshes.
-- [ ] Show compact fresh, stale, partial, and unavailable data-health states.
-- [ ] Add bounded Wiki request timeouts and user-safe failure messages while preserving request coalescing and TTL caching.
-- [ ] Keep request frequency respectful of the Wiki API and avoid unbounded per-item history enrichment.
+- [ ] Measure route payloads, loading and navigation time, request counts, and rendering cost on representative desktop and mobile workflows before choosing optimizations.
+- [ ] Review client/server boundaries, chart loading, image delivery, and repeated transfers; keep existing deferred loading and cache reuse effective.
+- [ ] Profile table sorting, sticky headers, search, and detail panels with representative result sizes; optimize demonstrated bottlenecks.
+- [ ] Verify cold and warm data paths, bounded enrichment, and Wiki request frequency after performance changes.
 
-### Boss Loot Reference
+### Design And Usability
 
-- [x] Add a public boss grid with search, categories, accessible loot dialogs, and shared reward-activity cards.
-- [x] Fetch full live Wiki drop tables through allowlisted sources, preserve conditions and variants, and bound/coalesce/cache upstream work.
-- [x] Enrich loot with observed instant-sell prices and explicit stale, missing, unmatched, and partial-data states.
-- [x] Verify extraction, API boundaries, caching, keyboard/mobile behavior, full tests, type checking, and production build.
+- [ ] Review typography, spacing, visual hierarchy, and shared controls across tools and all five themes.
+- [ ] Refine table, filter, chart, and dialog layouts for narrow screens while preserving dense desktop workflows.
+- [ ] Review keyboard navigation, focus visibility, contrast, and reduced-motion behavior.
+- [ ] Make loading, empty, error, stale, partial, and unavailable states consistent and easy to recognize.
 
-### Verification
+### Completion Gate
 
-- [x] Test historical-analysis formulas, missing samples, partial histories, unsupported values, and empty responses.
-- [ ] Test refresh intervals, pause/resume behavior, overlapping-request prevention, and degraded-data states.
-- [ ] Verify keyboard and narrow-screen usability for charts, refresh controls, and research metrics.
-- [ ] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
+- [ ] Implement and verify the selected quality fixes; record deferred findings without expanding the feature scope.
+- [ ] Record before/after evidence for performance changes and verify that upstream request load remains bounded.
+- [ ] Verify changed interactions and layouts in a browser with mocked data on desktop and narrow screens, including degraded-data states.
+- [ ] Run `npm test`, `npm run typecheck`, and `npm run build` for meaningful code changes, with focused checks required by [Repository Guidance](AGENTS.md#verification).
 
-## Milestone 3 - Risk-Aware Investment Finder
+## Deferred Market Work
 
-Status: **Planned after Milestone 2**
+The former Live Item Research milestone delivered the research experience and boss reference. Its unfinished auto-refresh work and the planned Investment Finder expansion are deferred, not completed. They do not block the current quality milestone.
 
-### Outcome
-
-Investment Finder remains a secondary tool that produces an explainable shortlist of liquid items with sustained historical momentum and clearly reported uncertainty.
-
-### Tasks
-
-- [ ] Review the short- and medium-horizon trend, liquidity, volatility, consistency, and confidence formulas through hands-on ranking tests.
-- [ ] Return named score drivers and penalties from the same deterministic path that produces the aggregate investment score.
-- [ ] Hide candidates with insufficient or unreliable history by default and explain the exclusion policy.
-- [ ] Distinguish observed volume and prices from historical trend measures; do not present momentum as a forecast.
-- [ ] Show compact drivers in the table and a complete explanation in the selected-item panel.
-- [ ] Link every candidate to the unified Item Lookup research view.
-- [ ] Preserve deterministic filtering and sorting with no customizable score weights.
-- [ ] Add focused formula, threshold, filtering, ranking, partial-history, and explanation-consistency tests.
-- [ ] Run `npm test`, `npm run typecheck`, and `npm run build` after implementation.
+- **Controlled auto-refresh:** visible interval and update time, pause/resume and manual refresh, visibility-aware requests, overlap prevention, and timer/degraded-data tests. Existing request reliability and data-health polish stay in the active milestone.
+- **Investment ranking expansion:** formula review, named drivers and penalties, a clearer insufficient-history policy, table/detail explanations, and formula, threshold, filtering, ranking, and partial-history tests. Candidate links to Item Lookup are already implemented. Fix demonstrated correctness issues as maintenance; broader ranking changes remain optional.
+- **Additional market tools:** market overview, side-by-side item comparison, and one-time portfolio suggestions. Portfolio budgets and allocations must remain ephemeral, with no execution tracking or automatic investment lots.
 
 ## Basic Reliability And Maintenance
 
 These tasks support a small private deployment and do not require production-scale infrastructure.
 
-- [ ] Document and verify a basic MySQL backup and restore procedure for accounts and Favorites.
-- [ ] Replace caught `Error.message` forwarding in items, latest prices, item quotes, investments, and favorite routes with user-safe failures; test that upstream and database details are not returned.
+- [ ] Document and verify a basic MySQL backup and restore procedure for accounts, Favorites, investment lots, and public calibration observations.
 - [ ] Review material dependency audit findings before dependency or deployment updates.
 - [ ] Document the private deployment environment, migration command, restart procedure, and common recovery steps.
 - [ ] Keep a lightweight health indication for database availability and Wiki data freshness.
@@ -146,13 +93,15 @@ These tasks support a small private deployment and do not require production-sca
 
 Production-scale rate limiting, distributed caching, centralized observability, recovery drills, and multi-instance operations are out of scope unless deployment needs change.
 
-## Later Product Bets
+## Optional OSRS Feature Ideas
 
-Promote a bet into a milestone only after the first three milestones are complete and hands-on use shows that it improves the core research workflow.
+Remain open to small, useful or enjoyable OSRS features beyond flipping. These are exploration areas, not scheduled deliverables:
 
-1. **Market overview:** market-wide movers, liquidity changes, and broad Grand Exchange conditions.
-2. **Item comparison:** side-by-side profitability, spread quality, liquidity, volatility, confidence, and freshness for selected candidates.
-3. **One-time portfolio suggestions:** deterministic allocations from an ephemeral budget without saving bankroll or recommendations, recording execution, or automatically creating tracker lots.
+- Boss, activity, and reward-reference improvements.
+- Item discovery and other public OSRS reference tools.
+- Compact game utilities with a clear purpose and modest maintenance cost.
+
+Choose concrete ideas individually based on interest, usability, data availability, and maintenance cost. Prefer additions that fit beside the current tools without crowding market research or expanding private trade tracking. New data sources or persistence need explicit design in the product and architecture docs.
 
 ## Explicitly Not Planned
 
@@ -170,6 +119,7 @@ Promote a bet into a milestone only after the first three milestones are complet
 
 ## Completed
 
+- **2026-10-10:** Refined Flip Finder column hierarchy and shared metric cards, with browser checks across five themes and desktop/mobile layouts. Removed the Experimental badge from the High Upside tab; the model's uncertainty and estimate labels remain documented.
 - **2026-09-03:** Made Item Lookup the canonical Finder drill-down with direct result links, conservative quote-pair freshness, seven-day market-quality analysis, explicit evidence states, and separately labeled executability estimates.
 - **2026-09-03:** Completed the trustworthy Flip Finder milestone with aggregate enrichment health, preserved results after refresh failures, distinct current/stale/partial/unavailable and chart states, explicit 12-hour traded-volume labeling, and a reproducible score total.
 - **2026-09-02:** Reduced cold navigation payloads for chart-capable pages by roughly 100 KB each through deferred chart rendering, and added immediate route loading states for session-gated pages.
@@ -194,5 +144,5 @@ Promote a bet into a milestone only after the first three milestones are complet
 - Update `Last updated` whenever priorities, assumptions, or statuses change.
 - Check off work only after implementation and required verification are complete.
 - Move completed milestone detail into a concise dated entry instead of retaining large checked checklists.
-- Record newly discovered work in the active milestone, next milestone, basic reliability, later bets, or explicitly-not-planned list.
+- Record newly discovered work in the active milestone, basic reliability, deferred market work, optional OSRS ideas, or explicitly-not-planned list.
 - Do not silently expand accounts beyond Favorites and manual investment lots or add sales, realized-profit history, open offers, synchronized trades, bankroll, execution, or external-data tracking.

@@ -9,6 +9,7 @@ Use this index to build the smallest useful context for a task. Paths are naviga
 | Product behavior, labels, or scope | Relevant experience and non-goals in [Product Contract](PRODUCT.md) |
 | Data flow, APIs, caching, scoring, auth, or persistence | Matching sections in [Architecture](ARCHITECTURE.md) |
 | Next feature or delivery status | Active milestone in [Roadmap](../TODO.md); do not infer completion from this index |
+| Code quality, performance, or design priorities | [Active quality milestone](../TODO.md#active-milestone---code-quality-performance-and-design) and [development focus](PRODUCT.md#development-focus); inspect and measure the affected implementation before choosing changes |
 | Calibration operation or model evaluation | [Flip Calibration](flip-calibration.md) |
 | Local database setup | [MySQL Setup](mysql-setup.md) |
 
@@ -34,13 +35,14 @@ Paths below are relative to the repository root. Tests live under `tests/`, mirr
 | Accounts and ownership | `components/AccountPage.tsx`, `lib/auth.ts`, `lib/auth-client.ts`, `lib/session.ts`, `lib/redirect.ts`, `lib/prisma.ts`, `prisma/schema.prisma`, `app/api/auth/[...all]/route.ts` | `tests/lib/redirect.test.ts`, authenticated route and page tests |
 | Public calibration | `app/api/internal/flip-calibration/route.ts`, `lib/flipCalibration.ts`, `lib/flipCalibrationAnalysis.ts`, `FlipObservation` in `prisma/schema.prisma` | Both calibration library tests and calibration route test |
 | Navigation, themes, and layout | `components/AppShell.tsx`, `lib/theme.ts`, `app/layout.tsx`, `app/globals.css` | `tests/components/AppShell.test.ts`, `tests/lib/theme.test.ts`, `tests/app/layout.test.ts` |
+| Table hierarchy and metric-card design | `components/FlipFinder.tsx`, `components/Metric.tsx`, their Finder/Lookup/Tracker callers, `app/globals.css` | Existing component tests cover static helpers; verify visual hierarchy, themes, keyboard use, and narrow-screen layouts in a browser |
 | Tables and number entry | `components/StickyTable.tsx`, `components/SortableTableHeader.tsx`, `components/TableFilter.tsx`, `components/GroupedNumberInput.tsx` | `tests/components/StickyTable.test.ts`, `tests/components/GroupedNumberInput.test.ts` |
 | Chart loading and compatibility | `components/LazyPriceHistoryChart.tsx`, `components/PriceHistoryChart.tsx`, their callers, `package.json` | `tests/lib/chartCompatibility.test.ts`; verify rendered UI separately |
 
 ## Boundaries That Are Easy To Miss
 
 - Reliable and High Upside share coordination but have distinct analysis and ranking policies. `lib/itemResearch.ts` reuses Reliable's `analyzeMarket`; changing that function can also change Item Lookup.
-- `lib/osrsWiki.ts` owns both Prices API and MediaWiki requests. MediaWiki loot fetches already have a timeout and concurrency cap; the Prices API fetch does not yet have an explicit timeout. See the active roadmap for remaining live-data work.
+- `lib/osrsWiki.ts` owns both Prices API and MediaWiki requests. MediaWiki loot fetches already have a timeout and concurrency cap; the Prices API fetch does not yet have an explicit timeout. See the active roadmap for Prices API reliability work.
 - Server TTLs, candidate-universe memoization, and browser caches are separate layers. A manual browser refresh does not force a server Wiki-cache miss. Flip memoization also includes a 60-second time bucket.
 - A flip buys at the latest low and sells at the latest high. Tracker liquidation and boss instant-sell reference both use the latest low; the tracker subtracts prospective tax, while boss prices are displayed before tax.
 - The default hourly Item Lookup response combines chart, research, and rhythm via `includeResearch=true&includeRhythm=true`. Other chart ranges still need the seven-day hourly evidence; avoid duplicating its default request.

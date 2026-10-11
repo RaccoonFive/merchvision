@@ -12,6 +12,12 @@ Merchvision should answer three questions clearly:
 2. Why does one opportunity rank above another?
 3. What uncertainty or market risk could make the apparent opportunity misleading?
 
+## Development Focus
+
+The current feature set is sufficient for this stage. Prioritize maintainable code, measured performance improvements, reliability, and visual polish across the existing tools. Improve the experience users already have before adding more flipping functionality. [Roadmap](../TODO.md) owns the active work and deferred ideas.
+
+New features remain welcome when a concrete idea adds useful or enjoyable OSRS functionality with a modest maintenance cost. Favor tools beyond flipping, such as public game references or compact utilities that fit alongside the existing Bosses experience. These additions need a clear purpose and should preserve the focused research screens and existing privacy boundaries; they do not need to expand market rankings or trade tracking.
+
 ## Primary User
 
 The primary user is a self-directed OSRS player who understands Grand Exchange buy and sell offers but does not want to inspect hundreds of item markets manually. They value a trustworthy shortlist, fast comparison, and transparent risk signals more than an opaque prediction.
@@ -41,7 +47,7 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 5. **Keep user agency.** Merchvision suggests markets to investigate. It does not place trades or claim certainty.
 6. **Respect the data source.** Bound enrichment work, cache responsibly, and use an identifiable User-Agent with contact information.
 7. **Optimize the repeated workflow.** Dense, responsive, keyboard-friendly views are preferred over decorative or instructional UI that slows experienced users.
-8. **Earn complexity.** Add features when they improve the core decision, not merely because the data or technology makes them possible.
+8. **Earn complexity.** Add features when they improve an existing decision or serve a clear OSRS use case. Consider interface clutter, data availability, and maintenance cost before expanding scope.
 
 Application themes use coordinated emerald, blue, violet, gold, and coral accents to distinguish tools, research categories, and boss categories. Soft color washes and highlighted selections add depth without reducing table density. Financial gains, losses, and market warnings retain their semantic colors and text labels in every theme.
 
@@ -88,9 +94,9 @@ Provide a public, searchable grid of repeatable combat, Wilderness, Slayer, skil
 
 Keep conditional, multi-roll, mode-specific, and shared-table rates distinct. Shared-table rates describe rolls within that table, not unconditional per-kill chances. Loot comes from live Wiki pages with a visible fetch date and source links; missing or unsupported data must be marked partial. Unmatched items, items not sold on the GE, unavailable prices, and stale quotes are separate states. This reference does not estimate GP per kill or track loot, kills, or player activity.
 
-### Planned Portfolio Suggestions
+### Deferred Portfolio Idea
 
-Use a one-time budget to propose a diversified set of opportunities. The budget and recommendation must remain ephemeral: do not persist bankroll or allocations, record execution, or automatically create Investment Tracker lots.
+Portfolio suggestions are an optional deferred idea, not a planned extension of the current feature set. If pursued, use a one-time budget to propose a diversified set of opportunities. The budget and recommendation must remain ephemeral: do not persist bankroll or allocations, record execution, or automatically create Investment Tracker lots.
 
 ## Non-Goals
 
