@@ -1081,15 +1081,6 @@ h3 {
   outline-offset: 2px;
 }
 
-.experimental-badge {
-  background: color-mix(in srgb, currentColor 14%, transparent);
-  border-radius: 999px;
-  font-size: 9px;
-  letter-spacing: 0.04em;
-  padding: 3px 6px;
-  text-transform: uppercase;
-}
-
 .flip-view-description {
   color: var(--muted);
   font-size: 12px;

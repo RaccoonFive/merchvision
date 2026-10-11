@@ -232,7 +232,7 @@ export function FlipFinder() {
                 <ShieldCheck aria-hidden="true" size={16} /> Reliable
               </button>
               <button aria-selected={view === "upside"} className={view === "upside" ? "active" : ""} data-view="upside" onClick={() => changeView("upside")} role="tab" type="button">
-                <Flame aria-hidden="true" size={16} /> High Upside <span className="experimental-badge">Experimental</span>
+                <Flame aria-hidden="true" size={16} /> High Upside
               </button>
             </div>
             <p className="flip-view-description">
