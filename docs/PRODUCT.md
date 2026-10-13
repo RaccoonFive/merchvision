@@ -61,6 +61,8 @@ On the first visit to `/` in a browser, provide a fullscreen OSRS-themed entry p
 
 On opening the introduction, fade in the headline first, then fade in the app entrance after the headline is fully visible. Show both immediately when reduced motion is preferred.
 
+Show a lightweight blurred preview of the scene from the first render, then fade in the responsive backdrop once it loads. Keep the preview if the image cannot load and skip the backdrop transition when reduced motion is preferred.
+
 ### Flip Finder
 
 Provide two ranked, filterable views of short-term buy-low/sell-high opportunities:

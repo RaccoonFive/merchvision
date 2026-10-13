@@ -20,7 +20,7 @@ Paths below are relative to the repository root. Tests live under `tests/`, mirr
 | Area | Start with | Closest tests |
 | --- | --- | --- |
 | cPanel deployment | `app.js`, `next.config.ts`, `package.json`, `.env.example`, `.gitignore`, cPanel deployment section in `README.md` | `tests/app.test.ts`, `tests/next.config.test.ts` |
-| Homepage and tool entry points | `middleware.ts` → `app/page.tsx` → `components/HomePage.tsx`, `app/welcome/page.tsx`, `app/flips/page.tsx`, `public/images/home/` | `tests/middleware.test.ts`, `tests/components/HomePage.test.ts`, `tests/components/AppShell.test.ts` |
+| Homepage and tool entry points | `middleware.ts` → `app/page.tsx` → `components/HomePage.tsx`, `components/HomeBackdrop.tsx`, `app/welcome/page.tsx`, `app/flips/page.tsx`, `public/images/home/` | `tests/middleware.test.ts`, `tests/components/HomePage.test.ts`, `tests/components/AppShell.test.ts` |
 | Reliable flips | `components/FlipFinder.tsx` → `app/api/flips/route.ts` → `lib/flipFinder.ts` → `lib/scoring.ts` | `tests/lib/scoring.test.ts`, `tests/app/api/flips/route.test.ts` |
 | High Upside flips | Same UI/route/coordinator; `lib/upsideScoring.ts` owns the separate policy | `tests/lib/upsideScoring.test.ts`, `tests/app/api/flips/route.test.ts` |
 | Filters and sorting | `lib/query.ts` parses URL filters; `lib/tableSort.ts` sorts UI rows; domain files own ranking sorts | `tests/lib/query.test.ts`, `tests/lib/tableSort.test.ts`, scoring/investment tests |

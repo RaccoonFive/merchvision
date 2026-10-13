@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { HomeBackdrop } from "@/components/HomeBackdrop";
 import { LogoMark } from "@/components/LogoMark";
 
 const floatingItems = [
@@ -28,7 +28,7 @@ const floatingItems = [
 export function HomePage() {
   return (
     <div className="home-page">
-      <Image alt="An Old School RuneScape-inspired Grand Exchange beneath a golden sunset" className="home-backdrop" fill priority quality={90} sizes="100vw" src="/images/home/grand-exchange-sunset-4k.webp?v=2" />
+      <HomeBackdrop />
       <div aria-hidden="true" className="home-backdrop-shade" />
       <div aria-hidden="true" className="home-floating-items">
         {floatingItems.map(({ item, density }) => (

@@ -31,12 +31,18 @@ describe("homepage entry points", () => {
     expect(markup).not.toContain("home-option-");
   });
 
-  it("offers a high-quality 4K backdrop while retaining responsive image sizes", () => {
-    const markup = renderToStaticMarkup(createElement(HomePage));
-    expect(markup).toContain("grand-exchange-sunset-4k.webp");
-    expect(markup).toContain('sizes="100vw"');
-    expect(markup).toContain("w=640&amp;q=90 640w");
-    expect(markup).toContain("w=3840&amp;q=90 3840w");
+  it("preloads bounded responsive artwork and renders an inline preview before it loads", () => {
+    const $ = load(renderToStaticMarkup(createElement(HomePage)));
+    const image = $(".home-backdrop-image");
+    expect(image.attr("sizes")).toBe("100vw");
+    expect(image.attr("src")).toBe("/images/home/grand-exchange-sunset-1600.webp");
+    expect(image.attr("srcset")).toBe("/images/home/grand-exchange-sunset-960.webp 960w, /images/home/grand-exchange-sunset-1600.webp 1600w, /images/home/grand-exchange-sunset-2560.webp 2560w");
+    expect(image.attr("fetchpriority")).toBe("high");
+    expect(image.attr("loading")).toBe("eager");
+    expect(image.hasClass("is-loaded")).toBe(false);
+    expect($(".home-backdrop").attr("style")).toContain("background-image:url(data:image/webp;base64,");
+    expect($('link[rel="preload"][as="image"]').attr("imagesrcset")).toBe(image.attr("srcset"));
+    expect($(".home-backdrop noscript").html()).toContain("opacity: 1");
   });
 
   it("keeps the scattered local item pictures decorative and outside the app entrance", () => {

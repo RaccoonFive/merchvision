@@ -17,13 +17,26 @@
 }
 
 .home-page .home-backdrop {
+  background-position: 55% center;
+  background-size: cover;
   filter: blur(2px) saturate(0.92);
-  object-fit: cover;
-  object-position: 55% center;
+  inset: 0;
+  position: absolute;
   /* Keep the blurred image edges outside the viewport. */
   transform: scale(1.02);
   z-index: -3;
 }
+
+.home-backdrop-image {
+  height: 100%;
+  object-fit: cover;
+  object-position: 55% center;
+  opacity: 0;
+  transition: opacity 600ms ease-out;
+  width: 100%;
+}
+
+.home-backdrop-image.is-loaded { opacity: 1; }
 
 .home-backdrop-shade {
   background: radial-gradient(ellipse at 50% 48%, rgb(20 17 11 / 66%) 0%, rgb(20 17 11 / 30%) 38%, transparent 72%), radial-gradient(ellipse at 50% 20%, rgb(233 173 75 / 10%), transparent 65%), linear-gradient(180deg, rgb(8 13 9 / 50%) 0%, rgb(8 13 9 / 20%) 35%, rgb(8 13 9 / 42%) 70%, rgb(8 13 9 / 90%) 100%);
@@ -90,6 +103,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-backdrop-image { transition: none; }
   .home-item-tile { animation: none; }
 }
 
