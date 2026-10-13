@@ -157,10 +157,10 @@ On the **hosting server**, copy the completed file to `.env` in the project dire
 ```bash
 cp .env.cpanel .env
 npm install --include=dev
-npm run db:generate
-npm run db:migrate:deploy
-npm run build:cpanel
+npm run deploy:cpanel
 ```
+
+`deploy:cpanel` runs `db:generate`, `db:migrate:deploy`, and `build:cpanel` in order, stopping if any step fails. After it succeeds, start or restart the application through cPanel as described below.
 
 Keep development dependencies installed: deployment uses the Prisma CLI, and the TypeScript Next.js configuration requires TypeScript. Install dependencies and build on the server rather than transferring local `node_modules` or platform-specific Prisma binaries. The build downloads Google Fonts; allow outbound HTTPS to Google Fonts during the build and to the OSRS Wiki APIs at runtime.
 
@@ -188,6 +188,7 @@ Check account login, Favorites, Investment Tracker, and public market data over 
 | `npm run typecheck` | Check TypeScript without emitting files. |
 | `npm run build` | Create an optimized production build. |
 | `npm run build:cpanel` | Create a production build with reduced worker and thread-pool concurrency for shared hosting. |
+| `npm run deploy:cpanel` | Generate Prisma, apply committed migrations, and build for cPanel; stop if any step fails. |
 | `npm start -- -p 3100` | Serve the production build. |
 | `npm run db:generate` | Generate the Prisma client. |
 | `npm run db:migrate:dev` | Create and apply a development migration. |
