@@ -19,7 +19,8 @@ describe("shared font scope", () => {
     expect(htmlTag).toContain("--font-open-sans:Open Sans, Arial, sans-serif");
     expect(htmlTag).toContain("--font-space-grotesk:Space Grotesk, Arial, sans-serif");
     expect(htmlTag).toContain("--font-alegreya:Alegreya, Georgia, serif");
-    expect(htmlTag).toContain('data-theme="dark"');
+    expect(htmlTag).toContain('data-theme="midnight"');
+    expect(markup).toContain('href="/favicon-midnight.svg"');
     expect(markup).toContain("<body><h1>Grand Exchange</h1></body>");
   });
 });

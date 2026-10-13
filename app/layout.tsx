@@ -46,9 +46,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html data-sidebar-collapsed="false" data-theme="dark" lang="en" style={fontVariables} suppressHydrationWarning>
+    <html data-sidebar-collapsed="false" data-theme={DEFAULT_THEME} lang="en" style={fontVariables} suppressHydrationWarning>
       <head>
-        <link data-theme-favicon href="/favicon-dark.svg" rel="icon" type="image/svg+xml" />
+        <link data-theme-favicon href={THEME_FAVICONS[DEFAULT_THEME]} rel="icon" type="image/svg+xml" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>{children}</body>

@@ -8,10 +8,12 @@ describe("theme catalog", () => {
     expect(THEME_VALUES.every(isTheme)).toBe(true);
   });
 
-  it("keeps Gielinor Dusk as the fallback for missing or unknown saved values", () => {
-    expect(DEFAULT_THEME).toBe("dark");
-    expect(resolveTheme(undefined)).toBe("dark");
-    expect(resolveTheme("unknown-theme")).toBe("dark");
+  it("uses Midnight Slate for missing or unknown saved values and preserves saved themes", () => {
+    expect(DEFAULT_THEME).toBe("midnight");
+    expect(resolveTheme(undefined)).toBe("midnight");
+    expect(resolveTheme(null)).toBe("midnight");
+    expect(resolveTheme("unknown-theme")).toBe("midnight");
+    expect(resolveTheme("dark")).toBe("dark");
     expect(resolveTheme("abyssal")).toBe("abyssal");
     expect(resolveTheme("blood")).toBe("blood");
   });

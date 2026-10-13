@@ -2,7 +2,7 @@ export const THEME_VALUES = ["light", "dark", "midnight", "abyssal", "blood"] as
 
 export type Theme = (typeof THEME_VALUES)[number];
 
-export const DEFAULT_THEME: Theme = "dark";
+export const DEFAULT_THEME: Theme = "midnight";
 
 export const THEME_OPTIONS: ReadonlyArray<{ description: string; label: string; value: Theme }> = [
   { description: "Warm, bright ledger", label: "Parchment", value: "light" },
