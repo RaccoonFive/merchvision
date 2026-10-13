@@ -159,10 +159,14 @@ cp .env.cpanel .env
 npm install --include=dev
 npm run db:generate
 npm run db:migrate:deploy
-npm run build
+npm run build:cpanel
 ```
 
 Keep development dependencies installed: deployment uses the Prisma CLI, and the TypeScript Next.js configuration requires TypeScript. Install dependencies and build on the server rather than transferring local `node_modules` or platform-specific Prisma binaries. The build downloads Google Fonts; allow outbound HTTPS to Google Fonts during the build and to the OSRS Wiki APIs at runtime.
+
+`build:cpanel` limits Next.js page workers and page-generation concurrency to one, and sets the build's V8 and libuv thread pools to one thread each. It preserves existing `NODE_OPTIONS` while adding the V8 limit. These limits apply to this build command; normal `npm run build` uses the default concurrency. The cPanel build may take longer.
+
+If Node aborts with `uv_thread_create` during a build, it could not create a native thread. Check cPanel's Resource Usage for process/thread (`NPROC`) and memory-limit faults at the time of failure, and ask the provider to check the account's limits if `build:cpanel` also fails. CloudLinux counts threads toward `NPROC`; even this reduced-concurrency command needs multiple threads across the build processes. Stop unnecessary applications through their normal controls before retrying. See [CloudLinux resource limits](https://docs.cloudlinux.com/cloudlinuxos/limits/) and [Node.js thread-pool settings](https://nodejs.org/download/release/v22.22.3/docs/api/cli.html#--v8-pool-sizenum).
 
 In Application Manager, select `merchvision.kevenparent.com`, set the Base Application URL to `/`, the Application Path to `merchvision` (relative to your cPanel home directory), and the environment to Production. Passenger uses the root-level `app.js`. If your host instead provides CloudLinux's **Setup Node.js App**, choose Node.js 22 and set its startup file to `app.js`. Let Passenger start the server. The existing `npm start` command remains available for other Node.js hosts.
 
@@ -183,6 +187,7 @@ Check account login, Favorites, Investment Tracker, and public market data over 
 | `npm test` | Run the Vitest suite once. Tests use mocked market data, never the live Wiki API. |
 | `npm run typecheck` | Check TypeScript without emitting files. |
 | `npm run build` | Create an optimized production build. |
+| `npm run build:cpanel` | Create a production build with reduced worker and thread-pool concurrency for shared hosting. |
 | `npm start -- -p 3100` | Serve the production build. |
 | `npm run db:generate` | Generate the Prisma client. |
 | `npm run db:migrate:dev` | Create and apply a development migration. |

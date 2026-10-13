@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cpanel": "MERCHVISION_CPANEL_BUILD=1 UV_THREADPOOL_SIZE=1 NODE_OPTIONS=\"$NODE_OPTIONS --v8-pool-size=1\" next build",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",

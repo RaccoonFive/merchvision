@@ -28,6 +28,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 ### Hosting
 
 - Standard Node.js hosting uses `npm start` (`next start`) after a production build.
+- `npm run build:cpanel` sets `MERCHVISION_CPANEL_BUILD=1` to use one Next.js page worker with page-generation concurrency of one. It also reduces V8 and libuv thread pools for the build processes. These build limits are opt-in and do not configure the Passenger runtime.
 - cPanel Passenger uses root-level `app.js`, which initializes Next.js in production mode from the project directory and forwards HTTP requests to its request handler. Passenger manages the public listener; the fallback port for direct invocation is 3100.
 - Deployment configuration lives in the server's private `.env` or process environment. Start from `.env.example` and configure production values in a private `.env.cpanel`, then copy it to `.env` on the hosting server before Prisma commands, building, or startup. See [cPanel deployment](../README.md#deploy-on-cpanel).
 
