@@ -25,6 +25,12 @@ The application is a single Next.js codebase. Market data comes from the public 
 
 ## Runtime Boundaries
 
+### Hosting
+
+- Standard Node.js hosting uses `npm start` (`next start`) after a production build.
+- cPanel Passenger uses root-level `app.js`, which initializes Next.js in production mode from the project directory and forwards HTTP requests to its request handler. Passenger manages the public listener; the fallback port for direct invocation is 3100.
+- Deployment configuration lives in the server's private `.env` or process environment. Start from `.env.example` and configure production values in a private `.env.cpanel`, then copy it to `.env` on the hosting server before Prisma commands, building, or startup. See [cPanel deployment](../README.md#deploy-on-cpanel).
+
 ### Pages And Components
 
 - `app/**/page.tsx` defines App Router entry points.
@@ -226,7 +232,7 @@ Investment Tracker values are estimates based on public quotes, not confirmed fi
 
 ## Security And Privacy Boundaries
 
-- `.env` is ignored and is the only intended local location for secrets.
+- `.env`, `.env.local`, and the private deployment file `.env.cpanel` are ignored. Committed environment templates contain placeholders rather than secrets.
 - The application database connection must use a dedicated least-privilege MySQL user, not root. See `docs/mysql-setup.md`.
 - Favorite reads and writes are scoped to the authenticated user's ID.
 - Callback URLs are normalized by `lib/redirect.ts` to prevent unsafe external redirects.

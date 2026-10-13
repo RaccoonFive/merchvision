@@ -5,4 +5,5 @@ out
 coverage
 .env
 .env.local
+.env.cpanel
 npm-debug.log*

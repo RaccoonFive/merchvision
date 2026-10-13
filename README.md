@@ -146,6 +146,35 @@ Open [http://localhost:3100](http://localhost:3100).
 
 On the first visit to `/`, the fullscreen OSRS-themed landing page opens the app through a centered golden frosted-glass “Open app” button. A browser cookie remembers that visit for one year; subsequent visits to `/` redirect straight to Flip Finder at [http://localhost:3100/flips](http://localhost:3100/flips). Clearing the cookie or using another browser shows the introduction again. The app’s Welcome link and brand logo always open the landing page at [http://localhost:3100/welcome](http://localhost:3100/welcome), so it remains available to returning visitors.
 
+## Deploy on cPanel
+
+Use Node.js 22 for both the terminal and Passenger runtime. Upload or clone the project outside `public_html`, for example into `/home/YOUR_CPANEL_USER/merchvision`, and deploy it at the root of `https://merchvision.kevenparent.com` with HTTPS enabled.
+
+Copy `.env.example` to a private `.env.cpanel`, or use the generated `.env.cpanel` if one was prepared locally. Set `NODE_ENV=production` and `BETTER_AUTH_URL=https://merchvision.kevenparent.com`. Set the full cPanel database and user names in `DATABASE_URL`, URL-encode special characters in its password, and set `USER_AGENT_CONTACT` to a contact where you can be reached. Generate separate secrets for `BETTER_AUTH_SECRET` and optional `CRON_SECRET` with `openssl rand -hex 32` if they have not already been generated. `.env.cpanel` is ignored by Git and must be transferred separately.
+
+On the **hosting server**, copy the completed file to `.env` in the project directory; Next.js and Prisma do not automatically load `.env.cpanel`. Preserve your local development `.env`. Then run these commands in the host's Node.js 22 environment:
+
+```bash
+cp .env.cpanel .env
+npm install --include=dev
+npm run db:generate
+npm run db:migrate:deploy
+npm run build
+```
+
+Keep development dependencies installed: deployment uses the Prisma CLI, and the TypeScript Next.js configuration requires TypeScript. Install dependencies and build on the server rather than transferring local `node_modules` or platform-specific Prisma binaries. The build downloads Google Fonts; allow outbound HTTPS to Google Fonts during the build and to the OSRS Wiki APIs at runtime.
+
+In Application Manager, select `merchvision.kevenparent.com`, set the Base Application URL to `/`, the Application Path to `merchvision` (relative to your cPanel home directory), and the environment to Production. Passenger uses the root-level `app.js`. If your host instead provides CloudLinux's **Setup Node.js App**, choose Node.js 22 and set its startup file to `app.js`. Let Passenger start the server. The existing `npm start` command remains available for other Node.js hosts.
+
+The production `.env` supplies runtime values. If you also configure environment variables in the panel, keep them consistent with the file, since process environment variables take precedence. Restart after changing configuration or rebuilding, using the panel's restart control or these commands from the project directory:
+
+```bash
+mkdir -p tmp
+touch tmp/restart.txt
+```
+
+Check account login, Favorites, Investment Tracker, and public market data over HTTPS. Calibration scheduling is optional; see the [production calibration instructions](docs/flip-calibration.md#production-configuration). For hosting details, see [cPanel's Node.js application guide](https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-node.js-application/).
+
 ## Commands
 
 | Command | Purpose |
