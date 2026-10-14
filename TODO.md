@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-10-10
+Last updated: 2026-10-14
 
 ## Product Direction
 
@@ -32,6 +32,7 @@ Last updated: 2026-10-10
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
 - The public Bosses dashboard covers 70 boss/reward activities with searchable square cards, live Wiki loot dialogs, conditional rates, and observed instant-sell prices.
+- Prayer Potions compares Prayer potion (4) and Super restore (4) by standard Prayer restoration per GP at a chosen base level, with purchase quotes and explicit stale or missing-data states.
 - Flip Finder puts estimated GP/hour and historical or capturable margin beside the item name. Shared metric cards use neutral surfaces, with selective emphasis on the main values.
 - The validation baseline is `npm test`, `npm run typecheck`, and `npm run build`; browser checks are also needed for interaction and layout changes.
 
@@ -119,6 +120,9 @@ Choose concrete ideas individually based on interest, usability, data availabili
 
 ## Completed
 
+- **2026-10-14:** Added locally served Prayer potion and Super restore inventory artwork to the comparison cards, with source attribution and desktop/mobile image-loading checks. Full tests, type checking, and production build passed.
+- **2026-10-14:** Remembered the last valid Prayer level in browser local storage, with a default of 70 for absent, invalid, or inaccessible preferences. Verified persistence across reloads, invalid edits, blocked storage, full tests, type checking, and production build.
+- **2026-10-14:** Added the requested Prayer Potions utility with level-dependent four-dose value, instant-buy quotes from the shared Wiki cache, safe failures, and stale/partial-data warnings. Verified formula boundaries and ranking, full tests, type checking, production build, and mocked browser interactions on desktop/mobile across five themes.
 - **2026-10-10:** Refined Flip Finder column hierarchy and shared metric cards, with browser checks across five themes and desktop/mobile layouts. Removed the Experimental badge from the High Upside tab; the model's uncertainty and estimate labels remain documented.
 - **2026-09-03:** Made Item Lookup the canonical Finder drill-down with direct result links, conservative quote-pair freshness, seven-day market-quality analysis, explicit evidence states, and separately labeled executability estimates.
 - **2026-09-03:** Completed the trustworthy Flip Finder milestone with aggregate enrichment health, preserved results after refresh failures, distinct current/stale/partial/unavailable and chart states, explicit 12-hour traded-volume labeling, and a reproducible score total.

@@ -33,6 +33,7 @@ It is a **decision-support tool**, not a profit oracle. Current trades are obser
 | 📈 **Investment Finder** | Which liquid items have sustained recent momentum? | Positive 24-hour and seven-day midpoint trends, volatility, directional consistency, sample coverage, and liquidity. |
 | 🔎 **Item Lookup** | Does one specific market hold up under inspection? | Latest quote-pair health, seven-day market quality and executability estimates, price history, warnings, and a local-time Market Rhythm heatmap. |
 | 💀 **Bosses** | What loot can I obtain from a boss or reward activity? | A searchable boss grid, live Wiki drop tables, reward conditions, and observed instant-sell prices per unit before tax. |
+| 🧪 **Prayer Potions** | Is Prayer potion (4) or Super restore (4) cheaper for my Prayer level? | Four-dose Prayer points per GP, cost per point, observed instant-buy prices, and quote-age warnings. |
 | 🎒 **Investment Tracker** | What is the current net value of my manually entered purchase lots? | Private purchase lots, prospective GE tax, net liquidation value, unrealized profit, stale quotes, and partial-data states. |
 | ⭐ **Favorites** | What do my watched items look like now? | A private watchlist enriched with current public quotes. |
 

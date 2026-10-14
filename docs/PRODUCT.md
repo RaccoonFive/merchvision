@@ -96,6 +96,12 @@ Provide a public, searchable grid of repeatable combat, Wilderness, Slayer, skil
 
 Keep conditional, multi-roll, mode-specific, and shared-table rates distinct. Shared-table rates describe rolls within that table, not unconditional per-kill chances. Loot comes from live Wiki pages with a visible fetch date and source links; missing or unsupported data must be marked partial. Unmatched items, items not sold on the GE, unavailable prices, and stale quotes are separate states. This reference does not estimate GP per kill or track loot, kills, or player activity.
 
+### Prayer Potion Value
+
+Provide a public comparison of Prayer potion (4) and Super restore (4) at a user-entered base Prayer level from 1 to 99. Show Prayer points per GP, GP per point, restoration per dose and full potion, and the better value using observed instant-buy quotes. Compare standard restoration without equipment bonuses, cap each dose at the user's base Prayer level, and assume enough missing Prayer to avoid wasting restoration. The comparison values Prayer only; super restores' stat restoration is an additional benefit outside the calculation.
+
+Keep missing prices unavailable, mark quotes older than one hour or without a timestamp, and preserve previous prices with a warning after a refresh failure. Remember the last valid Prayer level in browser local storage and restore it on return, defaulting to 70 when no valid preference is available. This browser preference requires no account or database persistence.
+
 ### Deferred Portfolio Idea
 
 Portfolio suggestions are an optional deferred idea, not a planned extension of the current feature set. If pursued, use a one-time budget to propose a diversified set of opportunities. The budget and recommendation must remain ephemeral: do not persist bankroll or allocations, record execution, or automatically create Investment Tracker lots.

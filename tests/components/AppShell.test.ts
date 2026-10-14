@@ -24,7 +24,7 @@ describe("AppShell compact navigation accessibility", () => {
 
   it("names navigation and theme controls when compact styles hide their text", () => {
     const markup = renderShell();
-    for (const label of ["Welcome", "Flip Finder", "Investment Finder", "Investment Tracker", "Item Lookup", "Favorites", "Sign in", "Choose theme"]) {
+    for (const label of ["Welcome", "Flip Finder", "Investment Finder", "Investment Tracker", "Item Lookup", "Prayer Potions", "Favorites", "Sign in", "Choose theme"]) {
       expect(markup).toContain(`aria-label="${label}"`);
     }
     expect(markup).toMatch(/<a[^>]*aria-current="page"[^>]*aria-label="Investment Finder"/);
@@ -46,7 +46,7 @@ describe("AppShell compact navigation accessibility", () => {
   it("exposes tool identities for consistent page and navigation accents", () => {
     const markup = renderShell("/flips");
     expect(markup).toMatch(/<div[^>]*class="app-frame"[^>]*data-tool="flips"/);
-    for (const tool of ["welcome", "flips", "investments", "investment-tracker", "lookup", "bosses", "favorites"]) {
+    for (const tool of ["welcome", "flips", "investments", "investment-tracker", "lookup", "bosses", "prayer-potions", "favorites"]) {
       expect(markup).toMatch(new RegExp(`<a[^>]*data-tool="${tool}"[^>]*href="/${tool}"`));
     }
   });

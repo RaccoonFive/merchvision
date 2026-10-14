@@ -43,7 +43,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - Price-history charts share a dynamically imported Recharts renderer. Ranking pages defer that bundle until a detail panel opens, while Item Lookup defers it until usable chart data is available.
 - Account, Favorites, and Investment Tracker provide route-level loading UI so their dynamic session checks do not leave navigation without immediate feedback.
 - Client components request internal `/api/**` endpoints. They do not call the Wiki API or database directly.
-- Theme and sidebar preferences are stored in browser `localStorage`; they are not account data.
+- Theme, sidebar, and Prayer-level preferences are stored in browser `localStorage`; they are not account data. `lib/clientPrayerLevel.ts` reads and writes the last valid level under `merchvision-prayer-level`, falling back to 70 when absent, invalid, or inaccessible. Invalid edits preserve the last valid preference, and storage failures do not interrupt the calculator.
 - At widths of 1050px and below, navigation uses a compact rail and the header search occupies its own row. At 760px and below, navigation becomes a horizontally scrollable labeled strip above the tool. These viewport layouts preserve the saved desktop sidebar preference. On tablet and mobile, market tables use bounded scroll regions with native sticky headers and a pinned item column; desktop retains the mirrored sticky table header and existing layout.
 
 ### Route Handlers
@@ -67,6 +67,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - `lib/marketRhythm.ts` derives Item Lookup's latest-seven-days hourly observations, after-tax spread quality, matched volume, and volatility summary.
 - `lib/itemResearch.ts` adapts the Reliable seven-day market-analysis policy for Item Lookup, adds hourly-history freshness and volume availability, and preserves missing analysis as unavailable rather than zero.
 - `lib/quote.ts` owns current item quote calculations and quote-level warnings.
+- `lib/prayerPotions.ts` owns standard four-dose restoration and value comparisons for Prayer potion (2434) and Super restore (3024). `/api/prayer-potions` selects only their high-side purchase prices and trade timestamps from one cached latest-price snapshot; it does not request mapping or history. Restoration is `min(level, base + floor(level / 4))` per dose, with bases 7 and 8. Value uses four doses divided by purchase price, without seller tax. The client recalculates for levels 1–99, compares unrounded ratios, and flags quotes over one hour old or without timestamps. Manual refresh preserves previous successful data on failure. The last valid Prayer level is a browser-local preference; comparisons are not persisted.
 - `lib/types.ts` owns shared market and API-facing domain types.
 
 ### Authentication And Persistence
@@ -90,6 +91,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 | `/investment-tracker` | Manually entered purchase lots and current unrealized net liquidation value | Authenticated; unauthenticated users are redirected |
 | `/lookup` and `/lookup/[id]` | Item search and quote/history inspection | Public; favorite controls require a session |
 | `/bosses` | Searchable boss grid and live drop-table dialogs | Public |
+| `/prayer-potions` | Compare four-dose potion cost per Prayer point at a given base level | Public |
 | `/favorites` | Current quotes for saved items | Authenticated; unauthenticated users are redirected |
 | `/account` | Sign-up, sign-in, session display, and sign-out | Public |
 
@@ -107,6 +109,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 | `GET /api/items/[id]/quote` | Return item metadata and current quote | `{ item, quote }` | Public |
 | `GET /api/items/[id]/timeseries` | Return normalized timeseries points and, when requested, Market Rhythm and canonical Item Lookup research analysis | `{ data, rhythm?, research? }` | Public |
 | `GET /api/prices/latest` | Return normalized latest prices | `{ data }` | Public |
+| `GET /api/prayer-potions` | Return two observed instant-buy potion prices and trade timestamps | `{ data, meta: { generatedAt } }` | Public |
 | `GET /api/bosses/[slug]/drops` | Return typed loot, observed instant-sell prices, source revisions, fetch time, and partial-data flags | `{ data, meta }` | Public |
 | `GET /api/favorites` | Return the current user's enriched favorites | `{ data }` | Authenticated |
 | `GET /api/favorites/[itemId]` | Check favorite state | `{ favorited }` | Authenticated |

@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, ChartNoAxesCombined, Check, ChevronDown, ChevronsLeft, ChevronsRight, House, LogIn, LogOut, Palette, Search, Skull, Star, TrendingUp, User } from "lucide-react";
+import { BriefcaseBusiness, ChartNoAxesCombined, Check, ChevronDown, ChevronsLeft, ChevronsRight, FlaskConical, House, LogIn, LogOut, Palette, Search, Skull, Star, TrendingUp, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ import { DEFAULT_THEME, THEME_OPTIONS, resolveTheme, themeFavicon, type Theme } 
 export type { Theme } from "@/lib/theme";
 
 type AppShellProps = {
-  activePath: "/welcome" | "/flips" | "/investments" | "/investment-tracker" | "/lookup" | "/bosses" | "/favorites" | "/account";
+  activePath: "/welcome" | "/flips" | "/investments" | "/investment-tracker" | "/lookup" | "/bosses" | "/prayer-potions" | "/favorites" | "/account";
   title: string;
   headerActions?: ReactNode;
   children: (theme: Theme) => ReactNode;
@@ -144,6 +144,10 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
           <Link aria-current={activePath === "/bosses" ? "page" : undefined} aria-label="Bosses" className={`nav-item${activePath === "/bosses" ? " active" : ""}`} data-tool="bosses" href="/bosses" title="Bosses">
             <Skull size={19} />
             <span>Bosses</span>
+          </Link>
+          <Link aria-current={activePath === "/prayer-potions" ? "page" : undefined} aria-label="Prayer Potions" className={`nav-item${activePath === "/prayer-potions" ? " active" : ""}`} data-tool="prayer-potions" href="/prayer-potions" title="Prayer Potions">
+            <FlaskConical size={19} />
+            <span>Prayer Potions</span>
           </Link>
           <Link aria-current={activePath === "/favorites" ? "page" : undefined} aria-label="Favorites" className={`nav-item${activePath === "/favorites" ? " active" : ""}`} data-tool="favorites" href="/favorites" title="Favorites">
             <Star size={19} />

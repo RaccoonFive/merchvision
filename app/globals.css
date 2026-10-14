@@ -517,6 +517,7 @@ button {
 [data-tool="investment-tracker"] { --tool-accent: var(--color-violet); }
 [data-tool="lookup"] { --tool-accent: var(--color-sky); }
 [data-tool="bosses"] { --tool-accent: var(--color-coral); }
+[data-tool="prayer-potions"] { --tool-accent: var(--color-emerald); }
 [data-tool="welcome"],
 [data-tool="favorites"] { --tool-accent: var(--color-gold); }
 
@@ -2853,6 +2854,44 @@ tbody tr.selected {
 
 :root[data-theme="dark"] th {
   color: #b9af97;
+}
+
+.prayer-page { display: grid; gap: 18px; margin-top: 18px; max-width: 1040px; }
+.prayer-controls { align-items: center; display: flex; flex-wrap: wrap; gap: 18px; }
+.prayer-controls .field { flex: 0 1 190px; }
+.prayer-controls p { color: var(--muted); flex: 1 1 240px; font-size: 13px; line-height: 1.5; margin: 0; }
+.prayer-controls small, .prayer-notes, .prayer-updated, .prayer-formula { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.prayer-controls small.error { color: var(--bad); }
+.prayer-controls .secondary-btn { align-items: center; display: flex; gap: 8px; }
+.prayer-verdict { align-items: center; background: color-mix(in srgb, var(--tool-accent) 8%, var(--soft-panel)); border: 1px solid var(--line); border-left: 3px solid var(--tool-accent); border-radius: 8px; display: flex; gap: 14px; padding: 18px; }
+.prayer-verdict > svg { color: var(--tool-accent); flex-shrink: 0; }
+.prayer-verdict strong { font-size: 16px; }
+.prayer-verdict p { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 6px 0 0; }
+.prayer-card-grid { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.prayer-card { background: var(--soft-panel-raised); border: 1px solid var(--line); border-radius: 8px; min-width: 0; padding: 20px; }
+.prayer-card-best { border-color: var(--tool-accent); }
+.prayer-card-head { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+.prayer-card-title { align-items: center; display: flex; gap: 12px; min-width: 0; }
+.prayer-potion-icon { background: var(--soft-panel); border: 1px solid var(--line); border-radius: 8px; flex: 0 0 56px; height: 56px; image-rendering: pixelated; object-fit: contain; padding: 8px; width: 56px; }
+.prayer-card h2 { font-size: 16px; margin: 0; }
+.prayer-card h2 a { color: var(--text); }
+.prayer-value-badge { background: color-mix(in srgb, var(--tool-accent) 12%, transparent); border-radius: 4px; color: var(--tool-accent); font-size: 11px; padding: 4px 7px; }
+.prayer-value { display: grid; gap: 4px; margin: 24px 0; }
+.prayer-value strong { font-size: clamp(24px, 3vw, 34px); font-variant-numeric: tabular-nums; }
+.prayer-card-best .prayer-value strong { color: var(--tool-accent); }
+.prayer-value span { color: var(--muted); font-size: 12px; }
+.prayer-card dl { display: grid; font-size: 13px; gap: 12px; margin: 0; }
+.prayer-card dl > div { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: space-between; }
+.prayer-card dt { color: var(--muted); }
+.prayer-card dd { font-variant-numeric: tabular-nums; margin: 0; }
+.prayer-card dd.prayer-stale { color: var(--warn); }
+.prayer-card > a { color: var(--tool-accent); font-size: 12px; }
+.prayer-card a:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 4px; }
+.prayer-notes, .prayer-updated { margin: 0; }
+@media (max-width: 760px) {
+  .prayer-card-grid { grid-template-columns: minmax(0, 1fr); }
+  .prayer-controls .field { flex-basis: 100%; }
+  .prayer-card { padding: 16px; }
 }
 
 @media (max-width: 1180px) {
