@@ -63,6 +63,10 @@ On opening the introduction, fade in the headline first, then fade in the app en
 
 Show a lightweight blurred preview of the scene from the first render, then fade in the responsive backdrop once it loads. Keep the preview if the image cannot load and skip the backdrop transition when reduced motion is preferred.
 
+### Installed App
+
+Supporting browsers can install Merchvision with its name and icon and launch it in a standalone window directly at Flip Finder (`/flips`). Installation provides a shortcut to the hosted application; live market data and account features continue to require an internet connection. Browser installation controls provide the entry point.
+
 ### Flip Finder
 
 Provide two ranked, filterable views of short-term buy-low/sell-high opportunities:

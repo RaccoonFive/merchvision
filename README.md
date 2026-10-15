@@ -147,6 +147,14 @@ Open [http://localhost:3100](http://localhost:3100).
 
 On the first visit to `/`, the fullscreen OSRS-themed landing page opens the app through a centered golden frosted-glass “Open app” button. A browser cookie remembers that visit for one year; subsequent visits to `/` redirect straight to Flip Finder at [http://localhost:3100/flips](http://localhost:3100/flips). Clearing the cookie or using another browser shows the introduction again. The app’s Welcome link and brand logo always open the landing page at [http://localhost:3100/welcome](http://localhost:3100/welcome), so it remains available to returning visitors.
 
+## Install Merchvision
+
+After deployment over HTTPS, open Merchvision in a supporting browser and use its **Install app** command in the address bar or browser menu. On iPhone or iPad, open it in Safari and use **Share → Add to Home Screen**. The available command and shortcut location depend on the browser and operating system.
+
+Installed launches open Flip Finder at `/flips` in a standalone window. Market data and account features still require an internet connection; installation does not add offline support. Website deployments update the installed experience without a separate desktop release.
+
+Next.js automatically links `app/manifest.ts` and the Apple home-screen icon in `app/apple-icon.png`. The install icons in `public/icon-192.png` and `public/icon-512.png`, and the Apple icon, are PNG exports of the existing Midnight Slate favicon (`public/favicon-midnight.svg`), flattened onto its `#18232e` background. Regenerate those PNGs when changing the installation branding.
+
 ## Deploy on cPanel
 
 Use Node.js 22 for both the terminal and Passenger runtime. Upload or clone the project outside `public_html`, for example into `/home/YOUR_CPANEL_USER/merchvision`, and deploy it at the root of `https://merchvision.kevenparent.com` with HTTPS enabled.
