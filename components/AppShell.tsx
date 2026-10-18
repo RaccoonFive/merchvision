@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, ChartNoAxesCombined, Check, ChevronDown, ChevronsLeft, ChevronsRight, FlaskConical, House, LogIn, LogOut, Palette, Search, Skull, Star, TrendingUp, User } from "lucide-react";
+import { BriefcaseBusiness, ChartNoAxesCombined, Check, ChevronDown, ChevronsLeft, ChevronsRight, FlaskConical, House, Landmark, LogIn, LogOut, Palette, Search, Skull, Star, TrendingUp, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ import { DEFAULT_THEME, THEME_OPTIONS, resolveTheme, themeFavicon, type Theme } 
 export type { Theme } from "@/lib/theme";
 
 type AppShellProps = {
-  activePath: "/welcome" | "/flips" | "/investments" | "/investment-tracker" | "/lookup" | "/bosses" | "/prayer-potions" | "/favorites" | "/account";
+  activePath: "/welcome" | "/flips" | "/investments" | "/investment-tracker" | "/bank" | "/lookup" | "/bosses" | "/prayer-potions" | "/favorites" | "/account";
   title: string;
   headerActions?: ReactNode;
   children: (theme: Theme) => ReactNode;
@@ -136,6 +136,10 @@ export function AppShell({ activePath, title, headerActions, children }: AppShel
           <Link aria-current={activePath === "/investment-tracker" ? "page" : undefined} aria-label="Investment Tracker" className={`nav-item${activePath === "/investment-tracker" ? " active" : ""}`} data-tool="investment-tracker" href="/investment-tracker" title="Investment Tracker">
             <BriefcaseBusiness size={19} />
             <span>Investment Tracker</span>
+          </Link>
+          <Link aria-current={activePath === "/bank" ? "page" : undefined} aria-label="Bank Overview" className={`nav-item${activePath === "/bank" ? " active" : ""}`} data-tool="bank" href="/bank" title="Bank Overview">
+            <Landmark size={19} />
+            <span>Bank Overview</span>
           </Link>
           <Link aria-current={activePath === "/lookup" ? "page" : undefined} aria-label="Item Lookup" className={`nav-item${activePath === "/lookup" ? " active" : ""}`} data-tool="lookup" href="/lookup" title="Item Lookup">
             <Search size={19} />

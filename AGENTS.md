@@ -26,6 +26,7 @@
 - Treat fill speed, executable volume, and projected profit as estimates, never guarantees.
 - Keep Flip Finder rankings independent of a user's bankroll.
 - Keep position tracking limited to private, manually entered Investment Tracker purchase lots. Do not add sales, realized-profit history, open offers, trade journaling, RuneLite synchronization, or saved bankroll unless the product contract is explicitly changed.
+- Bank Overview is a separate, explicitly permitted browser-local inventory snapshot, including imported coins at face value. Keep one current import; send only item IDs for market research. It does not create investment lots or authorize account persistence, bank history, synchronization, or trade tracking.
 - Keep research screens focused on the tools and results. The homepage uses a fullscreen OSRS-themed introduction with a single app entrance outside AppShell.
 
 ## Repository Map
@@ -37,6 +38,7 @@
 - `lib/scoring.ts`: flip candidate construction, market analysis, warnings, filters, and ranking.
 - `lib/investments.ts`: investment trend analysis and ranking.
 - `lib/investmentTracker.ts`: private purchase-lot validation, current valuation, and aggregate tracker summaries.
+- `lib/bank.ts`, `lib/bankMarket.ts`, `lib/clientBank.ts`, and `lib/useBankAnalysis.ts`: bank import/valuation/trends, bounded market enrichment, browser storage, and cancelable progressive loading.
 - `lib/query.ts`: URL filter parsing.
 - `lib/tax.ts` and `lib/quote.ts`: GE tax and current-quote calculations.
 - `lib/auth.ts`, `lib/session.ts`, and `lib/prisma.ts`: authentication, sessions, and database access.

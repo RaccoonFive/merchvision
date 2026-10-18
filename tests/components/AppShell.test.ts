@@ -9,7 +9,7 @@ vi.mock("@/lib/auth-client", () => ({ authClient: { useSession } }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock("@/components/HeaderItemSearch", () => ({ HeaderItemSearch: () => null }));
 
-function renderShell(activePath: "/welcome" | "/flips" | "/investments" = "/investments") {
+function renderShell(activePath: "/welcome" | "/flips" | "/investments" | "/bank" = "/investments") {
   return renderToStaticMarkup(createElement(AppShell, {
     activePath,
     title: "Investment Finder",
@@ -24,7 +24,7 @@ describe("AppShell compact navigation accessibility", () => {
 
   it("names navigation and theme controls when compact styles hide their text", () => {
     const markup = renderShell();
-    for (const label of ["Welcome", "Flip Finder", "Investment Finder", "Investment Tracker", "Item Lookup", "Prayer Potions", "Favorites", "Sign in", "Choose theme"]) {
+    for (const label of ["Welcome", "Flip Finder", "Investment Finder", "Investment Tracker", "Bank Overview", "Item Lookup", "Prayer Potions", "Favorites", "Sign in", "Choose theme"]) {
       expect(markup).toContain(`aria-label="${label}"`);
     }
     expect(markup).toMatch(/<a[^>]*aria-current="page"[^>]*aria-label="Investment Finder"/);
@@ -34,7 +34,7 @@ describe("AppShell compact navigation accessibility", () => {
   });
 
   it("keeps Welcome and Flip Finder on separate routes with a single active link", () => {
-    for (const [path, label] of [["/welcome", "Welcome"], ["/flips", "Flip Finder"]] as const) {
+    for (const [path, label] of [["/welcome", "Welcome"], ["/flips", "Flip Finder"], ["/bank", "Bank Overview"]] as const) {
       const markup = renderShell(path);
       expect(markup).toMatch(new RegExp(`<a[^>]*aria-current="page"[^>]*aria-label="${label}"[^>]*href="${path}"`));
       expect(markup.match(/aria-current="page"/g)).toHaveLength(1);
@@ -46,7 +46,7 @@ describe("AppShell compact navigation accessibility", () => {
   it("exposes tool identities for consistent page and navigation accents", () => {
     const markup = renderShell("/flips");
     expect(markup).toMatch(/<div[^>]*class="app-frame"[^>]*data-tool="flips"/);
-    for (const tool of ["welcome", "flips", "investments", "investment-tracker", "lookup", "bosses", "prayer-potions", "favorites"]) {
+    for (const tool of ["welcome", "flips", "investments", "investment-tracker", "bank", "lookup", "bosses", "prayer-potions", "favorites"]) {
       expect(markup).toMatch(new RegExp(`<a[^>]*data-tool="${tool}"[^>]*href="/${tool}"`));
     }
   });

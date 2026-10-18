@@ -1,6 +1,6 @@
 # Merchvision Roadmap
 
-Last updated: 2026-10-14
+Last updated: 2026-10-18
 
 ## Product Direction
 
@@ -13,8 +13,9 @@ Last updated: 2026-10-14
 - Use two fixed, evidence-backed views: Reliable by default and High Upside with separately displayed uncertainty. The High Upside model remains experimental; its tab no longer carries an Experimental badge. Do not add user-defined score weights.
 - Use only the OSRS Wiki Prices API for market data.
 - Keep accounts limited to authentication, Favorites, and private manually entered investment lots.
+- Explicitly permit Bank Overview as one browser-local imported inventory snapshot, including coins; keep it separate from account persistence, manual purchase lots, trade history, and synchronization.
 - Recommend candidates and expose evidence; do not prescribe offer prices or predict price targets.
-- Keep sales, realized-profit history, offer state, synchronized trades, bankroll, and execution data outside Merchvision.
+- Keep sales, realized-profit history, offer state, synchronized trades, account bankroll, and execution data outside Merchvision.
 - Optimize dense workflows for desktop while keeping every core action usable on narrow screens.
 
 `docs/PRODUCT.md` remains the durable product contract. This file owns delivery order, active work, and completion status.
@@ -30,6 +31,7 @@ Last updated: 2026-10-14
 - A compact global header search provides keyboard-friendly item lookup with item previews from every application page.
 - Investment Finder ranks liquid items with positive 24-hour and 7-day historical midpoint trends.
 - Investment Tracker stores separate account-owned purchase lots and compares their cost with the latest net instant-sell value, with explicit stale and partial-data states.
+- Bank Overview remembers one Bank Memory inventory import in this browser, with estimated gross/net instant-sell value, coins at face value, signed daily midpoint trends over 7/30/90 days, and bounded progressive analysis with stop/resume and retry.
 - Username/password accounts (with email retained), user-owned Favorites, responsive navigation, a five-theme picker, request caching, and request coalescing are implemented.
 - The public Bosses dashboard covers 70 boss/reward activities with searchable square cards, live Wiki loot dialogs, conditional rates, and observed instant-sell prices.
 - Prayer Potions compares Prayer potion (4) and Super restore (4) by standard Prayer restoration per GP at a chosen base level, with purchase quotes and explicit stale or missing-data states.
@@ -66,6 +68,10 @@ Make the existing tools easier to maintain, faster to use, and more visually con
 - [ ] Refine table, filter, chart, and dialog layouts for narrow screens while preserving dense desktop workflows.
 - [ ] Review keyboard navigation, focus visibility, contrast, and reduced-motion behavior.
 - [ ] Make loading, empty, error, stale, partial, and unavailable states consistent and easy to recognize.
+
+### Requested Feature - Bank Overview
+
+- [x] Deliver the explicitly requested browser-local Bank Memory import, estimated gross/net valuation, signed 7/30/90-day trends, bounded progressive loading, and cancellation/retry controls; verify synthetic-data tests, desktop/mobile browser behavior, and the full required checks.
 
 ### Completion Gate
 
@@ -110,7 +116,7 @@ Choose concrete ideas individually based on interest, usability, data availabili
 - In-app, email, Discord, browser-push, or other opportunity alerts.
 - Sale entry, trade journaling, or transaction-history reconstruction.
 - Open-offer or realized-profit tracking.
-- Saved bankroll or persistent capital tracking.
+- Saved bankroll or persistent capital tracking beyond the single browser-local Bank Overview inventory snapshot.
 - RuneLite trade synchronization.
 - Automatic trade execution.
 - Predicted entry prices, exit prices, holding times, or guaranteed outcomes.
@@ -120,6 +126,8 @@ Choose concrete ideas individually based on interest, usability, data availabili
 
 ## Completed
 
+- **2026-10-18:** Simplified the Bank Overview header by removing routine warning banners, combining import metadata and actions, and hiding completed progress bars. Partial/stale information remains in cards and item rows; actionable errors stay visible.
+- **2026-10-18:** Added Bank Overview with paste/file import, one browser-local inventory snapshot, safe gross/net valuation, coin handling, signed 7/30/90-day midpoint trends, progressive bounded analysis, filtering, cancellation, and retries. Verified mocked unit/API/interaction tests, desktop/mobile browser workflows across five themes, full tests, type checking, and production build.
 - **2026-10-14:** Added locally served Prayer potion and Super restore inventory artwork to the comparison cards, with source attribution and desktop/mobile image-loading checks. Full tests, type checking, and production build passed.
 - **2026-10-14:** Remembered the last valid Prayer level in browser local storage, with a default of 70 for absent, invalid, or inaccessible preferences. Verified persistence across reloads, invalid edits, blocked storage, full tests, type checking, and production build.
 - **2026-10-14:** Added the requested Prayer Potions utility with level-dependent four-dose value, instant-buy quotes from the shared Wiki cache, safe failures, and stale/partial-data warnings. Verified formula boundaries and ranking, full tests, type checking, production build, and mocked browser interactions on desktop/mobile across five themes.

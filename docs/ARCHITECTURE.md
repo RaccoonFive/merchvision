@@ -45,6 +45,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - Account, Favorites, and Investment Tracker provide route-level loading UI so their dynamic session checks do not leave navigation without immediate feedback.
 - Client components request internal `/api/**` endpoints. They do not call the Wiki API or database directly.
 - Theme, sidebar, and Prayer-level preferences are stored in browser `localStorage`; they are not account data. `lib/clientPrayerLevel.ts` reads and writes the last valid level under `merchvision-prayer-level`, falling back to 70 when absent, invalid, or inaccessible. Invalid edits preserve the last valid preference, and storage failures do not interrupt the calculator.
+- Bank Overview stores one versioned inventory snapshot under `merchvision-bank-v1`, including item IDs, imported names, quantities, and import time. Validation rejects corrupt or unsupported stored versions; storage failures leave the current visit usable with a warning. Snapshot replacement and clearing cancel superseded market/history requests. This browser-only inventory is separate from account-owned purchase lots.
 - At widths of 1050px and below, navigation uses a compact rail and the header search occupies its own row. At 760px and below, navigation becomes a horizontally scrollable labeled strip above the tool. These viewport layouts preserve the saved desktop sidebar preference. On tablet and mobile, market tables use bounded scroll regions with native sticky headers and a pinned item column; desktop retains the mirrored sticky table header and existing layout.
 
 ### Route Handlers
@@ -64,6 +65,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - `lib/flipCalibration.ts` records bounded ranking cohorts, resolves public-market touch proxies, prunes retention data, and reports model comparisons.
 - `lib/investments.ts` owns midpoint trend, volatility, consistency, confidence, filtering, and ranking for investments.
 - `lib/investmentTracker.ts` owns purchase-lot validation, live net-liquidation valuation, partial portfolio summaries, and tracker enrichment.
+- `lib/bank.ts` owns Bank Memory parsing, snapshot validation, conservative valuation, safe totals, and signed daily midpoint regression. `lib/bankMarket.ts` coordinates public enrichment; `lib/clientBank.ts` owns browser persistence and `lib/useBankAnalysis.ts` owns cancelable sequential batches.
 - `lib/tax.ts` owns the GE tax rule.
 - `lib/marketRhythm.ts` derives Item Lookup's latest-seven-days hourly observations, after-tax spread quality, matched volume, and volatility summary.
 - `lib/itemResearch.ts` adapts the Reliable seven-day market-analysis policy for Item Lookup, adds hourly-history freshness and volume availability, and preserves missing analysis as unavailable rather than zero.
@@ -90,6 +92,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 | `/flips` | Flip Finder | Public |
 | `/investments` | Investment Finder | Public |
 | `/investment-tracker` | Manually entered purchase lots and current unrealized net liquidation value | Authenticated; unauthenticated users are redirected |
+| `/bank` | Browser-local Bank Memory inventory, estimated valuation, and sustained historical trends | Public |
 | `/lookup` and `/lookup/[id]` | Item search and quote/history inspection | Public; favorite controls require a session |
 | `/bosses` | Searchable boss grid and live drop-table dialogs | Public |
 | `/prayer-potions` | Compare four-dose potion cost per Prayer point at a given base level | Public |
@@ -102,6 +105,8 @@ The application is a single Next.js codebase. Market data comes from the public 
 | --- | --- | --- | --- |
 | `GET /api/flips?view=reliable\|upside` | Rank and filter the default Reliable or experimental High Upside candidates | `{ data, meta: { health, ... } }` | Public |
 | `GET /api/investments` | Rank and filter investment candidates | `{ data, meta }` | Public |
+| `POST /api/bank/market` | Enrich 1–2,000 distinct item IDs with metadata, latest quotes, and 24-hour matched volume | `{ data, meta: { generatedAt, pricesAvailable, liquidityAvailable } }` | Public |
+| `POST /api/bank/trends` | Analyze daily history for 1–20 distinct item IDs over 7, 30, and 90 days | `{ data, meta: { generatedAt } }` | Public |
 | `GET /api/investment-tracker` | Enrich the current user's purchase lots with current valuation | `{ data, meta }` | Authenticated |
 | `POST /api/investment-tracker` | Create a separate purchase lot | `{ data }` | Authenticated |
 | `PUT /api/investment-tracker/[lotId]` | Replace a lot's quantity and per-unit cost | `{ data }` | Authenticated owner |
@@ -165,6 +170,15 @@ Successful normalized loot sources are cached for 24 hours and concurrent reques
 Each response uses one item-mapping snapshot and one latest-price snapshot; there are no per-drop quote or history requests. Explicit item IDs take precedence over unique exact normalized names. Ambiguous or unmatched names never receive guessed prices. The latest low is shown per unit before tax, preserving its timestamp; quotes over one hour old are marked stale. Market failures leave usable loot visible, while confirmed items not sold on the GE remain distinct from unmatched items.
 
 The browser coalesces requests and retains completed responses in memory for 60 seconds. Manual refresh bypasses that browser cache while respecting server TTLs. Dialog cleanup prevents responses for a previous selection from updating a new dialog. The feature adds no authentication or persistence. Wiki-derived HTML fixtures include source revision links and CC BY-NC-SA 3.0 attribution; tests do not depend on live requests.
+
+## Bank Overview Data Flow
+
+1. Parse the Bank Memory TSV entirely in the browser. Accept its three-column header, BOM, blank lines, CRLF/LF, duplicate IDs, and zero-quantity placeholders. Imports are bounded to 2 MiB and 2,000 nonblank item rows; IDs and combined quantities are integers from 1 to 2,147,483,647. Malformed rows reject the replacement with their original line number.
+2. Send only distinct item IDs as `{ itemIds: number[] }`. The market endpoint uses cached item, latest-price, and 24-hour snapshots. Mapping failure is a safe 503; quote or liquidity failure returns explicit partial metadata. Missing volume remains null, not zero. The bank adds no database records.
+3. The browser values each supported holding at the latest low quote, subtracting per-unit tax separately for estimated net proceeds. Coins (995) are worth one GP each with no tax or trend. No GE mapping means no inferred tradeable replacement. Unsafe individual values are unavailable; unsafe aggregate totals are unavailable. Quotes older than one hour or without usable timestamps are flagged and retained in estimates.
+4. Analyze every mapped non-coin holding in descending holding-value order through sequential batches of at most 20 IDs. Server history work shares four slots across bank callers in a process; canceled callers do not start more queued upstream work. Each item uses one cached `24h` series for all periods. Per-item failures remain retryable; unmapped IDs are unsupported. Stop/resume retains completed items. Refresh retains previous results on complete market-request failure; successful refresh restarts history analysis. Cache TTLs and upstream coalescing are unchanged.
+5. Filter valid positive two-sided prices into one midpoint per UTC day. For each trailing period, require at least 70% daily coverage, a sample span of at least 80% of the period, and a latest valid observation no older than 48 hours. Fit `log(midpoint)` against elapsed days. With slope `s`, intercept `a` at the period start, and length `d`, fitted change is `expm1(s*d)` and per-unit fitted GP movement is `exp(a)*expm1(s*d)`. Multiply the latter by the browser-held quantity with a safe-arithmetic guard. This is a historical fitted measure, not purchase profit or a forecast.
+6. Directional agreement is the proportion of consecutive available sample moves matching the slope's sign; unchanged moves do not support a nonzero slope. Absolute fitted change within 1% is Flat; larger changes need at least 60% agreement for Rising/Falling, otherwise Mixed. Insufficient and stale results have null changes and direction. UI filters and GP movement default to seven days; sorting keeps unavailable values last. Coverage, sample counts, quote warnings, and partial totals remain visible.
 
 ## Flip Finder Data Flow
 
@@ -242,7 +256,7 @@ Investment Tracker values are estimates based on public quotes, not confirmed fi
 - The application database connection must use a dedicated least-privilege MySQL user, not root. See `docs/mysql-setup.md`.
 - Favorite reads and writes are scoped to the authenticated user's ID.
 - Callback URLs are normalized by `lib/redirect.ts` to prevent unsafe external redirects.
-- Beyond account data, Favorites, manual purchase lots, and bounded public calibration observations, the application does not persist user trades, sales, offers, realized profit, bankroll, portfolio suggestions, filters, or full market histories.
+- Beyond account data, Favorites, manual purchase lots, bounded public calibration observations, and the explicitly imported browser-local Bank Overview snapshot, the application does not persist user trades, sales, offers, realized profit, account bankroll, portfolio suggestions, filters, or full market histories. Bank quantities and imported names never enter market API requests or the database.
 - Flip observations contain only public item-market features and public-market proxy outcomes; they never contain user IDs, account actions, or evidence that a user's order filled.
 - API errors should remain useful without exposing credentials, session tokens, database internals, or unnecessary upstream payloads.
 
@@ -252,7 +266,7 @@ Investment Tracker values are estimates based on public quotes, not confirmed fi
 - `tests/lib/*.test.ts` covers deterministic formulas, normalization, filtering, and helper behavior.
 - `tests/app/api/**/*.test.ts` tests route contracts with mocked dependencies.
 - `tests/app/**/page.test.ts` covers server-page authentication and routing behavior.
-- `tests/components/*.test.ts` covers component helpers and static markup; `tests/middleware.test.ts` covers homepage redirects.
+- `tests/components/*.test.ts` covers component helpers and static markup; `BankOverviewPage.test.ts` opts into jsdom and use React Testing Library to cover request ordering, progressive loading, imports, storage, and lifecycle cleanup. `tests/middleware.test.ts` covers homepage redirects.
 - Shared HTML fixtures and their source/licensing notes live in `tests/fixtures/`.
 - Tests use mocked market data and must not rely on the live Wiki API.
 - `npm test`, `npm run typecheck`, and `npm run build` form the current validation baseline.

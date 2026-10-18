@@ -35,6 +35,7 @@ It is a **decision-support tool**, not a profit oracle. Current trades are obser
 | 💀 **Bosses** | What loot can I obtain from a boss or reward activity? | A searchable boss grid, live Wiki drop tables, reward conditions, and observed instant-sell prices per unit before tax. |
 | 🧪 **Prayer Potions** | Is Prayer potion (4) or Super restore (4) cheaper for my Prayer level? | Four-dose Prayer points per GP, cost per point, observed instant-buy prices, and quote-age warnings. |
 | 🎒 **Investment Tracker** | What is the current net value of my manually entered purchase lots? | Private purchase lots, prospective GE tax, net liquidation value, unrealized profit, stale quotes, and partial-data states. |
+| 🏦 **Bank Overview** | What is my imported bank worth, and which holdings have sustained price trends? | Browser-local Bank Memory imports, estimated instant-sell value, separate after-tax proceeds, and explainable 7-, 30-, and 90-day midpoint trends. |
 | ⭐ **Favorites** | What do my watched items look like now? | A private watchlist enriched with current public quotes. |
 
 ## Why the rankings are different
@@ -85,13 +86,15 @@ For the complete system design, see [Architecture](docs/ARCHITECTURE.md).
 
 Merchvision stores only what its current tools need: account records, Favorites, private purchase lots, and bounded public-market calibration observations.
 
+Bank Overview at `/bank` additionally remembers one imported inventory snapshot in this browser's local storage, without an account. Paste the Bank Memory clipboard export or upload its `.txt`/`.tsv` file; the next successful import replaces the snapshot. **Clear bank** removes it. Only item IDs are sent for public market research; imported names and quantities stay in the browser. Coins count at face value, and missing GE prices remain unvalued. Clearing browser data removes the snapshot; it does not sync across devices.
+
 It does **not**:
 
 - Place or observe Grand Exchange offers
 - Synchronize RuneLite trades
 - Record sales or realized profit
 - Reconstruct transaction history
-- Save bankroll or allocations
+- Save account bankroll or allocations (the browser-local Bank Overview snapshot can include imported coins)
 - Guarantee fills, price direction, or profit
 
 Investment Tracker lots are manual and private. They are intentionally not a trade journal. Read the [Product Contract](docs/PRODUCT.md) for the durable product boundaries.

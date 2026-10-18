@@ -36,7 +36,7 @@ Merchvision is differentiated by decision quality rather than raw feature count:
 - **Explainable:** expose the metrics, warnings, assumptions, and uncertainty behind rankings.
 - **Market-quality focused:** reward stable spreads, sufficient samples, liquidity, confidence, and likely executability.
 - **Fast to scan:** use a minimal, fullscreen homepage with a single app entrance; keep research views focused on ranked results.
-- **Private by design:** keep manually entered investment lots private to the account and avoid collecting sales, realized outcomes, synchronized trades, or bankroll.
+- **Private by design:** keep manually entered investment lots private to the account; Bank Overview holds one explicitly imported inventory snapshot only in the browser. Avoid collecting sales, realized outcomes, synchronized trades, or account bankroll.
 
 ## Product Principles
 
@@ -86,6 +86,16 @@ Let a signed-in user manually record separate item purchase lots with a quantity
 
 Investment Tracker is deliberately not a trade journal. Users can correct or remove lots, but Merchvision does not record sales, realized profit, offer state, transaction history, or proof that a purchase occurred.
 
+### Bank Overview
+
+Let a user paste or upload the Bank Memory plugin's tab-separated item ID, name, and quantity export. Remember only the latest validated snapshot in this browser, with an import date and explicit replacement and clearing controls. This inventory snapshot, including coins, is an explicit exception to the prohibition on saved bankroll; it adds no account persistence, transaction records, import history, synchronization, or Investment Tracker lots. Market requests contain item IDs only; imported names and quantities stay in the browser.
+
+Show estimated instant-sell value before tax and separate estimated after-tax proceeds. Count coins at face value; keep untradeable, unmatched, unpriced, and stale holdings visible, with partial totals. Do not infer tradeable replacements for charged or untradeable versions.
+
+Keep the overview header compact: put the import timestamp beside its actions, show partial/stale information within the summary cards and item rows, and omit routine warning banners. Show the progress bar only while analysis is incomplete. Import, storage, and failed-request feedback remain visible when action is needed.
+
+Analyze sustained daily midpoint trends over 7, 30, and 90 days, including declining markets. Show fitted change, directional agreement, sample coverage, and estimated historical GP movement at the current quantity. Classify sufficiently sampled movement as Rising, Falling, Flat, or Mixed, without keep/sell recommendations. Sparse and stale histories remain unavailable. Historical fitted movement is neither purchase profit nor a forecast; midpoint research and instant-sell valuation use different price measures. Load supported items progressively through bounded requests, with progress, stop/resume, and failed-item retry.
+
 ### Item Lookup
 
 Let a user find an item from a compact, keyboard-friendly search in the application header on every page, with matching item previews as they type. The research view lets them inspect the item's latest quote, after-tax margin, freshness, recent history, observed hourly market rhythm, and relevant warnings without needing to search the full rankings. Market Rhythm must distinguish its latest-seven-days observations from recurring behavior or a fill forecast.
@@ -117,7 +127,7 @@ Unless this contract is explicitly revised, Merchvision will not provide:
 - Sale entry, trade journaling, or transaction-history reconstruction
 - Open-offer or realized-profit tracking
 - RuneLite trade synchronization
-- Saved bankroll or persistent capital tracking
+- Saved bankroll or persistent capital tracking beyond the single browser-local Bank Overview inventory snapshot
 - Automatic trade execution
 - Discord, email, browser-push, or other external alert delivery
 - Claims that public market data can guarantee fills, price direction, or profit

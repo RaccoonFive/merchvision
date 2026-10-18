@@ -515,6 +515,7 @@ button {
 [data-tool="flips"] { --tool-accent: var(--color-emerald); }
 [data-tool="investments"] { --tool-accent: var(--color-sky); }
 [data-tool="investment-tracker"] { --tool-accent: var(--color-violet); }
+[data-tool="bank"] { --tool-accent: var(--color-gold); }
 [data-tool="lookup"] { --tool-accent: var(--color-sky); }
 [data-tool="bosses"] { --tool-accent: var(--color-coral); }
 [data-tool="prayer-potions"] { --tool-accent: var(--color-emerald); }
@@ -1447,6 +1448,39 @@ tbody tr:focus-visible {
 
 tbody tr.selected {
   box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.bank-page { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.bank-page > * { min-width: 0; }
+.bank-page p { margin: 0; }
+.bank-toolbar, .bank-actions, .bank-section-heading, .bank-filters { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; }
+.bank-toolbar, .bank-section-heading { justify-content: space-between; }
+.bank-import-meta { color: var(--muted); font-size: 12px; }
+.bank-import { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: grid; gap: 12px; padding: 20px; }
+.bank-import h2 { font-size: 17px; margin: 0; }
+.bank-import textarea { background: var(--soft-panel); border: 1px solid var(--line); border-radius: 6px; color: var(--text); font: inherit; font-family: monospace; min-height: 120px; padding: 12px; resize: vertical; width: 100%; }
+.bank-import small, .bank-notes, .bank-file-label { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.bank-import input[type="file"] { max-width: 100%; }
+.bank-metrics { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bank-analysis-status { align-items: center; color: var(--muted); display: flex; flex-wrap: wrap; font-size: 12px; gap: 8px; }
+.bank-analysis-status progress { accent-color: var(--tool-accent); height: 8px; width: 100%; }
+.bank-filters { align-items: end; }
+.bank-filters .field:first-child { flex: 1; min-width: 180px; }
+.bank-table { min-width: 1450px; }
+.bank-table .item-cell { min-width: 200px; }
+.bank-table small { color: var(--muted); display: block; font-size: 11px; margin-top: 4px; }
+.bank-table .bank-quality { max-width: 240px; min-width: 170px; white-space: normal; }
+.bank-trend { min-width: 155px; }
+.bank-trend strong { display: block; margin-top: 4px; }
+.bank-rising > span, .bank-rising > strong { color: var(--good); }
+.bank-falling > span, .bank-falling > strong { color: var(--bad); }
+.bank-mixed > span { color: var(--warn); }
+.bank-sr-only { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
+@media (max-width: 760px) {
+  .bank-metrics { grid-template-columns: 1fr; }
+  .bank-import { padding: 14px; }
+  .bank-filters .field { flex: 1; min-width: 135px; }
+  .bank-actions { gap: 8px; }
 }
 
 .item-cell {
