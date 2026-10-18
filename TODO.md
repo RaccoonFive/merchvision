@@ -53,6 +53,7 @@ Make the existing tools easier to maintain, faster to use, and more visually con
 - [ ] Add bounded Prices API timeouts while preserving TTL caching and request coalescing.
 - [ ] Replace caught `Error.message` forwarding in items, latest prices, item quotes, investments, and favorite routes with user-safe failures; test that upstream and database details are not returned.
 - [ ] Review cancellation, overlapping requests, and stale responses during navigation, filtering, and dialog changes.
+- [x] Cancel superseded Finder list and detail-chart requests; protect results, errors, and loading state against late responses, with interaction coverage for filters, tabs, refreshes, closure, unmounting, and Strict Mode.
 - [ ] Add focused regression coverage for concrete defects and fragile behavior found during review.
 
 ### Performance
@@ -126,6 +127,7 @@ Choose concrete ideas individually based on interest, usability, data availabili
 
 ## Completed
 
+- **2026-10-18:** Protected Flip Finder and Investment Finder from stale list and chart responses, canceled requests on replacement and cleanup, and retained Investment Finder filters during refresh. Verified mocked React interactions, desktop/mobile browser workflows, full tests, type checking, and production build.
 - **2026-10-18:** Simplified the Bank Overview header by removing routine warning banners, combining import metadata and actions, and hiding completed progress bars. Partial/stale information remains in cards and item rows; actionable errors stay visible.
 - **2026-10-18:** Added Bank Overview with paste/file import, one browser-local inventory snapshot, safe gross/net valuation, coin handling, signed 7/30/90-day midpoint trends, progressive bounded analysis, filtering, cancellation, and retries. Verified mocked unit/API/interaction tests, desktop/mobile browser workflows across five themes, full tests, type checking, and production build.
 - **2026-10-14:** Added locally served Prayer potion and Super restore inventory artwork to the comparison cards, with source attribution and desktop/mobile image-loading checks. Full tests, type checking, and production build passed.

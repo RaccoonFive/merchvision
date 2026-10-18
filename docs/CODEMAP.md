@@ -24,6 +24,7 @@ Paths below are relative to the repository root. Tests live under `tests/`, mirr
 | Reliable flips | `components/FlipFinder.tsx` → `app/api/flips/route.ts` → `lib/flipFinder.ts` → `lib/scoring.ts` | `tests/lib/scoring.test.ts`, `tests/app/api/flips/route.test.ts` |
 | High Upside flips | Same UI/route/coordinator; `lib/upsideScoring.ts` owns the separate policy | `tests/lib/upsideScoring.test.ts`, `tests/app/api/flips/route.test.ts` |
 | Filters and sorting | `lib/query.ts` parses URL filters; `lib/tableSort.ts` sorts UI rows; domain files own ranking sorts | `tests/lib/query.test.ts`, `tests/lib/tableSort.test.ts`, scoring/investment tests |
+| Finder request cancellation and response ordering | List and detail-chart effects in `components/FlipFinder.tsx` and `components/InvestmentFinder.tsx` | `tests/components/FinderRequests.test.ts` (jsdom interactions with deferred, mocked response bodies) |
 | Flip data-health display | `lib/flipHealth.ts`, `components/FlipFinder.tsx`; health counts come from `lib/flipFinder.ts` | `tests/lib/flipHealth.test.ts`, `tests/app/api/flips/route.test.ts` |
 | Investment momentum | `components/InvestmentFinder.tsx` → `app/api/investments/route.ts` → `lib/investments.ts` | `tests/lib/investments.test.ts`, `tests/app/api/investments/route.test.ts` |
 | Item quote and tax | `components/ItemLookup.tsx`, `app/api/items/[id]/quote/route.ts`, `lib/quote.ts`, `lib/tax.ts` | `tests/lib/quote.test.ts`, `tests/lib/tax.test.ts`, quote route test |
@@ -54,7 +55,7 @@ Paths below are relative to the repository root. Tests live under `tests/`, mirr
 - Account-owned records are Favorites and manual `InvestmentLot`s. Public `FlipObservation`s have no user relation. Inspect ownership filters and schema constraints before changing persistence.
 - Bank Overview remembers one inventory snapshot only in browser local storage, independently of accounts. Its API requests contain item IDs, never imported names or quantities. Its signed daily midpoint regressions do not reuse Investment Finder's positive-only qualification gate; bank instant-sell totals still use latest low quotes, with coins at face value.
 - Some older routes forward caught `Error.message`; user-safe errors are a requirement, not a guarantee of every current handler. See the reliability task in the roadmap.
-- Vitest defaults to the Node environment for `*.test.ts`. Bank Overview tests opt into jsdom for React interactions; other component tests cover helpers or static markup. These tests do not establish responsive browser layout or timer behavior.
+- Vitest defaults to the Node environment for `*.test.ts`. Finder request and Bank Overview tests opt into jsdom for React interactions; other component tests cover helpers or static markup. These tests do not establish responsive browser layout or timer behavior.
 
 ## Targeted Discovery And Verification
 

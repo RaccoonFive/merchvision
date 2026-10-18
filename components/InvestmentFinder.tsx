@@ -2,7 +2,7 @@
 
 import { ExternalLink, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell, type Theme } from "@/components/AppShell";
 import { ItemIcon } from "@/components/ItemIcon";
 import { ItemLookupDialog } from "@/components/ItemLookupDialog";
@@ -62,6 +62,7 @@ type InvestmentSortKey =
   | "score";
 
 export function InvestmentFinder() {
+  const listRequest = useRef<AbortController | null>(null);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [investments, setInvestments] = useState<InvestmentCandidate[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -92,12 +93,16 @@ export function InvestmentFinder() {
   }, [filters]);
 
   const loadInvestments = useCallback(async () => {
+    listRequest.current?.abort();
+    const controller = new AbortController();
+    listRequest.current = controller;
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/investments?${query}`);
+      const response = await fetch(`/api/investments?${query}`, { signal: controller.signal });
       const payload = (await response.json()) as InvestmentsResponse;
+      if (controller.signal.aborted) return;
       if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load investments.");
       const nextInvestments = payload.data ?? [];
       setInvestments(nextInvestments);
@@ -113,39 +118,44 @@ export function InvestmentFinder() {
           : null
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load investments.");
+      if (!controller.signal.aborted) {
+        setError(err instanceof Error ? err.message : "Unable to load investments.");
+      }
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, [query]);
 
   useEffect(() => {
-    loadInvestments();
+    void loadInvestments();
+    return () => listRequest.current?.abort();
   }, [loadInvestments]);
 
   useEffect(() => {
     if (!detailPanelOpen || !selected?.id) {
       setChartData([]);
+      setChartLoading(false);
       return;
     }
 
-    let alive = true;
+    const controller = new AbortController();
+    setChartData([]);
     setChartLoading(true);
-    fetch(`/api/items/${selected.id}/timeseries?timestep=1h`)
+    fetch(`/api/items/${selected.id}/timeseries?timestep=1h`, { signal: controller.signal })
       .then(async (response) => {
         const payload = (await response.json()) as TimeseriesResponse;
         if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load chart.");
-        if (alive) setChartData(payload.data ?? []);
+        if (!controller.signal.aborted) setChartData(payload.data ?? []);
       })
       .catch(() => {
-        if (alive) setChartData([]);
+        if (!controller.signal.aborted) setChartData([]);
       })
       .finally(() => {
-        if (alive) setChartLoading(false);
+        if (!controller.signal.aborted) setChartLoading(false);
       });
 
     return () => {
-      alive = false;
+      controller.abort();
     };
   }, [detailPanelOpen, selected?.id]);
 
@@ -182,9 +192,9 @@ export function InvestmentFinder() {
           <div className={`main-grid${detailPanelOpen ? "" : " detail-panel-closed"}`}>
             <section className="table-wrap" aria-label="Ranked investments">
               {error ? <div className="error">{error}</div> : null}
-              {loading ? <LoadingSpinner label="Analyzing liquid markets and price history..." /> : null}
+              {loading && investments.length === 0 ? <LoadingSpinner label="Analyzing liquid markets and price history..." /> : null}
               {!loading && !error && investments.length === 0 ? <div className="empty">No investments match these filters.</div> : null}
-              {!loading && !error && investments.length > 0 ? (
+              {!error && investments.length > 0 ? (
                 <StickyTable>
                   <table>
                     <thead>

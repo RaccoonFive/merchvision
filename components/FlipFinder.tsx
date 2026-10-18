@@ -2,7 +2,7 @@
 
 import { AlertTriangle, ExternalLink, Flame, RefreshCw, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   FlipCandidate,
   FlipView,
@@ -97,6 +97,7 @@ type FlipSortKey =
   | "buyLimit";
 
 export function FlipFinder() {
+  const listRequest = useRef<AbortController | null>(null);
   const [view, setView] = useState<FlipView>("reliable");
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [flips, setFlips] = useState<RankedFlipCandidate[]>([]);
@@ -124,12 +125,17 @@ export function FlipFinder() {
   const query = useMemo(() => buildQuery(view, filters), [filters, view]);
 
   const loadFlips = useCallback(async () => {
+    listRequest.current?.abort();
+    const controller = new AbortController();
+    listRequest.current = controller;
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/flips?${query}`);
+      const response = await fetch(`/api/flips?${query}`, { signal: controller.signal });
       const payload = (await response.json()) as FlipsResponse;
+      // A response body may finish after cancellation, even if fetch already resolved.
+      if (controller.signal.aborted) return;
       if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load flips.");
       const nextFlips = (payload.data ?? []).filter((flip) => flip.view === view);
       setFlips(nextFlips);
@@ -138,45 +144,50 @@ export function FlipFinder() {
       setModelVersion(payload.meta?.modelVersion ?? null);
       setSelectedId((current) => (current && nextFlips.some((flip) => flip.id === current) ? current : null));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load flips.");
+      if (!controller.signal.aborted) {
+        setError(err instanceof Error ? err.message : "Unable to load flips.");
+      }
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, [query, view]);
 
   useEffect(() => {
-    loadFlips();
+    void loadFlips();
+    return () => listRequest.current?.abort();
   }, [loadFlips]);
 
   useEffect(() => {
     if (!detailPanelOpen || !selected?.id) {
       setChartData([]);
       setChartError(null);
+      setChartLoading(false);
       return;
     }
 
-    let alive = true;
+    const controller = new AbortController();
+    setChartData([]);
     setChartLoading(true);
     setChartError(null);
     const timestep = selected.view === "upside" ? "5m" : "1h";
-    fetch(`/api/items/${selected.id}/timeseries?timestep=${timestep}`)
+    fetch(`/api/items/${selected.id}/timeseries?timestep=${timestep}`, { signal: controller.signal })
       .then(async (response) => {
         const payload = (await response.json()) as TimeseriesResponse;
         if (!response.ok || payload.error) throw new Error(payload.error ?? "Unable to load chart.");
-        if (alive) setChartData(payload.data ?? []);
+        if (!controller.signal.aborted) setChartData(payload.data ?? []);
       })
       .catch((err) => {
-        if (alive) {
+        if (!controller.signal.aborted) {
           setChartData([]);
           setChartError(err instanceof Error ? err.message : "Unable to load chart.");
         }
       })
       .finally(() => {
-        if (alive) setChartLoading(false);
+        if (!controller.signal.aborted) setChartLoading(false);
       });
 
     return () => {
-      alive = false;
+      controller.abort();
     };
   }, [detailPanelOpen, selected?.id, selected?.view]);
 

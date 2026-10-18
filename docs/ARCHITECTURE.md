@@ -30,7 +30,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - Standard Node.js hosting uses `npm start` (`next start`) after a production build.
 - `npm run build:cpanel` sets `MERCHVISION_CPANEL_BUILD=1` to use one Next.js page worker with page-generation concurrency of one. It also reduces V8 and libuv thread pools for the build processes. These build limits are opt-in and do not configure the Passenger runtime.
 - cPanel Passenger uses root-level `app.js`, which initializes Next.js in production mode from the project directory and forwards HTTP requests to its request handler. Passenger manages the public listener; the fallback port for direct invocation is 3100.
-- Deployment configuration lives in the server's private `.env` or process environment. Start from `.env.example` and configure production values in a private `.env.cpanel`, then copy it to `.env` on the hosting server before Prisma commands, building, or startup. See [cPanel deployment](../README.md#deploy-on-cpanel).
+- Deployment configuration lives in the server's private `.env` or process environment. Start from `.env.example` for local development or `.env.cpanel.example` for cPanel and configure production values in a private `.env.cpanel`, then copy it to `.env` on the hosting server before Prisma commands, building, or startup. See [cPanel deployment](../README.md#deploy-on-cpanel).
 
 ### Pages And Components
 
@@ -41,6 +41,7 @@ The application is a single Next.js codebase. Market data comes from the public 
 - `middleware.ts` applies only to `/`: the first actual GET displays the introduction and sets an HttpOnly, SameSite=Lax visit cookie for one year; later requests with that marker redirect to `/flips`. Prefetches and HEAD requests do not set the marker. The root page is dynamic so client navigation rechecks the cookie instead of reusing a cached first-visit page. This browser preference is independent of authentication and does not affect direct tool routes.
 - `components/AppShell.tsx` owns navigation, session-aware account controls, theme switching, sidebar state, and the global item quick-search placement. `components/HeaderItemSearch.tsx` loads the cached item metadata collection through `/api/items` and routes selections to Item Lookup.
 - `components/FlipFinder.tsx`, `InvestmentFinder.tsx`, `ItemLookup.tsx`, and `FavoritesPage.tsx` own the main interactive experiences. Finder item names link directly to the canonical Item Lookup route while their rows retain quick-detail selection. Flip Finder preserves the last successful results when a refresh fails and distinguishes current, stale, partially enriched, empty, and unavailable states.
+- Both Finders abort superseded list requests and ignore canceled responses, errors, and loading-state updates, including response bodies that finish after cancellation. Query changes and unmounting cancel the active list request, including manual refreshes. Investment Finder retains its table and filter controls while refreshing. Detail charts cancel on selection changes, closure, or unmounting and clear previous chart data when a new selection loads.
 - Price-history charts share a dynamically imported Recharts renderer. Ranking pages defer that bundle until a detail panel opens, while Item Lookup defers it until usable chart data is available.
 - Account, Favorites, and Investment Tracker provide route-level loading UI so their dynamic session checks do not leave navigation without immediate feedback.
 - Client components request internal `/api/**` endpoints. They do not call the Wiki API or database directly.
@@ -266,7 +267,7 @@ Investment Tracker values are estimates based on public quotes, not confirmed fi
 - `tests/lib/*.test.ts` covers deterministic formulas, normalization, filtering, and helper behavior.
 - `tests/app/api/**/*.test.ts` tests route contracts with mocked dependencies.
 - `tests/app/**/page.test.ts` covers server-page authentication and routing behavior.
-- `tests/components/*.test.ts` covers component helpers and static markup; `BankOverviewPage.test.ts` opts into jsdom and use React Testing Library to cover request ordering, progressive loading, imports, storage, and lifecycle cleanup. `tests/middleware.test.ts` covers homepage redirects.
+- `tests/components/*.test.ts` covers component helpers and static markup; `FinderRequests.test.ts` and `BankOverviewPage.test.ts` opt into jsdom and use React Testing Library to cover request ordering, progressive loading, imports, storage, and lifecycle cleanup. `tests/middleware.test.ts` covers homepage redirects.
 - Shared HTML fixtures and their source/licensing notes live in `tests/fixtures/`.
 - Tests use mocked market data and must not rely on the live Wiki API.
 - `npm test`, `npm run typecheck`, and `npm run build` form the current validation baseline.
