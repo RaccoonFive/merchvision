@@ -10,7 +10,6 @@ Use this index to build the smallest useful context for a task. Paths are naviga
 | Data flow, APIs, caching, scoring, auth, or persistence | Matching sections in [Architecture](ARCHITECTURE.md) |
 | Next feature or delivery status | Active milestone in [Roadmap](../TODO.md); do not infer completion from this index |
 | Code quality, performance, or design priorities | [Active quality milestone](../TODO.md#active-milestone---code-quality-performance-and-design) and [development focus](PRODUCT.md#development-focus); inspect and measure the affected implementation before choosing changes |
-| Calibration operation or model evaluation | [Flip Calibration](flip-calibration.md) |
 | Local database setup | [MySQL Setup](mysql-setup.md) |
 
 ## Implementation And Tests
@@ -37,7 +36,6 @@ Paths below are relative to the repository root. Tests live under `tests/`, mirr
 | Bank imports, browser snapshots, valuation, and signed trends | `components/BankOverviewPage.tsx` → `lib/useBankAnalysis.ts` → `app/api/bank/{market,trends}/route.ts`; `lib/bank.ts` owns parsing/math, `lib/bankMarket.ts` bounds enrichment, `lib/clientBank.ts` owns storage | `tests/lib/bank.test.ts`, `tests/lib/clientBank.test.ts`, `tests/app/api/bank/routes.test.ts`, `tests/components/BankOverviewPage.test.ts` |
 | Favorites | `components/FavoritesPage.tsx`, favorite controls in `components/ItemLookup.tsx`, `app/api/favorites/**`, `lib/favorites.ts` | `tests/lib/favorites.test.ts`, both favorite route tests, `tests/app/favorites/page.test.ts` |
 | Accounts and ownership | `components/AccountPage.tsx`, `lib/auth.ts`, `lib/auth-client.ts`, `lib/session.ts`, `lib/redirect.ts`, `lib/prisma.ts`, `prisma/schema.prisma`, `app/api/auth/[...all]/route.ts` | `tests/lib/redirect.test.ts`, authenticated route and page tests |
-| Public calibration | `app/api/internal/flip-calibration/route.ts`, `lib/flipCalibration.ts`, `lib/flipCalibrationAnalysis.ts`, `FlipObservation` in `prisma/schema.prisma` | Both calibration library tests and calibration route test |
 | Navigation, themes, and layout | `components/AppShell.tsx`, `lib/theme.ts`, `app/layout.tsx`, `app/globals.css` | `tests/components/AppShell.test.ts`, `tests/lib/theme.test.ts`, `tests/app/layout.test.ts` |
 | Browser app installation | `app/manifest.ts`, `app/apple-icon.png`, `public/icon-192.png`, `public/icon-512.png`; install instructions in `README.md` | `tests/app/manifest.test.ts` |
 | Table hierarchy and metric-card design | `components/FlipFinder.tsx`, `components/Metric.tsx`, their Finder/Lookup/Tracker callers, `app/globals.css` | Existing component tests cover static helpers; verify visual hierarchy, themes, keyboard use, and narrow-screen layouts in a browser |
@@ -52,7 +50,7 @@ Paths below are relative to the repository root. Tests live under `tests/`, mirr
 - A flip buys at the latest low and sells at the latest high. Tracker liquidation and boss instant-sell reference both use the latest low; the tracker subtracts prospective tax, while boss prices are displayed before tax.
 - The default hourly Item Lookup response combines chart, research, and rhythm via `includeResearch=true&includeRhythm=true`. Other chart ranges still need the seven-day hourly evidence; avoid duplicating its default request.
 - `generatedAt` describes response generation, not quote freshness. Use source timestamps and returned health/coverage fields to judge data age and completeness.
-- Account-owned records are Favorites and manual `InvestmentLot`s. Public `FlipObservation`s have no user relation. Inspect ownership filters and schema constraints before changing persistence.
+- Account-owned records are Favorites and manual `InvestmentLot`s. Inspect ownership filters and schema constraints before changing persistence.
 - Bank Overview remembers one inventory snapshot only in browser local storage, independently of accounts. Its API requests contain item IDs, never imported names or quantities. Its signed daily midpoint regressions do not reuse Investment Finder's positive-only qualification gate; bank instant-sell totals still use latest low quotes, with coins at face value.
 - Some older routes forward caught `Error.message`; user-safe errors are a requirement, not a guarantee of every current handler. See the reliability task in the roadmap.
 - Vitest defaults to the Node environment for `*.test.ts`. Finder request and Bank Overview tests opt into jsdom for React interactions; other component tests cover helpers or static markup. These tests do not establish responsive browser layout or timer behavior.

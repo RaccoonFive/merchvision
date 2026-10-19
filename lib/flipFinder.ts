@@ -57,10 +57,6 @@ export async function loadReliableFlipResult(filters: FlipFilters): Promise<Flip
   return { data: filterAndSortFlips(result.data, filters), health: result.health };
 }
 
-export async function loadReliableCandidateUniverse(): Promise<FlipCandidate[]> {
-  return (await loadReliableUniverseResult()).data;
-}
-
 async function loadReliableUniverseResult(): Promise<FlipUniverseResult<FlipCandidate>> {
   const nowSeconds = Math.floor(Date.now() / 1000);
   const [items, prices, summaries] = await Promise.all([
@@ -101,10 +97,6 @@ async function loadReliableUniverseResult(): Promise<FlipUniverseResult<FlipCand
 export async function loadUpsideFlipResult(filters: UpsideFlipFilters): Promise<FlipLoadResult<UpsideFlipCandidate>> {
   const result = await loadUpsideUniverseResult();
   return { data: filterAndSortUpsideFlips(result.data, filters), health: result.health };
-}
-
-export async function loadUpsideCandidateUniverse(): Promise<UpsideFlipCandidate[]> {
-  return (await loadUpsideUniverseResult()).data;
 }
 
 async function loadUpsideUniverseResult(): Promise<FlipUniverseResult<UpsideFlipCandidate>> {

@@ -23,7 +23,6 @@ Last updated: 2026-10-18
 ## Current Baseline
 
 - Flip Finder defaults to a conservative Reliable score and lazy-loads an experimental High Upside ranking based on fresh paired quotes, five-minute margin persistence, robust capacity, and separately displayed confidence.
-- A protected 15-minute calibration job can retain 90 days of bounded public-market observations and compare High Upside, Reliable, and legacy-current ranking cohorts without recording user activity.
 - Flip enrichment is bounded to balanced shortlists and produces deterministic confidence, stability, spread-quality, and executability estimates.
 - Item Lookup exposes current quote math, warnings, Favorites, and 1-day, 7-day, 3-month, and 1-year price history.
 - Item Lookup includes Market Rhythm: a local-time heatmap of observed hourly after-tax spread quality and matched volume from the latest seven days, with explicit missing-data and non-forecast caveats.
@@ -93,7 +92,7 @@ The former Live Item Research milestone delivered the research experience and bo
 
 These tasks support a small private deployment and do not require production-scale infrastructure.
 
-- [ ] Document and verify a basic MySQL backup and restore procedure for accounts, Favorites, investment lots, and public calibration observations.
+- [ ] Document and verify a basic MySQL backup and restore procedure for accounts, Favorites, and investment lots.
 - [ ] Review material dependency audit findings before dependency or deployment updates.
 - [ ] Document the private deployment environment, migration command, restart procedure, and common recovery steps.
 - [ ] Keep a lightweight health indication for database availability and Wiki data freshness.
@@ -127,6 +126,7 @@ Choose concrete ideas individually based on interest, usability, data availabili
 
 ## Completed
 
+- **2026-10-18:** Removed the unused cron-driven flip calibration endpoint, reporting code, configuration, and runbook, with a migration to drop its public observation table. Verified fresh and upgrade migrations against disposable MySQL databases, preservation of account-owned records, endpoint 404 responses, full tests, type checking, and production build.
 - **2026-10-18:** Protected Flip Finder and Investment Finder from stale list and chart responses, canceled requests on replacement and cleanup, and retained Investment Finder filters during refresh. Verified mocked React interactions, desktop/mobile browser workflows, full tests, type checking, and production build.
 - **2026-10-18:** Simplified the Bank Overview header by removing routine warning banners, combining import metadata and actions, and hiding completed progress bars. Partial/stale information remains in cards and item rows; actionable errors stay visible.
 - **2026-10-18:** Added Bank Overview with paste/file import, one browser-local inventory snapshot, safe gross/net valuation, coin handling, signed 7/30/90-day midpoint trends, progressive bounded analysis, filtering, cancellation, and retries. Verified mocked unit/API/interaction tests, desktop/mobile browser workflows across five themes, full tests, type checking, and production build.

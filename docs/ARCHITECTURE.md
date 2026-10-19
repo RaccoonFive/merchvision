@@ -21,7 +21,7 @@ Next.js application
   `-- centralized Wiki client -----------------> OSRS Wiki Prices and MediaWiki APIs
 ```
 
-The application is a single Next.js codebase. Market data comes from the public OSRS Wiki Real-Time Prices API; boss loot reference comes from the Wiki MediaWiki API. MySQL stores authentication records, favorites, private manually entered investment lots, and bounded user-independent flip observations used for model calibration. Full market snapshots, filters, budgets, sales, private trade outcomes, and realized-profit history are not persisted.
+The application is a single Next.js codebase. Market data comes from the public OSRS Wiki Real-Time Prices API; boss loot reference comes from the Wiki MediaWiki API. MySQL stores authentication records, favorites, and private manually entered investment lots. Full market snapshots, filters, budgets, sales, private trade outcomes, and realized-profit history are not persisted.
 
 ## Runtime Boundaries
 
@@ -63,7 +63,6 @@ The application is a single Next.js codebase. Market data comes from the public 
 - `lib/scoring.ts` owns flip construction, seven-day market analysis, warnings, filtering, and sorting.
 - `lib/upsideScoring.ts` owns the experimental five-minute High Upside gate, analysis, capacity estimate, confidence, filtering, and ranking.
 - `lib/flipFinder.ts` coordinates the separate Reliable and High Upside enrichment paths.
-- `lib/flipCalibration.ts` records bounded ranking cohorts, resolves public-market touch proxies, prunes retention data, and reports model comparisons.
 - `lib/investments.ts` owns midpoint trend, volatility, consistency, confidence, filtering, and ranking for investments.
 - `lib/investmentTracker.ts` owns purchase-lot validation, live net-liquidation valuation, partial portfolio summaries, and tracker enrichment.
 - `lib/bank.ts` owns Bank Memory parsing, snapshot validation, conservative valuation, safe totals, and signed daily midpoint regression. `lib/bankMarket.ts` coordinates public enrichment; `lib/clientBank.ts` owns browser persistence and `lib/useBankAnalysis.ts` owns cancelable sequential batches.
@@ -80,7 +79,6 @@ The application is a single Next.js codebase. Market data comes from the public 
 - Server page sessions and route-request sessions are resolved in `lib/session.ts`.
 - `lib/prisma.ts` provides a development-safe Prisma client singleton.
 - `prisma/schema.prisma` defines Better Auth records and the user-owned `Favorite` and `InvestmentLot` models.
-- `FlipObservation` stores public, user-independent model features and four-hour proxy outcomes for 90 days. It has no user relation.
 - Favorite uniqueness is enforced by the composite `(userId, itemId)` constraint. Deleting a user cascades to their sessions, accounts, and favorites.
 - Investment lots intentionally allow repeated item IDs so separate purchases retain their own quantity and per-unit cost. Deleting a user cascades to their lots.
 
@@ -123,8 +121,6 @@ The application is a single Next.js codebase. Market data comes from the public 
 | `PUT /api/favorites/[itemId]` | Save an item | `{ favorited: true }` | Authenticated |
 | `DELETE /api/favorites/[itemId]` | Remove an item | `{ favorited: false }` | Authenticated |
 | `/api/auth/[...all]` | Better Auth handler | Better Auth contract | Depends on operation |
-| `GET /api/internal/flip-calibration` | Return bounded calibration reports and monotonic weight analysis | `{ data }` | `CRON_SECRET` bearer token |
-| `POST /api/internal/flip-calibration` | Collect, resolve, and prune calibration observations | `{ data }` | `CRON_SECRET` bearer token |
 
 ## Market Data Integration And Caching
 
@@ -222,12 +218,6 @@ The 0–100 score uses `min(current net profit, seven-day median net margin)` as
 
 High Upside exposes GP/hour and confidence separately. Its 1% market-share assumption is a capacity heuristic, not a fill forecast.
 
-### Calibration
-
-Every 15 minutes, an external scheduler may call the protected calibration endpoint. It records at most 50 High Upside, 25 Reliable, and 25 legacy-current observations per timestamp bucket. Four hours later, a candidate is marked completed only when a qualifying low-side trade is followed in a later five-minute bucket by a qualifying high-side trade. Same-bucket touches are ambiguous and receive zero proxy GP/hour.
-
-Reports compare top-10 and top-25 completion, time-to-completion, and zero-inclusive proxy GP/hour by model. A time-ordered 70/30 analysis can recommend positive monotonic confidence weights, but it never changes the production model automatically. Resolved raw observations are removed after 90 days. See `docs/flip-calibration.md`.
-
 ## Investment Finder Data Flow
 
 1. Load item mapping and 24-hour summaries concurrently.
@@ -257,8 +247,7 @@ Investment Tracker values are estimates based on public quotes, not confirmed fi
 - The application database connection must use a dedicated least-privilege MySQL user, not root. See `docs/mysql-setup.md`.
 - Favorite reads and writes are scoped to the authenticated user's ID.
 - Callback URLs are normalized by `lib/redirect.ts` to prevent unsafe external redirects.
-- Beyond account data, Favorites, manual purchase lots, bounded public calibration observations, and the explicitly imported browser-local Bank Overview snapshot, the application does not persist user trades, sales, offers, realized profit, account bankroll, portfolio suggestions, filters, or full market histories. Bank quantities and imported names never enter market API requests or the database.
-- Flip observations contain only public item-market features and public-market proxy outcomes; they never contain user IDs, account actions, or evidence that a user's order filled.
+- Beyond account data, Favorites, manual purchase lots, and the explicitly imported browser-local Bank Overview snapshot, the application does not persist user trades, sales, offers, realized profit, account bankroll, portfolio suggestions, filters, or full market histories. Bank quantities and imported names never enter market API requests or the database.
 - API errors should remain useful without exposing credentials, session tokens, database internals, or unnecessary upstream payloads.
 
 ## Testing Strategy

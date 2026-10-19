@@ -151,7 +151,7 @@ Because Merchvision does not observe execution or record sales, success should b
 
 - Users can reach a credible shortlist quickly.
 - A high proportion of displayed candidates have sufficient data coverage and clearly reported confidence.
-- Experimental ranking changes are evaluated against Reliable and legacy baselines using time-ordered public-market proxy outcomes before promotion.
+- Experimental ranking changes should be evaluated against the Reliable baseline using reproducible public-market evidence before promotion; the app does not collect scheduled calibration observations.
 - Users can explain, from the UI, why a higher-ranked opportunity outranks a lower-ranked one.
 - Stale or degraded upstream data is visible rather than silently presented as current.
 - Returning users can resume research efficiently through filters, lookup, and favorites.

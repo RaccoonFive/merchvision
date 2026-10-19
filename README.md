@@ -84,7 +84,7 @@ For the complete system design, see [Architecture](docs/ARCHITECTURE.md).
 
 ## Privacy and boundaries
 
-Merchvision stores only what its current tools need: account records, Favorites, private purchase lots, and bounded public-market calibration observations.
+Merchvision stores only what its current tools need: account records, Favorites, and private purchase lots.
 
 Bank Overview at `/bank` additionally remembers one imported inventory snapshot in this browser's local storage, without an account. Paste the Bank Memory clipboard export or upload its `.txt`/`.tsv` file; the next successful import replaces the snapshot. **Clear bank** removes it. Only item IDs are sent for public market research; imported names and quantities stay in the browser. Coins count at face value, and missing GE prices remain unvalued. Clearing browser data removes the snapshot; it does not sync across devices.
 
@@ -129,7 +129,6 @@ Set these values in `.env`:
 | `OSRS_LATEST_CACHE_SECONDS` | No | Latest-price cache TTL; defaults to 60 seconds. |
 | `OSRS_MAPPING_CACHE_SECONDS` | No | Item-mapping cache TTL; defaults to 86,400 seconds. |
 | `OSRS_TIMESERIES_CACHE_SECONDS` | No | Timeseries and 24-hour-summary cache TTL; defaults to 300 seconds. |
-| `CRON_SECRET` | For calibration | Separate bearer secret for the protected 15-minute calibration job and report. |
 
 Never commit `.env` or real credentials. The [MySQL setup guide](docs/mysql-setup.md) includes a least-privilege database bootstrap.
 
@@ -162,7 +161,7 @@ Next.js automatically links `app/manifest.ts` and the Apple home-screen icon in 
 
 Use Node.js 22 for both the terminal and Passenger runtime. Upload or clone the project outside `public_html`, for example into `/home/YOUR_CPANEL_USER/merchvision`, and deploy it at the root of `https://merchvision.kevenparent.com` with HTTPS enabled.
 
-Copy [`.env.cpanel.example`](.env.cpanel.example) to a private `.env.cpanel`, or use the generated `.env.cpanel` if one was prepared locally. The template sets `NODE_ENV=production` and `BETTER_AUTH_URL=https://merchvision.kevenparent.com`. Set the full cPanel database and user names in `DATABASE_URL`, URL-encode special characters in its password, and set `USER_AGENT_CONTACT` to a contact where you can be reached. Generate separate secrets for `BETTER_AUTH_SECRET` and optional `CRON_SECRET` with `openssl rand -hex 32` if they have not already been generated. `.env.cpanel` is ignored by Git and must be transferred separately.
+Copy [`.env.cpanel.example`](.env.cpanel.example) to a private `.env.cpanel`, or use the generated `.env.cpanel` if one was prepared locally. The template sets `NODE_ENV=production` and `BETTER_AUTH_URL=https://merchvision.kevenparent.com`. Set the full cPanel database and user names in `DATABASE_URL`, URL-encode special characters in its password, and set `USER_AGENT_CONTACT` to a contact where you can be reached. Generate `BETTER_AUTH_SECRET` with `openssl rand -hex 32` if it has not already been generated. `.env.cpanel` is ignored by Git and must be transferred separately.
 
 On the **hosting server**, copy the completed file to `.env` in the project directory; Next.js and Prisma do not automatically load `.env.cpanel`. Preserve your local development `.env`. Then run these commands in the host's Node.js 22 environment:
 
@@ -189,7 +188,7 @@ mkdir -p tmp
 touch tmp/restart.txt
 ```
 
-Check account login, Favorites, Investment Tracker, and public market data over HTTPS. Calibration scheduling is optional; see the [production calibration instructions](docs/flip-calibration.md#production-configuration). For hosting details, see [cPanel's Node.js application guide](https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-node.js-application/).
+Check account login, Favorites, Investment Tracker, and public market data over HTTPS. For hosting details, see [cPanel's Node.js application guide](https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-node.js-application/).
 
 ## Commands
 
@@ -214,7 +213,7 @@ components/          Interactive tools, tables, dialogs, charts, and application
 lib/                 Market logic, scoring, Wiki integration, auth, and persistence helpers
 tests/               Vitest tests mirroring the source tree, with shared fixtures
 prisma/              MySQL schema and committed migrations
-docs/                Product, architecture, calibration, and operational documentation
+docs/                Product, architecture, and operational documentation
 public/              Theme-aware application icons and local homepage artwork
 AGENTS.md             Durable repository guidance for coding agents
 TODO.md               Active milestone, backlog, and delivery history
@@ -232,7 +231,6 @@ The current feature set is sufficient for this stage. Development now focuses on
 | [Product Contract](docs/PRODUCT.md) | You want to understand the product principles, privacy boundaries, and non-goals. |
 | [Architecture](docs/ARCHITECTURE.md) | You are changing data flow, APIs, caching, authentication, persistence, or scoring. |
 | [Roadmap](TODO.md) | You want the active milestone, planned work, or delivery history. |
-| [Flip Calibration](docs/flip-calibration.md) | You are operating or evaluating the experimental High Upside model. |
 | [MySQL Setup](docs/mysql-setup.md) | You need a local least-privilege database user. |
 
 ## Contributing
